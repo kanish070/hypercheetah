@@ -10,9 +10,14 @@ declare global {
 }
 
 let loadPromise: Promise<void> | null = null;
+let loadError: Error | null = null;
 
 export async function loadGoogleMaps(apiKey: string): Promise<void> {
   if (loadPromise) return loadPromise;
+  if (!apiKey) {
+    loadError = new Error("Google Maps API key is required");
+    throw loadError;
+  }
 
   loadPromise = new Promise((resolve, reject) => {
     if (window.google?.maps) {
@@ -30,7 +35,11 @@ export async function loadGoogleMaps(apiKey: string): Promise<void> {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&callback=initMap`;
     script.async = true;
     script.defer = true;
-    script.onerror = () => reject(new Error("Failed to load Google Maps"));
+    script.onerror = () => {
+      const error = new Error("Failed to load Google Maps");
+      loadError = error;
+      reject(error);
+    };
     document.head.appendChild(script);
   });
 
@@ -38,18 +47,14 @@ export async function loadGoogleMaps(apiKey: string): Promise<void> {
 }
 
 export async function waitForMapsToLoad(): Promise<void> {
+  if (loadError) throw loadError;
   if (window.mapsLoaded) return;
 
-  return new Promise((resolve) => {
-    const checkLoaded = () => {
-      if (window.mapsLoaded) {
-        resolve();
-      } else {
-        setTimeout(checkLoaded, 100);
-      }
-    };
-    checkLoaded();
-  });
+  if (!loadPromise) {
+    throw new Error("Call loadGoogleMaps before using Maps features");
+  }
+
+  await loadPromise;
 }
 
 export async function calculateRoute(
@@ -109,6 +114,11 @@ export async function createMap(
 export async function drawRoute(map: any, route: Route) {
   await waitForMapsToLoad();
 
+  // Clear existing polylines and markers
+  map.data?.forEach((feature: any) => {
+    map.data.remove(feature);
+  });
+
   const path = route.waypoints.map(
     (point) => new window.google.maps.LatLng(point.lat, point.lng)
   );
@@ -148,4 +158,9 @@ export async function drawRoute(map: any, route: Route) {
       strokeColor: "#FFFFFF",
     },
   });
+
+  // Fit bounds to show entire route
+  const bounds = new window.google.maps.LatLngBounds();
+  path.forEach((point: any) => bounds.extend(point));
+  map.fitBounds(bounds);
 }
