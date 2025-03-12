@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UserIcon, Car } from "lucide-react";
+import { UserIcon, Car, Zap } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Home() {
@@ -10,11 +10,14 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-6">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Share Your Journey
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Zap className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold tracking-tight">
+              HyperCheetah
+            </h1>
+          </div>
           <p className="text-xl text-muted-foreground">
-            Connect with travelers going your way and share the ride
+            Lightning-fast rides with smart route matching
           </p>
         </div>
 
