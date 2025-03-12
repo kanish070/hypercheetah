@@ -16,13 +16,29 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    mapInstanceRef.current = createMap(mapRef.current, center);
+    const initMap = async () => {
+      try {
+        mapInstanceRef.current = await createMap(mapRef.current, center);
+      } catch (error) {
+        console.error("Failed to initialize map:", error);
+      }
+    };
+
+    initMap();
   }, [center]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !route) return;
 
-    drawRoute(mapInstanceRef.current, route);
+    const showRoute = async () => {
+      try {
+        await drawRoute(mapInstanceRef.current, route);
+      } catch (error) {
+        console.error("Failed to draw route:", error);
+      }
+    };
+
+    showRoute();
   }, [route]);
 
   return (

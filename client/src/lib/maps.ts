@@ -5,37 +5,66 @@ declare global {
   interface Window {
     google: any;
     initMap: () => void;
+    mapsLoaded: boolean;
   }
 }
 
+let loadPromise: Promise<void> | null = null;
+
 export async function loadGoogleMaps(apiKey: string): Promise<void> {
-  return new Promise((resolve, reject) => {
+  if (loadPromise) return loadPromise;
+
+  loadPromise = new Promise((resolve, reject) => {
     if (window.google?.maps) {
+      window.mapsLoaded = true;
       resolve();
       return;
     }
 
-    window.initMap = () => resolve();
+    window.initMap = () => {
+      window.mapsLoaded = true;
+      resolve();
+    };
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&callback=initMap`;
     script.async = true;
+    script.defer = true;
     script.onerror = () => reject(new Error("Failed to load Google Maps"));
     document.head.appendChild(script);
   });
+
+  return loadPromise;
 }
 
-export function calculateRoute(
+export async function waitForMapsToLoad(): Promise<void> {
+  if (window.mapsLoaded) return;
+
+  return new Promise((resolve) => {
+    const checkLoaded = () => {
+      if (window.mapsLoaded) {
+        resolve();
+      } else {
+        setTimeout(checkLoaded, 100);
+      }
+    };
+    checkLoaded();
+  });
+}
+
+export async function calculateRoute(
   origin: Location,
   destination: Location
 ): Promise<Route> {
+  await waitForMapsToLoad();
+
   return new Promise((resolve, reject) => {
     const directionsService = new window.google.maps.DirectionsService();
-    
+
     directionsService.route(
       {
-        origin: origin,
-        destination: destination,
+        origin: { lat: origin.lat, lng: origin.lng },
+        destination: { lat: destination.lat, lng: destination.lng },
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result: any, status: any) => {
@@ -50,18 +79,20 @@ export function calculateRoute(
           };
           resolve(route);
         } else {
-          reject(new Error("Failed to calculate route"));
+          reject(new Error(`Failed to calculate route: ${status}`));
         }
       }
     );
   });
 }
 
-export function createMap(
+export async function createMap(
   element: HTMLElement,
   center: Location,
   zoom: number = 12
 ) {
+  await waitForMapsToLoad();
+
   return new window.google.maps.Map(element, {
     center,
     zoom,
@@ -75,7 +106,9 @@ export function createMap(
   });
 }
 
-export function drawRoute(map: any, route: Route) {
+export async function drawRoute(map: any, route: Route) {
+  await waitForMapsToLoad();
+
   const path = route.waypoints.map(
     (point) => new window.google.maps.LatLng(point.lat, point.lng)
   );
