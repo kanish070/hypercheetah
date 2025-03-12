@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { createMap, drawRoute } from "@/lib/maps";
 import type { Location, Route } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { convertToRelativePosition } from "@/lib/maps";
 
 interface RouteMapProps {
   center: Location;
@@ -11,69 +9,61 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ center, route, className = "" }: RouteMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-
-    const initMap = async () => {
-      try {
-        setIsLoading(true);
-        setError(undefined);
-        const mapInstance = await createMap(mapRef.current, center);
-        mapInstanceRef.current = mapInstance;
-      } catch (error) {
-        console.error("Failed to initialize map:", error);
-        setError("Failed to load map. Please check your internet connection and refresh the page.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initMap();
-
-    return () => {
-      if (mapInstanceRef.current) {
-        // Clean up the map instance when component unmounts
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [center]);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current || !route) return;
-
-    const showRoute = async () => {
-      try {
-        setIsLoading(true);
-        await drawRoute(mapInstanceRef.current, route);
-      } catch (error) {
-        console.error("Failed to draw route:", error);
-        setError("Failed to display route on map. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    showRoute();
-  }, [route]);
+  // Convert locations to relative positions
+  const centerPos = convertToRelativePosition(center);
 
   return (
     <Card className={`relative overflow-hidden ${className}`}>
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="w-full h-full min-h-[400px] bg-secondary/5 relative">
+        {/* Grid lines */}
+        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
+          {Array.from({ length: 64 }).map((_, i) => (
+            <div key={i} className="border border-secondary/10" />
+          ))}
         </div>
-      )}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-          <p className="text-destructive text-center px-4">{error}</p>
-        </div>
-      )}
-      <div ref={mapRef} className="w-full h-full min-h-[400px]" />
+
+        {/* Center marker */}
+        <div
+          className="absolute w-3 h-3 bg-primary rounded-full transform -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: `${50 + centerPos.x}%`,
+            top: `${50 + centerPos.y}%`
+          }}
+        />
+
+        {/* Route visualization */}
+        {route && (
+          <svg className="absolute inset-0 w-full h-full">
+            {/* Route path */}
+            <path
+              d={`M ${50 + convertToRelativePosition(route.start).x} ${
+                50 + convertToRelativePosition(route.start).y
+              } L ${50 + convertToRelativePosition(route.end).x} ${
+                50 + convertToRelativePosition(route.end).y
+              }`}
+              stroke="hsl(var(--primary))"
+              strokeWidth="2"
+              fill="none"
+            />
+
+            {/* Start point */}
+            <circle
+              cx={50 + convertToRelativePosition(route.start).x}
+              cy={50 + convertToRelativePosition(route.start).y}
+              r="4"
+              fill="hsl(var(--primary))"
+            />
+
+            {/* End point */}
+            <circle
+              cx={50 + convertToRelativePosition(route.end).x}
+              cy={50 + convertToRelativePosition(route.end).y}
+              r="4"
+              fill="hsl(var(--destructive))"
+            />
+          </svg>
+        )}
+      </div>
     </Card>
   );
 }
