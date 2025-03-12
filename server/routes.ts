@@ -1,8 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, type WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertRideSchema, LocationSchema, RouteSchema } from "@shared/schema";
+import { insertUserSchema, insertRideSchema, insertMessageSchema, LocationSchema, RouteSchema } from "@shared/schema";
 import { z } from "zod";
+
+// WebSocket message types
+const wsMessageSchema = z.object({
+  type: z.enum(["chat"]),
+  rideId: z.number(),
+  senderId: z.number(),
+  content: z.string()
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
@@ -63,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: LocationSchema,
         type: z.enum(["offer", "request"])
       }).parse(req.query);
-      
+
       const rides = await storage.getNearbyRides(location, type);
       res.json(rides);
     } catch (error) {
@@ -83,10 +92,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/rides/:id/status", async (req, res) => {
     try {
-      const { status } = z.object({ 
-        status: z.enum(["active", "matched", "completed"]) 
+      const { status } = z.object({
+        status: z.enum(["active", "matched", "completed"])
       }).parse(req.body);
-      
+
       const ride = await storage.updateRideStatus(parseInt(req.params.id), status);
       res.json(ride);
     } catch (error) {
@@ -94,6 +103,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Message routes
+  app.get("/api/messages/:rideId", async (req, res) => {
+    try {
+      const messages = await storage.getMessages(parseInt(req.params.rideId));
+      res.json(messages);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to fetch messages" });
+    }
+  });
+
   const httpServer = createServer(app);
+
+  // Setup WebSocket server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  // Store active WebSocket connections
+  const connections = new Map<number, WebSocket>();
+
+  wss.on('connection', (ws) => {
+    let userId: number | undefined;
+
+    ws.on('message', async (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+
+        // Handle initial connection setup
+        if (message.type === 'init') {
+          userId = message.userId;
+          connections.set(userId, ws);
+          return;
+        }
+
+        // Handle chat messages
+        if (message.type === 'chat') {
+          const validatedMessage = wsMessageSchema.parse(message);
+
+          // Store the message
+          const storedMessage = await storage.createMessage({
+            rideId: validatedMessage.rideId,
+            senderId: validatedMessage.senderId,
+            content: validatedMessage.content
+          });
+
+          // Get ride to find participants
+          const ride = await storage.getRide(validatedMessage.rideId);
+          if (!ride) return;
+
+          // Broadcast to all participants
+          const participants = [ride.userId];
+          participants.forEach(participantId => {
+            const participantWs = connections.get(participantId);
+            if (participantWs?.readyState === WebSocket.OPEN) {
+              participantWs.send(JSON.stringify({
+                type: 'chat',
+                message: storedMessage
+              }));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      if (userId) {
+        connections.delete(userId);
+      }
+    });
+  });
+
   return httpServer;
 }

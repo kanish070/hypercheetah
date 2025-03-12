@@ -38,6 +38,15 @@ export const rides = pgTable("rides", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
+// Chat messages
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  rideId: serial("ride_id").notNull(),
+  senderId: serial("sender_id").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow()
+});
+
 // For creating new users
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true,
@@ -51,7 +60,15 @@ export const insertRideSchema = createInsertSchema(rides).omit({
   createdAt: true
 });
 
+// For creating new messages
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertRide = z.infer<typeof insertRideSchema>;
 export type Ride = typeof rides.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;

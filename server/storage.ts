@@ -1,4 +1,4 @@
-import { users, rides, type User, type InsertUser, type Ride, type InsertRide, type Route, type Location } from "@shared/schema";
+import { users, rides, messages, type User, type InsertUser, type Ride, type InsertRide, type Message, type InsertMessage, type Route, type Location } from "@shared/schema";
 
 export interface IStorage {
   // User operations
@@ -7,26 +7,34 @@ export interface IStorage {
   updateUserMode(id: number, mode: string): Promise<User>;
   updateUserLocation(id: number, location: Location): Promise<User>;
   setUserActive(id: number, active: boolean): Promise<User>;
-  
+
   // Ride operations
   createRide(ride: InsertRide): Promise<Ride>;
   getRide(id: number): Promise<Ride | undefined>;
   getNearbyRides(location: Location, type: string): Promise<Ride[]>;
   updateRideStatus(id: number, status: string): Promise<Ride>;
   findMatchingRides(route: Route): Promise<Ride[]>;
+
+  // Chat operations
+  createMessage(message: InsertMessage): Promise<Message>;
+  getMessages(rideId: number): Promise<Message[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private rides: Map<number, Ride>;
+  private messages: Map<number, Message>;
   private userId: number;
   private rideId: number;
+  private messageId: number;
 
   constructor() {
     this.users = new Map();
     this.rides = new Map();
+    this.messages = new Map();
     this.userId = 1;
     this.rideId = 1;
+    this.messageId = 1;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -111,6 +119,23 @@ export class MemStorage implements IStorage {
       ride.status === "active" &&
       this.routesOverlap(route, ride.route)
     );
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const id = this.messageId++;
+    const message: Message = {
+      id,
+      ...insertMessage,
+      createdAt: new Date()
+    };
+    this.messages.set(id, message);
+    return message;
+  }
+
+  async getMessages(rideId: number): Promise<Message[]> {
+    return Array.from(this.messages.values())
+      .filter(message => message.rideId === rideId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
   private isNearby(loc1: Location, loc2: Location): boolean {
