@@ -20,27 +20,39 @@ export async function loadGoogleMaps(apiKey: string): Promise<void> {
   }
 
   loadPromise = new Promise((resolve, reject) => {
-    if (window.google?.maps) {
-      window.mapsLoaded = true;
-      resolve();
-      return;
-    }
+    try {
+      if (window.google?.maps) {
+        window.mapsLoaded = true;
+        resolve();
+        return;
+      }
 
-    window.initMap = () => {
-      window.mapsLoaded = true;
-      resolve();
-    };
+      window.initMap = () => {
+        if (!window.google?.maps) {
+          const error = new Error("Google Maps failed to initialize");
+          loadError = error;
+          reject(error);
+          return;
+        }
+        window.mapsLoaded = true;
+        resolve();
+      };
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => {
-      const error = new Error("Failed to load Google Maps");
-      loadError = error;
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&callback=initMap&v=weekly`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = () => {
+        const error = new Error("Failed to load Google Maps script");
+        loadError = error;
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    } catch (error) {
+      loadError = error as Error;
       reject(error);
-    };
-    document.head.appendChild(script);
+    }
   });
 
   return loadPromise;
@@ -98,7 +110,7 @@ export async function createMap(
 ) {
   await waitForMapsToLoad();
 
-  return new window.google.maps.Map(element, {
+  const map = new window.google.maps.Map(element, {
     center,
     zoom,
     styles: [
@@ -109,15 +121,19 @@ export async function createMap(
       },
     ],
   });
+
+  return map;
 }
 
 export async function drawRoute(map: any, route: Route) {
   await waitForMapsToLoad();
 
   // Clear existing polylines and markers
-  map.data?.forEach((feature: any) => {
-    map.data.remove(feature);
-  });
+  if (map.data) {
+    map.data.forEach((feature: any) => {
+      map.data.remove(feature);
+    });
+  }
 
   const path = route.waypoints.map(
     (point) => new window.google.maps.LatLng(point.lat, point.lng)

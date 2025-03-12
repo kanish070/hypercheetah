@@ -23,16 +23,24 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
       try {
         setIsLoading(true);
         setError(undefined);
-        mapInstanceRef.current = await createMap(mapRef.current, center);
+        const mapInstance = await createMap(mapRef.current, center);
+        mapInstanceRef.current = mapInstance;
       } catch (error) {
         console.error("Failed to initialize map:", error);
-        setError("Failed to load map. Please check your internet connection.");
+        setError("Failed to load map. Please check your internet connection and refresh the page.");
       } finally {
         setIsLoading(false);
       }
     };
 
     initMap();
+
+    return () => {
+      if (mapInstanceRef.current) {
+        // Clean up the map instance when component unmounts
+        mapInstanceRef.current = null;
+      }
+    };
   }, [center]);
 
   useEffect(() => {
@@ -44,7 +52,7 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
         await drawRoute(mapInstanceRef.current, route);
       } catch (error) {
         console.error("Failed to draw route:", error);
-        setError("Failed to display route on map.");
+        setError("Failed to display route on map. Please try again.");
       } finally {
         setIsLoading(false);
       }
