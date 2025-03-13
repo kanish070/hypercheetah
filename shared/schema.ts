@@ -1,74 +1,87 @@
-import { pgTable, text, serial, doublePrecision, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, doublePrecision, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Types for location coordinates
-export const LocationSchema = z.object({
-  lat: z.number(),
-  lng: z.number()
+// Products table
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: doublePrecision("price").notNull(),
+  stock: integer("stock").notNull().default(0),
+  categoryId: serial("category_id").notNull(),
+  images: text("images").array(),
+  createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
-export type Location = z.infer<typeof LocationSchema>;
-
-// Types for route information
-export const RouteSchema = z.object({
-  start: LocationSchema,
-  end: LocationSchema,
-  waypoints: z.array(LocationSchema)
+// Categories table
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description")
 });
-
-export type Route = z.infer<typeof RouteSchema>;
 
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  currentMode: text("current_mode").notNull(), // "passenger" or "rider"
-  currentLocation: jsonb("current_location").$type<Location>(),
-  active: boolean("active").notNull().default(false)
+  email: text("email").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role").notNull().default("customer") // "admin" or "customer"
 });
 
-// Active rides/requests
-export const rides = pgTable("rides", {
+// Orders table
+export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: serial("user_id").notNull(),
-  type: text("type").notNull(), // "offer" for riders, "request" for passengers
-  route: jsonb("route").$type<Route>().notNull(),
-  status: text("status").notNull(), // "active", "matched", "completed"
+  status: text("status").notNull().default("pending"), // "pending", "confirmed", "shipped", "delivered"
+  total: doublePrecision("total").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
-// Chat messages
-export const messages = pgTable("messages", {
+// Order items table
+export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),
-  rideId: serial("ride_id").notNull(),
-  senderId: serial("sender_id").notNull(),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow()
+  orderId: serial("order_id").notNull(),
+  productId: serial("product_id").notNull(),
+  quantity: integer("quantity").notNull(),
+  priceAtTime: doublePrecision("price_at_time").notNull()
 });
 
-// For creating new users
+// Insert schemas
+export const insertProductSchema = createInsertSchema(products).omit({ 
+  id: true,
+  createdAt: true 
+});
+
+export const insertCategorySchema = createInsertSchema(categories).omit({ 
+  id: true 
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true,
-  currentLocation: true,
-  active: true
+  passwordHash: true 
+}).extend({
+  password: z.string().min(8, "Password must be at least 8 characters")
 });
 
-// For creating new rides
-export const insertRideSchema = createInsertSchema(rides).omit({
+export const insertOrderSchema = createInsertSchema(orders).omit({ 
   id: true,
-  createdAt: true
+  createdAt: true 
 });
 
-// For creating new messages
-export const insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
-  createdAt: true
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ 
+  id: true 
 });
 
+// Types
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type Product = typeof products.$inferSelect;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Category = typeof categories.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertRide = z.infer<typeof insertRideSchema>;
-export type Ride = typeof rides.$inferSelect;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type Message = typeof messages.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderItem = typeof orderItems.$inferSelect;

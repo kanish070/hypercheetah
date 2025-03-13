@@ -1,178 +1,143 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
-import { WebSocketServer, type WebSocket } from "ws";
+import { createServer } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertRideSchema, insertMessageSchema, LocationSchema, RouteSchema } from "@shared/schema";
+import { insertUserSchema, insertProductSchema, insertCategorySchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
-// WebSocket message types
-const wsMessageSchema = z.object({
-  type: z.enum(["chat"]),
-  rideId: z.number(),
-  senderId: z.number(),
-  content: z.string()
-});
+export async function registerRoutes(app: Express) {
+  // Product routes
+  app.get("/api/products", async (_req, res) => {
+    try {
+      const products = await storage.getAllProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
 
-export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/api/products/:id", async (req, res) => {
+    try {
+      const product = await storage.getProduct(parseInt(req.params.id));
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch product" });
+    }
+  });
+
+  app.post("/api/products", async (req, res) => {
+    try {
+      const data = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(data);
+      res.status(201).json(product);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid product data" });
+    }
+  });
+
+  // Category routes
+  app.get("/api/categories", async (_req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const data = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(data);
+      res.status(201).json(category);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid category data" });
+    }
+  });
+
   // User routes
-  app.post("/api/users", async (req, res) => {
+  app.post("/api/users/register", async (req, res) => {
     try {
       const data = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(data);
-      res.json(user);
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(data.password, salt);
+      const user = await storage.createUser({ ...data, passwordHash });
+      res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
     } catch (error) {
       res.status(400).json({ error: "Invalid user data" });
     }
   });
 
-  app.patch("/api/users/:id/mode", async (req, res) => {
+  app.post("/api/users/login", async (req, res) => {
     try {
-      const { mode } = z.object({ mode: z.enum(["passenger", "rider"]) }).parse(req.body);
-      const user = await storage.updateUserMode(parseInt(req.params.id), mode);
-      res.json(user);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid mode" });
-    }
-  });
-
-  app.patch("/api/users/:id/location", async (req, res) => {
-    try {
-      const location = LocationSchema.parse(req.body);
-      const user = await storage.updateUserLocation(parseInt(req.params.id), location);
-      res.json(user);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid location data" });
-    }
-  });
-
-  app.patch("/api/users/:id/active", async (req, res) => {
-    try {
-      const { active } = z.object({ active: z.boolean() }).parse(req.body);
-      const user = await storage.setUserActive(parseInt(req.params.id), active);
-      res.json(user);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid active status" });
-    }
-  });
-
-  // Ride routes
-  app.post("/api/rides", async (req, res) => {
-    try {
-      const data = insertRideSchema.parse(req.body);
-      const ride = await storage.createRide(data);
-      res.json(ride);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid ride data" });
-    }
-  });
-
-  app.get("/api/rides/nearby", async (req, res) => {
-    try {
-      const { location, type } = z.object({
-        location: LocationSchema,
-        type: z.enum(["offer", "request"])
-      }).parse(req.query);
-
-      const rides = await storage.getNearbyRides(location, type);
-      res.json(rides);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid search parameters" });
-    }
-  });
-
-  app.post("/api/rides/match", async (req, res) => {
-    try {
-      const { route } = z.object({ route: RouteSchema }).parse(req.body);
-      const matches = await storage.findMatchingRides(route);
-      res.json(matches);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid route data" });
-    }
-  });
-
-  app.patch("/api/rides/:id/status", async (req, res) => {
-    try {
-      const { status } = z.object({
-        status: z.enum(["active", "matched", "completed"])
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string()
       }).parse(req.body);
 
-      const ride = await storage.updateRideStatus(parseInt(req.params.id), status);
-      res.json(ride);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const validPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!validPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
     } catch (error) {
-      res.status(400).json({ error: "Invalid status" });
+      res.status(400).json({ error: "Invalid login data" });
     }
   });
 
-  // Message routes
-  app.get("/api/messages/:rideId", async (req, res) => {
+  // Order routes
+  app.post("/api/orders", async (req, res) => {
     try {
-      const messages = await storage.getMessages(parseInt(req.params.rideId));
-      res.json(messages);
+      const orderData = insertOrderSchema.parse(req.body);
+      const order = await storage.createOrder(orderData);
+      res.status(201).json(order);
     } catch (error) {
-      res.status(400).json({ error: "Failed to fetch messages" });
+      res.status(400).json({ error: "Invalid order data" });
+    }
+  });
+
+  app.get("/api/orders/:userId", async (req, res) => {
+    try {
+      const orders = await storage.getUserOrders(parseInt(req.params.userId));
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  app.patch("/api/orders/:id/status", async (req, res) => {
+    try {
+      const { status } = z.object({
+        status: z.enum(["pending", "confirmed", "shipped", "delivered"])
+      }).parse(req.body);
+
+      const order = await storage.updateOrderStatus(parseInt(req.params.id), status);
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid status update" });
+    }
+  });
+
+  // Order items routes
+  app.post("/api/order-items", async (req, res) => {
+    try {
+      const itemData = insertOrderItemSchema.parse(req.body);
+      const orderItem = await storage.createOrderItem(itemData);
+      res.status(201).json(orderItem);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid order item data" });
     }
   });
 
   const httpServer = createServer(app);
-
-  // Setup WebSocket server
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-
-  // Store active WebSocket connections
-  const connections = new Map<number, WebSocket>();
-
-  wss.on('connection', (ws) => {
-    let userId: number | undefined;
-
-    ws.on('message', async (data) => {
-      try {
-        const message = JSON.parse(data.toString());
-
-        // Handle initial connection setup
-        if (message.type === 'init') {
-          userId = message.userId;
-          connections.set(userId, ws);
-          return;
-        }
-
-        // Handle chat messages
-        if (message.type === 'chat') {
-          const validatedMessage = wsMessageSchema.parse(message);
-
-          // Store the message
-          const storedMessage = await storage.createMessage({
-            rideId: validatedMessage.rideId,
-            senderId: validatedMessage.senderId,
-            content: validatedMessage.content
-          });
-
-          // Get ride to find participants
-          const ride = await storage.getRide(validatedMessage.rideId);
-          if (!ride) return;
-
-          // Broadcast to all participants
-          const participants = [ride.userId];
-          participants.forEach(participantId => {
-            const participantWs = connections.get(participantId);
-            if (participantWs?.readyState === WebSocket.OPEN) {
-              participantWs.send(JSON.stringify({
-                type: 'chat',
-                message: storedMessage
-              }));
-            }
-          });
-        }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-      }
-    });
-
-    ws.on('close', () => {
-      if (userId) {
-        connections.delete(userId);
-      }
-    });
-  });
-
   return httpServer;
 }
