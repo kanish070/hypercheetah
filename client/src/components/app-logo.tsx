@@ -67,7 +67,7 @@ export function AppLogo({
                   className="flex items-center justify-center bg-primary/10 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                   style={{ width, height }}
                 >
-                  <span className="text-xl font-bold text-primary">HC</span>
+                  <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent transform hover:scale-105 transition-transform">HC</span>
                 </div>
                   
                   <AnimatePresence>
