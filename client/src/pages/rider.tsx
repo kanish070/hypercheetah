@@ -24,19 +24,25 @@ export default function Rider() {
         location: JSON.stringify(startLocation),
         type: "request"
       });
-      const res = await apiRequest("GET", `/api/rides/nearby?${params}`);
-      return res.json();
+      return apiRequest<Ride[]>(`/api/rides/nearby?${params}`);
     }
   });
 
   const createRideMutation = useMutation({
     mutationFn: async () => {
       if (!route) return;
-      await apiRequest("POST", "/api/rides", {
-        userId: 1, // In a real app, this would come from auth
-        type: "offer",
-        route,
-        status: "active"
+      return apiRequest<Ride>("/api/rides", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: 1, // In a real app, this would come from auth
+          type: "offer",
+          route,
+          status: "active",
+          availableSeats: 3, // Default number of seats
+          price: 10, // Default price
+          departureTime: new Date().toISOString(),
+          routeData: JSON.stringify(route)
+        } as any)
       });
     },
     onSuccess: () => {

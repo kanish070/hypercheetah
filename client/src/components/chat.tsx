@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import type { Message } from "@shared/schema";
+import { Message } from "@shared/schema";
 import { Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 
 interface ChatProps {
   rideId: number;
@@ -15,112 +14,155 @@ interface ChatProps {
 }
 
 export function Chat({ rideId, userId }: ChatProps) {
+  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const wsRef = useRef<WebSocket | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Fetch existing messages
-  const { data: initialMessages = [] } = useQuery({
+  const { data: initialMessages, isLoading } = useQuery({
     queryKey: ['/api/messages', rideId],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/messages/${rideId}`);
-      return response.json();
-    }
+      return apiRequest<Message[]>(`/api/messages/${rideId}`);
+    },
+    enabled: !!rideId
   });
 
+  // Initialize messages from API data
   useEffect(() => {
-    setMessages(initialMessages);
+    if (initialMessages) {
+      setMessages(initialMessages);
+    }
   }, [initialMessages]);
 
-  // WebSocket connection
+  // Initialize WebSocket connection
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'init', userId }));
+    // Create WebSocket connection
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const wsConnection = new WebSocket(`${protocol}//${host}/ws-chat`);
+    
+    wsConnection.onopen = () => {
+      console.log('WebSocket connection established');
+      // Initialize the connection with user ID
+      wsConnection.send(JSON.stringify({ 
+        type: 'init', 
+        userId 
+      }));
     };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'chat') {
-        setMessages(prev => [...prev, data.message]);
-        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    
+    wsConnection.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'chat' && data.message) {
+          setMessages(prevMessages => [...prevMessages, data.message]);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
       }
     };
-
-    wsRef.current = ws;
-
-    return () => {
-      ws.close();
+    
+    wsConnection.onerror = (error) => {
+      console.error('WebSocket error:', error);
     };
-  }, [userId]);
+    
+    wsConnection.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+    
+    setSocket(wsConnection);
+    
+    // Clean up function
+    return () => {
+      wsConnection.close();
+    };
+  }, [userId, rideId]);
 
-  const sendMessage = () => {
-    if (!inputValue.trim() || !wsRef.current) return;
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
+    }
+  }, [messages]);
 
-    wsRef.current.send(JSON.stringify({
+  const handleSendMessage = () => {
+    if (!message.trim() || !socket) return;
+    
+    // Send the message through WebSocket
+    socket.send(JSON.stringify({
       type: 'chat',
       rideId,
       senderId: userId,
-      content: inputValue.trim()
+      content: message.trim()
     }));
+    
+    setMessage("");
+  };
 
-    setInputValue("");
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1 p-4">
-        <CardTitle className="text-xl">Chat</CardTitle>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-2">
+        <CardTitle>Chat</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <ScrollArea className="h-[300px] pr-4">
-          <AnimatePresence>
-            {messages.map((message, index) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className={`flex mb-4 ${message.senderId === userId ? 'justify-end' : 'justify-start'}`}
+      
+      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-muted-foreground">Loading messages...</p>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-muted-foreground">No messages yet</p>
+          </div>
+        ) : (
+          <div className="space-y-4 py-4">
+            {messages.map((msg) => (
+              <div 
+                key={msg.id}
+                className={`flex ${msg.senderId === userId ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                    message.senderId === userId
-                      ? 'bg-primary text-primary-foreground'
+                <div 
+                  className={`max-w-[80%] px-4 py-2 rounded-lg ${
+                    msg.senderId === userId 
+                      ? 'bg-primary text-primary-foreground' 
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  <span className="text-xs opacity-70">
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </span>
+                  <p>{msg.content}</p>
+                  <p className="text-xs opacity-70 mt-1">
+                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
-              </motion.div>
+              </div>
             ))}
-            <div ref={scrollRef} />
-          </AnimatePresence>
-        </ScrollArea>
-        <div className="flex gap-2 mt-4">
+          </div>
+        )}
+      </ScrollArea>
+      
+      <CardFooter className="pt-2">
+        <div className="flex w-full gap-2">
           <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..."
-            className="flex-1"
+            placeholder="Type a message..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-          <Button
-            onClick={sendMessage}
-            size="icon"
-            className="shrink-0"
-          >
+          <Button onClick={handleSendMessage} disabled={!message.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 }

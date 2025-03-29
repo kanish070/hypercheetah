@@ -1,98 +1,96 @@
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { type Ride } from "@shared/schema";
-import { Clock, MapPin } from "lucide-react";
-import { motion } from "framer-motion";
+import { Ride } from "@shared/schema";
+import { formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
+import { Clock, MapPin, Users } from "lucide-react";
 
 interface RideMatchesProps {
   matches: Ride[];
   onSelectMatch: (ride: Ride) => void;
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
-  if (matches.length === 0) {
+  if (!matches.length) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Card className="bg-muted border-dashed">
-          <CardContent className="p-6 text-center text-muted-foreground">
-            <p className="mb-2">No matching rides found.</p>
-            <p className="text-sm">Try adjusting your route or wait for new riders.</p>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Available Matches</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No matches found. Try adjusting your route or try again later.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="space-y-4"
-    >
-      {matches.map((match) => (
-        <motion.div key={match.id} variants={item}>
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-            <CardHeader className="p-4 bg-primary/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="font-medium">
-                    {Math.round(
-                      window.google.maps.geometry.spherical.computeLength(
-                        match.route.waypoints.map(
-                          (p) => new window.google.maps.LatLng(p.lat, p.lng)
-                        )
-                      ) / 1000
-                    )} km shared route
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {new Date(match.createdAt).toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">Starting Point</div>
-                  <div className="text-sm text-muted-foreground">
-                    {match.route.start.lat.toFixed(4)}, {match.route.start.lng.toFixed(4)}
+    <Card>
+      <CardHeader>
+        <CardTitle>Available Matches ({matches.length})</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="divide-y">
+          {matches.map((ride) => (
+            <div key={ride.id} className="p-4 hover:bg-accent transition-colors">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="font-medium">
+                    {ride.type === "offer" ? "Ride Offer" : "Ride Request"}
+                  </h3>
+                  <div className="flex items-center text-sm text-muted-foreground mt-1">
+                    <Users className="h-4 w-4 mr-1" />
+                    <span>
+                      {ride.type === "offer" 
+                        ? `${ride.availableSeats} seats available` 
+                        : "1 passenger"}
+                    </span>
                   </div>
                 </div>
-                <Button
-                  variant="secondary"
-                  className="transition-all duration-300 hover:scale-105"
-                  onClick={() => onSelectMatch(match)}
-                >
-                  Select Match
+                {ride.price !== null && (
+                  <Badge variant="outline" className="ml-2">
+                    ${ride.price.toFixed(2)}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-2 mb-3">
+                <div className="flex items-start gap-1">
+                  <MapPin className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                  <div className="text-sm">
+                    <p>Pick-up: Location name for {ride.route.start.lat.toFixed(2)}, {ride.route.start.lng.toFixed(2)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-1">
+                  <MapPin className="h-4 w-4 text-red-500 mt-1 shrink-0" />
+                  <div className="text-sm">
+                    <p>Drop-off: Location name for {ride.route.end.lat.toFixed(2)}, {ride.route.end.lng.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>
+                      {formatTime(getEstimatedTime(ride.route.start, ride.route.end))}
+                    </span>
+                  </div>
+                  <div>
+                    {formatDistance(getDistanceInKm(ride.route.start, ride.route.end))}
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => onSelectMatch(ride)}>
+                  Select
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
-    </motion.div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -22,14 +22,22 @@ export default function Passenger() {
     queryKey: ["/api/rides/match", route],
     enabled: !!route,
     queryFn: async () => {
-      const res = await apiRequest("POST", "/api/rides/match", { route });
-      return res.json();
+      return apiRequest<Ride[]>("/api/rides/match", {
+        method: "POST", 
+        body: JSON.stringify({ 
+          route,
+          type: "offer" // Looking for ride offers
+        })
+      });
     }
   });
 
   const createRideMutation = useMutation({
     mutationFn: async (ride: Ride) => {
-      await apiRequest("POST", "/api/rides", ride);
+      return apiRequest<Ride>("/api/rides", {
+        method: "POST",
+        body: JSON.stringify(ride)
+      });
     },
     onSuccess: () => {
       toast({
@@ -59,8 +67,12 @@ export default function Passenger() {
       userId: 1, // In a real app, this would come from auth
       type: "request",
       route: route!,
-      status: "active"
-    });
+      status: "active",
+      availableSeats: null,
+      price: null,
+      departureTime: null,
+      routeData: JSON.stringify(route)
+    } as any);
   };
 
   return (
