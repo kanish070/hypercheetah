@@ -262,7 +262,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="chat" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6">
                   <TabsTrigger value="chat" className="w-full">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Chat
@@ -287,8 +287,8 @@ export default function Home() {
                 
                 <TabsContent value="chat" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Messaging System</h3>
-                    <p className="text-muted-foreground mb-4">The Chat component enables communication between ride partners.</p>
+                    <h3 className="text-lg font-semibold mb-2">Instant Messaging</h3>
+                    <p className="text-muted-foreground mb-4">Connect with ride partners through our real-time messaging system.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <MessageSquare className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">In-app messaging between ride partners</span>
@@ -298,8 +298,8 @@ export default function Home() {
                 
                 <TabsContent value="map" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Route Map Component</h3>
-                    <p className="text-muted-foreground mb-4">The RouteMap component requires Leaflet which isn't loading correctly.</p>
+                    <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
+                    <p className="text-muted-foreground mb-4">View and navigate routes with our interactive map system.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <MapPin className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">Interactive map with route visualization</span>
@@ -309,8 +309,8 @@ export default function Home() {
                 
                 <TabsContent value="location" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Location Picker Component</h3>
-                    <p className="text-muted-foreground mb-4">The LocationPicker component provides location search and selection.</p>
+                    <h3 className="text-lg font-semibold mb-2">Location Search</h3>
+                    <p className="text-muted-foreground mb-4">Find and select pickup and dropoff locations easily.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <Navigation className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">Search and select locations with suggestions</span>
@@ -320,8 +320,8 @@ export default function Home() {
                 
                 <TabsContent value="rides" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Ride Matches Component</h3>
-                    <p className="text-muted-foreground mb-4">The RideMatches component displays available ride options.</p>
+                    <h3 className="text-lg font-semibold mb-2">Ride Options</h3>
+                    <p className="text-muted-foreground mb-4">Browse available ride matches along your route.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <Car className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">View and select from available ride matches</span>
@@ -332,7 +332,7 @@ export default function Home() {
                 <TabsContent value="tracker" className="p-4">
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Live Tracking</h3>
-                    <p className="text-muted-foreground mb-4 px-4">The LiveLocationTracker component shows real-time ride tracking between partners.</p>
+                    <p className="text-muted-foreground mb-4 px-4">See your ride partner's location in real-time with GPS tracking.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <Share className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">Real-time location sharing and ride tracking</span>
