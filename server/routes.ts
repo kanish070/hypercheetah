@@ -541,8 +541,8 @@ export async function registerRoutes(app: Express) {
         },
         {
           id: 1,
-          name: "John Doe",
-          avatar: "https://randomuser.me/api/portraits/men/42.jpg",
+          name: "Kanish",
+          avatar: "/images/kanish-profile.jpg",
           points: 850,
           rank: 3,
           level: 4,
