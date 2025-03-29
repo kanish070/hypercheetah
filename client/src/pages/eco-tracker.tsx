@@ -110,23 +110,23 @@ export default function EcoTracker() {
   const [activeTab, setActiveTab] = useState("overview");
   const [timePeriod, setTimePeriod] = useState("all-time");
   const userId = 1; // Hardcoded for demo
-  
+
   const { data: ecoImpact, isLoading: isEcoImpactLoading } = useQuery({
     queryKey: ['/api/users', userId, 'eco-impact'],
     queryFn: () => fetch(`/api/users/${userId}/eco-impact`).then(res => res.json()),
   });
-  
+
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['/api/users', userId],
     queryFn: () => fetch(`/api/users/${userId}`).then(res => res.json()),
   });
-  
+
   const { data: ecoAchievements, isLoading: isAchievementsLoading } = useQuery({
     queryKey: ['/api/users', userId, 'achievements'],
     queryFn: () => fetch(`/api/users/${userId}/achievements`).then(res => res.json())
       .then(achievements => achievements.filter((a: any) => a.achievement.category === 'eco')),
   });
-  
+
   // Sample data for this demo
   const ecoGoals: EcoGoal[] = [
     {
@@ -170,7 +170,7 @@ export default function EcoTracker() {
       completed: true
     }
   ];
-  
+
   const greenTips: GreenTip[] = [
     {
       id: 1,
@@ -205,7 +205,7 @@ export default function EcoTracker() {
       icon: "activity"
     }
   ];
-  
+
   const communityActions: CommunityAction[] = [
     {
       id: 1,
@@ -228,7 +228,7 @@ export default function EcoTracker() {
       imageUrl: "https://images.unsplash.com/photo-1519806141769-a0e58011caa1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80"
     }
   ];
-  
+
   const monthlyStats: MonthlyStats[] = [
     { month: "Jan", co2Saved: 42, ridesShared: 8 },
     { month: "Feb", co2Saved: 58, ridesShared: 12 },
@@ -237,7 +237,7 @@ export default function EcoTracker() {
     { month: "May", co2Saved: 0, ridesShared: 0 },
     { month: "Jun", co2Saved: 0, ridesShared: 0 }
   ];
-  
+
   // Helper functions
   const getImpactLevelBadge = (level: string) => {
     const styles = {
@@ -247,7 +247,7 @@ export default function EcoTracker() {
     };
     return styles[level as keyof typeof styles] || "bg-gray-100 text-gray-800";
   };
-  
+
   const getCategoryIcon = (category: string) => {
     switch(category) {
       case "carbon":
@@ -264,13 +264,13 @@ export default function EcoTracker() {
         return <CircleDot className="h-5 w-5 text-primary" />;
     }
   };
-  
+
   // Calculate stats based on data
   const totalCO2Saved = monthlyStats.reduce((sum, month) => sum + month.co2Saved, 0);
   const totalRidesShared = monthlyStats.reduce((sum, month) => sum + month.ridesShared, 0);
   const completedGoals = ecoGoals.filter(goal => goal.completed).length;
   const inProgressGoals = ecoGoals.length - completedGoals;
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-background to-green-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -282,7 +282,7 @@ export default function EcoTracker() {
               <span>Back to Home</span>
             </Button>
           </Link>
-          
+
           <div className="flex items-center gap-3">
             <Select defaultValue={timePeriod} onValueChange={setTimePeriod}>
               <SelectTrigger className="w-[160px]">
@@ -295,7 +295,7 @@ export default function EcoTracker() {
                 <SelectItem value="last-month">Last Month</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -310,7 +310,7 @@ export default function EcoTracker() {
             </TooltipProvider>
           </div>
         </div>
-        
+
         {/* Page Title */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold text-green-800">Eco-Impact Tracker</h1>
@@ -318,7 +318,7 @@ export default function EcoTracker() {
             Track your environmental contributions and earn rewards for eco-friendly ride-sharing
           </p>
         </div>
-        
+
         {/* Impact Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column - User Stats */}
@@ -331,19 +331,19 @@ export default function EcoTracker() {
                   <AvatarImage src="/profile-photo.jpeg" alt="User Profile" />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
-                
+
                 <div className="mt-4">
                   <h3 className="text-xl font-bold">{isUserLoading ? "Loading..." : user?.name}</h3>
                   <p className="text-muted-foreground">Eco Warrior Level 3</p>
                 </div>
-                
+
                 <div className="mt-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Eco Points</span>
                     <span className="font-medium">{250} pts</span>
                   </div>
                   <Progress value={250 / 5} className="h-2" />
-                  
+
                   <div className="mt-2 flex justify-between items-center">
                     <span className="text-sm">Rank</span>
                     <Badge variant="outline" className="bg-green-50 text-green-800">
@@ -351,18 +351,18 @@ export default function EcoTracker() {
                     </Badge>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-center">
                     <div className="text-xl font-bold text-green-600">{completedGoals}</div>
                     <div className="text-xs text-muted-foreground">Goals Met</div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="text-xl font-bold text-amber-600">{inProgressGoals}</div>
                     <div className="text-xs text-muted-foreground">In Progress</div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="text-xl font-bold text-blue-600">{ecoAchievements?.length || 0}</div>
                     <div className="text-xs text-muted-foreground">Achievements</div>
@@ -370,7 +370,7 @@ export default function EcoTracker() {
                 </div>
               </div>
             </Card>
-            
+
             {/* Green Achievements */}
             <Card>
               <CardHeader className="pb-2">
@@ -395,7 +395,7 @@ export default function EcoTracker() {
                         <div className="bg-green-100 rounded-full p-2 flex-shrink-0">
                           <Leaf className="h-5 w-5 text-green-700" />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <h4 className="font-medium text-green-900 truncate">{item.achievement.name}</h4>
@@ -423,7 +423,7 @@ export default function EcoTracker() {
               </CardFooter>
             </Card>
           </div>
-          
+
           {/* Middle and Right Columns - Impact Stats & Goals */}
           <div className="md:col-span-2 space-y-6">
             {/* Main Tabs */}
@@ -434,7 +434,7 @@ export default function EcoTracker() {
                 <TabsTrigger value="history">History</TabsTrigger>
                 <TabsTrigger value="community">Community</TabsTrigger>
               </TabsList>
-              
+
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6 mt-6">
                 {/* Impact Summary */}
@@ -461,20 +461,20 @@ export default function EcoTracker() {
                             <div className="text-2xl font-bold text-green-700">{ecoImpact?.co2Saved} kg</div>
                             <div className="text-sm text-green-600">CO₂ Saved</div>
                           </div>
-                          
+
                           <div className="p-4 bg-emerald-50 rounded-lg text-center">
                             <Trees className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
                             <div className="text-2xl font-bold text-emerald-700">{ecoImpact?.treesEquivalent}</div>
                             <div className="text-sm text-emerald-600">Trees Equivalent</div>
                           </div>
-                          
+
                           <div className="p-4 bg-blue-50 rounded-lg text-center">
                             <Droplets className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                             <div className="text-2xl font-bold text-blue-700">{ecoImpact?.fuelSaved} L</div>
                             <div className="text-sm text-blue-600">Fuel Saved</div>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-4">
                           <div>
                             <div className="flex justify-between mb-1">
@@ -496,7 +496,7 @@ export default function EcoTracker() {
                               <span>Total: {ecoImpact?.sharedRides + ecoImpact?.singleUseRides} rides</span>
                             </div>
                           </div>
-                          
+
                           <div>
                             <div className="flex justify-between mb-1">
                               <span className="text-sm font-medium">Distance Covered</span>
@@ -513,7 +513,7 @@ export default function EcoTracker() {
                     )}
                   </CardContent>
                 </Card>
-                
+
                 {/* Green Tips */}
                 <Card>
                   <CardHeader className="pb-3">
@@ -547,7 +547,7 @@ export default function EcoTracker() {
                   </CardFooter>
                 </Card>
               </TabsContent>
-              
+
               {/* Goals Tab */}
               <TabsContent value="goals" className="space-y-6 mt-6">
                 <Card>
@@ -572,7 +572,7 @@ export default function EcoTracker() {
                               <div className={`p-2 rounded-full ${goal.completed ? 'bg-green-100' : 'bg-primary/10'}`}>
                                 {getCategoryIcon(goal.category)}
                               </div>
-                              
+
                               <div>
                                 <h3 className="font-medium">{goal.name}</h3>
                                 <p className="text-sm text-muted-foreground">
@@ -580,7 +580,7 @@ export default function EcoTracker() {
                                 </p>
                               </div>
                             </div>
-                            
+
                             {goal.completed ? (
                               <Badge className="bg-green-100 text-green-800">Completed</Badge>
                             ) : (
@@ -589,14 +589,14 @@ export default function EcoTracker() {
                               </Badge>
                             )}
                           </div>
-                          
+
                           <div className="mt-4">
                             <div className="flex justify-between text-sm mb-1">
                               <span>{goal.current} {goal.unit}</span>
                               <span>{goal.target} {goal.unit}</span>
                             </div>
                             <Progress value={(goal.current / goal.target) * 100} className="h-2" />
-                            
+
                             <div className="flex justify-between mt-3 text-sm">
                               <div className="flex items-center">
                                 <span className="text-muted-foreground">Progress:</span>
@@ -604,7 +604,7 @@ export default function EcoTracker() {
                                   {Math.round((goal.current / goal.target) * 100)}%
                                 </span>
                               </div>
-                              
+
                               {!goal.completed && (
                                 <div className="flex items-center text-muted-foreground">
                                   <span>Remaining:</span>
@@ -629,7 +629,7 @@ export default function EcoTracker() {
                   </CardFooter>
                 </Card>
               </TabsContent>
-              
+
               {/* History Tab */}
               <TabsContent value="history" className="space-y-6 mt-6">
                 <Card>
@@ -657,7 +657,7 @@ export default function EcoTracker() {
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Summary stats */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="border rounded-lg p-4">
@@ -680,7 +680,7 @@ export default function EcoTracker() {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="border rounded-lg p-4">
                           <div className="flex items-center gap-2 mb-2">
                             <Calendar className="h-5 w-5 text-primary" />
@@ -706,7 +706,7 @@ export default function EcoTracker() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               {/* Community Tab */}
               <TabsContent value="community" className="space-y-6 mt-6">
                 <Card>
@@ -732,11 +732,11 @@ export default function EcoTracker() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          
+
                           <div className="p-4">
                             <h3 className="text-lg font-medium">{action.title}</h3>
                             <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
-                            
+
                             <div className="grid grid-cols-2 gap-4 mt-4">
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2">
@@ -748,7 +748,7 @@ export default function EcoTracker() {
                                   <span className="text-sm truncate">{action.location}</span>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -760,9 +760,9 @@ export default function EcoTracker() {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className="flex justify-end mt-4">
-                              <Button>Join Initiative</Button>
+                              <Button>Join InitiativeButton</Button>
                             </div>
                           </div>
                         </motion.div>
