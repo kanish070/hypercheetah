@@ -313,8 +313,8 @@ export default function EcoTracker() {
         
         {/* Page Title */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-green-800">Eco-Impact Tracker</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-green-800">Eco-Impact Tracker</h1>
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto px-4">
             Track your environmental contributions and earn rewards for eco-friendly ride-sharing
           </p>
         </div>
