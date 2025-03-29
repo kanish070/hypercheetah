@@ -168,6 +168,108 @@ const friendSuggestions = [
   }
 ];
 
+// Sample chat data
+const chatConversations = [
+  {
+    id: 201,
+    user: users[0],
+    lastMessage: "Are we still meeting at the coffee shop?",
+    timestamp: "2 mins ago",
+    unread: 2,
+    isRidePartner: true,
+    routeMatch: "Brooklyn to Manhattan",
+    status: "Active"
+  },
+  {
+    id: 202,
+    user: users[1],
+    lastMessage: "Thanks for the ride yesterday!",
+    timestamp: "Yesterday",
+    unread: 0,
+    isRidePartner: true,
+    routeMatch: "Queens to Midtown",
+    status: "Completed"
+  },
+  {
+    id: 203,
+    user: friendSuggestions[0],
+    lastMessage: "Hey, nice to connect with you!",
+    timestamp: "2 days ago",
+    unread: 0,
+    isRidePartner: false,
+    status: "Active"
+  },
+  {
+    id: 204,
+    user: friendSuggestions[1],
+    lastMessage: "I saw we have the same commute route!",
+    timestamp: "1 week ago",
+    unread: 1,
+    isRidePartner: false,
+    status: "Active"
+  }
+];
+
+// Sample messages for an active chat
+const sampleChatMessages = [
+  {
+    id: 1001,
+    senderId: 1, // Alex Johnson
+    text: "Hey! Are we still meeting for coffee before our ride?",
+    timestamp: "10:30 AM",
+    media: null
+  },
+  {
+    id: 1002,
+    senderId: 0, // Current user
+    text: "Yes! I'll be there around 8:45am if that works for you?",
+    timestamp: "10:35 AM",
+    media: null
+  },
+  {
+    id: 1003,
+    senderId: 1,
+    text: "Perfect! I'll be there. By the way, I found this cool shortcut for our route.",
+    timestamp: "10:38 AM",
+    media: null
+  },
+  {
+    id: 1004,
+    senderId: 1,
+    text: "Here's the map I was talking about.",
+    timestamp: "10:40 AM",
+    media: {
+      type: "route",
+      route: {
+        start: { lat: 40.7128, lng: -74.0060 },
+        end: { lat: 40.7831, lng: -73.9712 },
+        waypoints: [{ lat: 40.7306, lng: -73.9352 }]
+      }
+    }
+  },
+  {
+    id: 1005,
+    senderId: 0,
+    text: "That looks great! Should save us about 15 minutes.",
+    timestamp: "10:42 AM",
+    media: null
+  },
+  {
+    id: 1006,
+    senderId: 0,
+    text: "Looking forward to meeting you tomorrow!",
+    timestamp: "10:45 AM",
+    media: null
+  },
+  {
+    id: 1007,
+    senderId: 1,
+    text: "Same here! It's always more fun to travel with someone.",
+    timestamp: "10:47 AM",
+    media: null
+  }
+];
+
 // Sample communities
 const communities = [
   {
@@ -213,6 +315,8 @@ export default function Social() {
   const [activeTab, setActiveTab] = useState("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewingRoutePost, setViewingRoutePost] = useState<number | null>(null);
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [messageText, setMessageText] = useState("");
   
   // Filter users based on search query
   const filteredUsers = users.filter(
@@ -223,9 +327,21 @@ export default function Social() {
       user.interests.some(i => i.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
+  // Filter chats based on search query
+  const filteredChats = searchQuery 
+    ? chatConversations.filter(
+        chat => chat.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (chat.routeMatch && chat.routeMatch.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : chatConversations;
+  
   // Get the currently viewed route if any
   const currentlyViewedPost = posts.find(post => post.id === viewingRoutePost && post.hasRoute);
   const currentlyViewedRoute = currentlyViewedPost?.route;
+  
+  // Get the selected chat
+  const currentChat = chatConversations.find(chat => chat.id === selectedChat);
   
   // Handlers
   const handleConnectUser = (userId: number) => {
@@ -265,6 +381,32 @@ export default function Social() {
     setViewingRoutePost(viewingRoutePost === postId ? null : postId);
   };
   
+  const handleSelectChat = (chatId: number) => {
+    setSelectedChat(chatId);
+  };
+  
+  const handleSendMessage = () => {
+    if (!messageText.trim()) return;
+    
+    toast({
+      description: "Message sent"
+    });
+    
+    setMessageText("");
+  };
+  
+  const handleAttachRoute = () => {
+    toast({
+      description: "Route attached to message"
+    });
+  };
+  
+  const handleAttachMedia = () => {
+    toast({
+      description: "Media attachment feature coming soon!"
+    });
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -290,19 +432,20 @@ export default function Social() {
         
         {/* Main Tabs */}
         <Tabs defaultValue="feed" className="w-full" onValueChange={setActiveTab}>
-          <div className="flex justify-between items-center mb-4">
-            <TabsList className="grid grid-cols-4 w-fit">
-              <TabsTrigger value="feed">Feed</TabsTrigger>
-              <TabsTrigger value="network">Network</TabsTrigger>
-              <TabsTrigger value="communities">Communities</TabsTrigger>
-              <TabsTrigger value="discover">Discover</TabsTrigger>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+            <TabsList className="w-full md:w-auto">
+              <TabsTrigger value="feed" className="flex-1 md:flex-none px-4">Feed</TabsTrigger>
+              <TabsTrigger value="network" className="flex-1 md:flex-none px-4">Network</TabsTrigger>
+              <TabsTrigger value="communities" className="flex-1 md:flex-none px-4">Communities</TabsTrigger>
+              <TabsTrigger value="discover" className="flex-1 md:flex-none px-4">Discover</TabsTrigger>
+              <TabsTrigger value="chats" className="flex-1 md:flex-none px-4">Chats</TabsTrigger>
             </TabsList>
             
-            <div className="relative flex items-center">
+            <div className="relative flex items-center w-full md:w-auto">
               <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search people or posts..." 
-                className="pl-8 w-[240px]"
+                className="pl-8 w-full md:w-[240px]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -707,6 +850,273 @@ export default function Social() {
                 ))}
               </div>
             </div>
+          </TabsContent>
+          
+          {/* Chats Tab Content */}
+          <TabsContent value="chats" className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-6 h-[600px]">
+              {/* Chat list sidebar */}
+              <Card className="md:w-1/3 w-full overflow-hidden">
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-lg flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+                    Your Conversations
+                  </CardTitle>
+                </CardHeader>
+                
+                <div className="overflow-y-auto" style={{ maxHeight: "calc(600px - 64px)" }}>
+                  {filteredChats.length === 0 ? (
+                    <div className="text-center p-4 text-muted-foreground">
+                      No conversations found
+                    </div>
+                  ) : (
+                    filteredChats.map(chat => (
+                      <div 
+                        key={chat.id} 
+                        className={`p-3 border-b cursor-pointer transition-colors hover:bg-primary/5 ${selectedChat === chat.id ? 'bg-primary/10' : ''}`}
+                        onClick={() => handleSelectChat(chat.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <Avatar>
+                              <AvatarImage src={chat.user.avatar} />
+                              <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            
+                            {chat.unread > 0 && (
+                              <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                {chat.unread}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <div className="font-medium truncate">{chat.user.name}</div>
+                              <div className="text-xs text-muted-foreground">{chat.timestamp}</div>
+                            </div>
+                            <div className="text-sm text-muted-foreground truncate">
+                              {chat.lastMessage}
+                            </div>
+                            
+                            {chat.isRidePartner && (
+                              <div className="flex items-center mt-1">
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs py-0 px-1.5 ${chat.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}
+                                >
+                                  <Car className="h-3 w-3 mr-1" />
+                                  Ride Partner · {chat.status}
+                                </Badge>
+                                
+                                {chat.routeMatch && (
+                                  <div className="text-xs ml-2 text-muted-foreground flex items-center">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {chat.routeMatch}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
+              
+              {/* Chat content */}
+              <Card className="flex-1 flex flex-col overflow-hidden">
+                {selectedChat ? (
+                  <>
+                    {/* Chat header */}
+                    <CardHeader className="p-4 pb-3 border-b">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={currentChat?.user.avatar} />
+                            <AvatarFallback>{currentChat?.user.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          
+                          <div>
+                            <div className="font-medium">{currentChat?.user.name}</div>
+                            
+                            {currentChat?.isRidePartner && (
+                              <div className="flex items-center">
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs py-0 px-1.5 ${currentChat.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}
+                                >
+                                  <Car className="h-3 w-3 mr-1" />
+                                  {currentChat.status} Ride
+                                </Badge>
+                                
+                                {currentChat.routeMatch && (
+                                  <div className="text-xs ml-2 text-muted-foreground flex items-center">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {currentChat.routeMatch}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Filter className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    
+                    {/* Chat messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: "calc(600px - 144px)" }}>
+                      {sampleChatMessages.map(message => (
+                        <div 
+                          key={message.id}
+                          className={`flex ${message.senderId === 0 ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div 
+                            className={`max-w-[80%] ${
+                              message.senderId === 0 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'bg-muted'
+                            } rounded-2xl px-4 py-2`}
+                          >
+                            <div className="mb-1">
+                              {message.text}
+                            </div>
+                            
+                            {message.media && message.media.type === 'route' && (
+                              <div className="mt-2 rounded-md overflow-hidden border bg-background">
+                                <div className="p-2 text-xs font-medium border-b bg-muted/50 text-foreground">
+                                  <MapPin className="h-3 w-3 inline-block mr-1 text-primary" />
+                                  Shared Route
+                                </div>
+                                <div className="h-[200px]">
+                                  <RouteMap
+                                    center={message.media.route.start}
+                                    route={message.media.route}
+                                    className="h-full"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
+                            <div className={`text-xs ${message.senderId === 0 ? 'text-primary-foreground/70' : 'text-muted-foreground'} text-right`}>
+                              {message.timestamp}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Chat input */}
+                    <div className="p-3 border-t">
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <Input 
+                            placeholder="Type a message..." 
+                            className="bg-muted/50 border-0"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage();
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-full"
+                            onClick={handleAttachRoute}
+                          >
+                            <MapPin className="h-5 w-5 text-primary" />
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 rounded-full"
+                            onClick={handleAttachMedia}
+                          >
+                            <Film className="h-5 w-5 text-primary" />
+                          </Button>
+                          <Button 
+                            size="icon"
+                            className="h-10 w-10 rounded-full"
+                            onClick={handleSendMessage}
+                          >
+                            <ArrowLeft className="h-5 w-5 rotate-180" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                      <MessageSquare className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">Your Messages</h3>
+                    <p className="text-muted-foreground max-w-sm mb-6">
+                      Connect with your ride partners and friends. Select a conversation from the list to start chatting.
+                    </p>
+                    <Button>
+                      <Users className="h-4 w-4 mr-2" />
+                      Find New Connections
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </div>
+            
+            <Card className="bg-primary/5 border border-primary/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Social Connection Tips</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Make the most of your ride-sharing experience by connecting with people who share your routes.
+                </p>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-2 mt-0.5">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="font-medium">Connect Before Rides</span>
+                      <p className="text-muted-foreground">Chat with your ride partner before meeting to coordinate details</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-2 mt-0.5">
+                      <MapPin className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="font-medium">Share Routes</span>
+                      <p className="text-muted-foreground">Exchange favorite routes and shortcuts with frequent travelers</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-2 mt-0.5">
+                      <Heart className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="font-medium">Build Your Network</span>
+                      <p className="text-muted-foreground">Connect with compatible ride partners for future journeys</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
