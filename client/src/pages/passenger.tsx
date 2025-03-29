@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { LocationPicker } from "@/components/location-picker";
 import { RouteMap } from "@/components/route-map";
@@ -10,8 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
-import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Zap, Search } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Passenger() {
@@ -19,7 +19,52 @@ export default function Passenger() {
   const [endLocation, setEndLocation] = useState<Location>();
   const [route, setRoute] = useState<Route>();
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [isQuickMode, setIsQuickMode] = useState(false);
   const [_, setLocation] = useLocation();
+  
+  // Parse URL query parameter for quick mode and auto-calculate route
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const quickParam = urlParams.get('quick');
+    if (quickParam === 'true') {
+      setIsQuickMode(true);
+      
+      // Set default popular locations for quick route finding
+      const sfLocation = { lat: 37.7749, lng: -122.4194 }; // San Francisco
+      const sjLocation = { lat: 37.3382, lng: -121.8863 }; // San Jose
+      
+      setStartLocation(sfLocation);
+      setEndLocation(sjLocation);
+      
+      // Show toast notification for quick mode
+      toast({
+        title: "Quick Route Finder Activated",
+        description: "We've selected popular locations for you. You can change them if needed.",
+      });
+      
+      // Automatically calculate route after a short delay
+      setTimeout(async () => {
+        try {
+          setIsCalculatingRoute(true);
+          const calculatedRoute = await calculateRoute(sfLocation, sjLocation);
+          setRoute(calculatedRoute);
+          
+          toast({
+            title: "Quick Route Found",
+            description: "The fastest route has been automatically calculated for you.",
+          });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to calculate quick route",
+            variant: "destructive"
+          });
+        } finally {
+          setIsCalculatingRoute(false);
+        }
+      }, 1000);
+    }
+  }, []);
 
   const { data: matches = [], isLoading: isLoadingMatches } = useQuery({
     queryKey: ["/api/rides/match", route],
@@ -108,9 +153,17 @@ export default function Passenger() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-            Find a Ride
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
+              Find a Ride
+            </h1>
+            {isQuickMode && (
+              <div className="flex items-center gap-2 mt-1 text-sm text-green-600">
+                <Zap className="h-4 w-4" />
+                <span>Quick Route Finder Active</span>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8">

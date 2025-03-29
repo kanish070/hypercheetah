@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserIcon, Car, Zap, Users, Coffee, MapPin, Sparkles, MessageSquare, Navigation, Share, Award, User, Leaf } from "lucide-react";
+import { AppLogo } from "@/components/app-logo";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { Chat } from "@/components/chat";
@@ -82,20 +83,10 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="text-center space-y-6"
         >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <motion.div
-              animate={{ 
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
-            >
-              <Zap className="h-10 w-10 text-primary" />
-            </motion.div>
+          <div className="flex flex-col items-center justify-center gap-3 mb-4">
+            <div className="mb-2">
+              <AppLogo size="lg" />
+            </div>
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
               HyperCheetah
             </h1>
