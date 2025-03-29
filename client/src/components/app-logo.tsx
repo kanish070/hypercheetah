@@ -63,23 +63,12 @@ export function AppLogo({
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <div className="relative">
-                  <picture>
-                    <source srcSet="/images/logo.svg" type="image/svg+xml" />
-                    <source srcSet="/images/logo.jpeg" type="image/jpeg" />
-                    <img 
-                      src="/images/logo.svg" 
-                      alt="HyperCheetah Logo" 
-                      width={width} 
-                      height={height}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src.includes('logo.jpeg')) {
-                          target.src = '/images/logo.svg';
-                        }
-                      }}
-                      className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-                    />
-                  </picture>
+                  <div 
+                  className="flex items-center justify-center bg-primary/10 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                  style={{ width, height }}
+                >
+                  <span className="text-xl font-bold text-primary">HC</span>
+                </div>
                   
                   <AnimatePresence>
                     {isActive && (
