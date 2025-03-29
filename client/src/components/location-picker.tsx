@@ -18,24 +18,8 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<Array<{ name: string; desc: string; location: Location }>>([]);
-  const [recentLocations, setRecentLocations] = useState<Array<{ name: string; desc: string; location: Location }>>([
-    { 
-      name: "Home", 
-      desc: "123 Main Street, San Francisco, CA", 
-      location: { lat: 37.7749, lng: -122.4194 } 
-    },
-    { 
-      name: "Work", 
-      desc: "456 Market Street, San Francisco, CA", 
-      location: { lat: 37.7899, lng: -122.4009 } 
-    },
-    { 
-      name: "Gym", 
-      desc: "789 Fitness Avenue, San Francisco, CA", 
-      location: { lat: 37.7833, lng: -122.4167 } 
-    }
-  ]);
   
+  // Simplified saved locations - combining saved and recent into a single list
   const [savedLocations, setSavedLocations] = useState<Array<{ name: string; desc: string; icon: string; location: Location }>>([
     { 
       name: "Home", 
@@ -44,7 +28,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       location: { lat: 37.7749, lng: -122.4194 } 
     },
     { 
-      name: "Office", 
+      name: "Work", 
       desc: "456 Market Street, San Francisco, CA", 
       icon: "briefcase", 
       location: { lat: 37.7899, lng: -122.4009 } 
@@ -62,6 +46,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   // Simulate search results - in a real app, this would call a geocoding API
   useEffect(() => {
     if (searchQuery.length > 2) {
+      // Limit to just 2 suggestions to prevent cluttering
       const fakeAddresses = [
         {
           name: `${searchQuery} Main St`,
@@ -71,16 +56,6 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         {
           name: `${searchQuery} Market St`,
           desc: `San Francisco, CA 94103`,
-          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
-        },
-        {
-          name: `${searchQuery} Valencia St`,
-          desc: `San Francisco, CA 94110`,
-          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
-        },
-        {
-          name: `${searchQuery} Hayes St`,
-          desc: `San Francisco, CA 94117`,
           location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
         }
       ];
@@ -112,9 +87,13 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
     setSearchQuery(suggestion.name);
     setShowSuggestions(false);
     
-    // Add to recent locations if not already in the list
-    if (!recentLocations.some(loc => loc.name === suggestion.name)) {
-      setRecentLocations(prev => [suggestion, ...prev.slice(0, 2)]);
+    // Add to saved locations if not already in the list
+    if (!savedLocations.some(loc => loc.name === suggestion.name)) {
+      const newLocation = {
+        ...suggestion,
+        icon: 'mapPin'
+      };
+      setSavedLocations(prev => [newLocation, ...prev.slice(0, 2)]);
     }
   };
   
@@ -169,7 +148,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.length > 2 && setShowSuggestions(true)}
-          className="pl-10 pr-10"
+          className="pl-10 pr-10 bg-background"
         />
         <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-primary" />
         {searchQuery ? (
@@ -191,16 +170,13 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           <div className="max-h-[300px] overflow-y-auto">
             {/* Use current location */}
             <div 
-              className="flex items-center p-3 cursor-pointer hover:bg-muted"
+              className="flex items-center p-2 cursor-pointer hover:bg-muted border-b"
               onClick={handleUseCurrentLocation}
             >
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                <Crosshair className="h-4 w-4 text-primary" />
+              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mr-2">
+                <Crosshair className="h-3 w-3 text-primary" />
               </div>
-              <div>
-                <div className="font-medium">Use current location</div>
-                <div className="text-xs text-muted-foreground">Detect your current GPS location</div>
-              </div>
+              <div className="font-medium text-sm">Use current location</div>
             </div>
             
             {/* Search results */}
@@ -209,26 +185,24 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
               return (
                 <div 
                   key={`suggestion-${index}`}
-                  className={`flex items-center p-3 cursor-pointer border-t ${
+                  className={`flex items-center p-2 cursor-pointer ${
                     isSelected 
                       ? 'bg-primary/10 border-l-2 border-l-primary' 
                       : 'hover:bg-muted'
                   }`}
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
-                  <div className={`h-8 w-8 rounded-full ${
+                  <div className={`h-6 w-6 rounded-full ${
                     isSelected ? 'bg-primary/30' : 'bg-primary/10'
-                  } flex items-center justify-center mr-3`}>
-                    <MapPin className={`h-4 w-4 ${
-                      isSelected ? 'text-primary' : 'text-primary'
-                    }`} />
+                  } flex items-center justify-center mr-2`}>
+                    <MapPin className="h-3 w-3 text-primary" />
                   </div>
-                  <div>
-                    <div className={`font-medium ${isSelected ? 'text-primary' : ''}`}>
+                  <div className="overflow-hidden">
+                    <div className={`font-medium text-sm ${isSelected ? 'text-primary' : ''}`}>
                       {suggestion.name}
-                      {isSelected && <span className="ml-2 text-xs text-primary-foreground bg-primary rounded-full px-2 py-0.5">Selected</span>}
+                      {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
                     </div>
-                    <div className="text-xs text-muted-foreground">{suggestion.desc}</div>
+                    <div className="text-xs text-muted-foreground truncate">{suggestion.desc}</div>
                   </div>
                 </div>
               );
@@ -237,89 +211,39 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         </Card>
       )}
       
-      {/* Recent locations (when input is empty and not focused) */}
+      {/* Quick access locations */}
       {!searchQuery && !showSuggestions && (
-        <div className="mt-4">
-          <div className="text-sm font-medium mb-2 flex items-center">
-            <Clock className="h-4 w-4 mr-1.5" />
-            Recent Locations
-          </div>
-          <div className="space-y-2">
-            {recentLocations.map((location, index) => {
-              const isSelected = isLocationSelected(location.location);
-              return (
-                <div 
-                  key={`recent-${index}`}
-                  className={`flex items-center p-2 cursor-pointer rounded-md ${
-                    isSelected 
-                      ? 'bg-primary/10 border border-primary/40' 
-                      : 'hover:bg-muted'
-                  }`}
-                  onClick={() => handleSuggestionClick(location)}
-                >
-                  <div className={`h-8 w-8 rounded-full ${
-                    isSelected ? 'bg-primary/30' : 'bg-primary/10'
-                  } flex items-center justify-center mr-3`}>
-                    <MapPin className={`h-4 w-4 ${
-                      isSelected ? 'text-primary-foreground' : 'text-primary'
-                    }`} />
-                  </div>
-                  <div className="flex-1">
-                    <div className={`font-medium ${isSelected ? 'text-primary' : ''}`}>
-                      {location.name}
-                      {isSelected && <span className="ml-2 text-xs text-primary-foreground bg-primary rounded-full px-2 py-0.5">Selected</span>}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{location.desc}</div>
-                  </div>
-                  <ChevronRight className={`h-4 w-4 ${
-                    isSelected ? 'text-primary' : 'text-muted-foreground'
-                  }`} />
+        <div className="mt-2 grid grid-cols-1 gap-1">
+          {/* Show just a combined compact list of saved locations */}
+          {savedLocations.slice(0, 3).map((location: any, index: number) => {
+            const isSelected = isLocationSelected(location.location);
+            return (
+              <div 
+                key={`location-${index}`}
+                className={`flex items-center p-1.5 cursor-pointer rounded-md ${
+                  isSelected 
+                    ? 'bg-primary/10 border border-primary/40' 
+                    : 'hover:bg-muted/70'
+                }`}
+                onClick={() => handleSuggestionClick(location)}
+              >
+                <div className={`h-6 w-6 rounded-full ${
+                  isSelected ? 'bg-primary/30' : 'bg-primary/10'
+                } flex items-center justify-center mr-2`}>
+                  {renderLocationIcon(location.icon)}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      
-      {/* Saved locations (when input is empty and not focused) */}
-      {!searchQuery && !showSuggestions && (
-        <div className="mt-4">
-          <div className="text-sm font-medium mb-2 flex items-center">
-            <Star className="h-4 w-4 mr-1.5" />
-            Saved Places
-          </div>
-          <div className="space-y-2">
-            {savedLocations.map((location, index) => {
-              const isSelected = isLocationSelected(location.location);
-              return (
-                <div 
-                  key={`saved-${index}`}
-                  className={`flex items-center p-2 cursor-pointer rounded-md ${
-                    isSelected 
-                      ? 'bg-primary/10 border border-primary/40' 
-                      : 'hover:bg-muted'
-                  }`}
-                  onClick={() => handleSuggestionClick(location)}
-                >
-                  <div className={`h-8 w-8 rounded-full ${
-                    isSelected ? 'bg-primary/30' : 'bg-primary/10'
-                  } flex items-center justify-center mr-3`}>
-                    {renderLocationIcon(location.icon)}
+                <div className="flex-1 overflow-hidden">
+                  <div className={`font-medium text-sm truncate ${isSelected ? 'text-primary' : ''}`}>
+                    {location.name}
+                    {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
                   </div>
-                  <div className="flex-1">
-                    <div className={`font-medium ${isSelected ? 'text-primary' : ''}`}>
-                      {location.name}
-                      {isSelected && <span className="ml-2 text-xs text-primary-foreground bg-primary rounded-full px-2 py-0.5">Selected</span>}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{location.desc}</div>
-                  </div>
-                  <ChevronRight className={`h-4 w-4 ${
-                    isSelected ? 'text-primary' : 'text-muted-foreground'
-                  }`} />
                 </div>
-              );
-            })}
-          </div>
+                <ChevronRight className={`h-3 w-3 ml-1 ${
+                  isSelected ? 'text-primary' : 'text-muted-foreground'
+                }`} />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

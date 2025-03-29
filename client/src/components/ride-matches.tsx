@@ -115,14 +115,36 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 text-primary mr-1.5" />
                             <div className="text-sm font-medium">
-                              {ride.routeData ? JSON.parse(ride.routeData).start?.name || "Pickup Location" : "Pickup Location"}
+                              {ride.routeData 
+                                ? (typeof ride.routeData === 'string' 
+                                   ? ((() => {
+                                      try {
+                                        const parsed = JSON.parse(ride.routeData as string);
+                                        return parsed?.start?.name || "Pickup Location";
+                                      } catch (e) {
+                                        return "Pickup Location";
+                                      }
+                                    })())
+                                   : "Pickup Location")
+                                : "Pickup Location"}
                             </div>
                           </div>
                           <div className="h-8 border-l-2 border-dashed border-primary/30 ml-[7px] my-1"></div>
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 text-primary mr-1.5" />
                             <div className="text-sm font-medium">
-                              {ride.routeData ? JSON.parse(ride.routeData).end?.name || "Dropoff Location" : "Dropoff Location"}
+                              {ride.routeData 
+                                ? (typeof ride.routeData === 'string' 
+                                   ? ((() => {
+                                      try {
+                                        const parsed = JSON.parse(ride.routeData as string);
+                                        return parsed?.end?.name || "Dropoff Location";
+                                      } catch (e) {
+                                        return "Dropoff Location";
+                                      }
+                                    })())
+                                   : "Dropoff Location")
+                                : "Dropoff Location"}
                             </div>
                           </div>
                         </div>
@@ -131,19 +153,23 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                           <div className="flex items-center mb-1">
                             <Clock className="h-4 w-4 text-primary mr-1.5" />
                             <div className="text-sm font-medium">
-                              {new Date(ride.departureTime).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                              {ride.departureTime ? 
+                                // Make sure we have a string representation to construct the Date
+                                new Date(ride.departureTime.toString()).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : "TBD"}
                             </div>
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 text-primary mr-1.5" />
                             <div className="text-sm font-medium">
-                              {new Date(ride.departureTime).toLocaleDateString([], {
-                                month: 'short',
-                                day: 'numeric'
-                              })}
+                              {ride.departureTime ? 
+                                // Make sure we have a string representation to construct the Date
+                                new Date(ride.departureTime.toString()).toLocaleDateString([], {
+                                  month: 'short',
+                                  day: 'numeric'
+                                }) : "TBD"}
                             </div>
                           </div>
                           <div className="flex items-center mt-1">

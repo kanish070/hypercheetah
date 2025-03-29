@@ -76,7 +76,7 @@ function MapController({ center, route }: { center: Location, route?: Route }) {
         L.latLng(route.end.lat, route.end.lng)
       ];
       
-      // Create routing control
+      // Create routing control with better styling options
       const control = L.Routing.control({
         waypoints,
         router: L.Routing.osrmv1({
@@ -84,7 +84,12 @@ function MapController({ center, route }: { center: Location, route?: Route }) {
           profile: 'driving'
         }),
         lineOptions: {
-          styles: [{ color: '#4CAF50', weight: 4, opacity: 0.7 }],
+          styles: [
+            // Main route line - more visible and branded
+            { color: '#4CAF50', weight: 6, opacity: 0.7 },
+            // Highlight edge for better visibility
+            { color: '#FFF', weight: 10, opacity: 0.3 }
+          ],
           extendToWaypoints: true,
           missingRouteTolerance: 0
         },
@@ -92,7 +97,10 @@ function MapController({ center, route }: { center: Location, route?: Route }) {
         draggableWaypoints: false,
         fitSelectedRoutes: true,
         showAlternatives: false,
-        createMarker: function() { return null; } // Disable default markers
+        routeWhileDragging: false,
+        show: false, // Hide the instructions panel
+        collapsible: true, // Allow collapsing the instructions
+        createMarker: function() { return null; } // Disable default markers, we have our own
       });
       
       control.addTo(map);

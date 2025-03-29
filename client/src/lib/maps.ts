@@ -24,25 +24,16 @@ export async function calculateRoute(
   origin: Location,
   destination: Location
 ): Promise<Route> {
-  // For the prototype, we'll create a simple direct route
-  // In a real implementation, this would use Google Maps Directions API
+  // For accurate routing, we'd use a routing API (like Mapbox, GoogleMaps, etc.)
+  // Since we're using leaflet-routing-machine on the client-side for visualization,
+  // we'll just use the start and end points and let the routing machine calculate 
+  // the actual route points
   
-  // Calculate a few waypoints between origin and destination
-  const waypoints: Location[] = [];
-  
-  // Create 3 intermediate points along a straight line
-  for (let i = 1; i <= 3; i++) {
-    const ratio = i / 4;  // 1/4, 2/4, 3/4 of the way
-    waypoints.push({
-      lat: origin.lat + (destination.lat - origin.lat) * ratio,
-      lng: origin.lng + (destination.lng - origin.lng) * ratio
-    });
-  }
-  
+  // Return a simplified route structure
   return {
     start: origin,
     end: destination,
-    waypoints
+    waypoints: [] // Let the routing library calculate the actual waypoints
   };
 }
 
@@ -81,11 +72,28 @@ function deg2rad(deg: number): number {
   return deg * (Math.PI/180);
 }
 
-// Estimate travel time based on distance (car speed around 50 km/h on average)
+// Estimate travel time based on distance with a more realistic model
 export function getEstimatedTime(origin: Location, destination: Location): number {
   const distance = getDistanceInKm(origin, destination);
-  const avgSpeedKmh = 50;
-  return distance / avgSpeedKmh; // Time in hours
+  
+  // More sophisticated model:
+  // - For short distances (<5km): slower speed (25km/h) due to city traffic/lights
+  // - For medium distances (5-20km): moderate speed (40km/h)
+  // - For longer distances (>20km): highway speeds (70km/h)
+  let avgSpeedKmh: number;
+  
+  if (distance < 5) {
+    avgSpeedKmh = 25; // City driving
+  } else if (distance < 20) {
+    avgSpeedKmh = 40; // Mixed driving
+  } else {
+    avgSpeedKmh = 70; // Highway driving
+  }
+  
+  // Add a small fixed time (0.1 hours = 6 min) for getting in/out, traffic signals, etc.
+  const fixedTimeHours = 0.1;
+  
+  return (distance / avgSpeedKmh) + fixedTimeHours; // Time in hours
 }
 
 // Format time as text (e.g. "30 min", "1 h 15 min")
