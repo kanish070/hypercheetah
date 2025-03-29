@@ -428,7 +428,7 @@ export default function EcoTracker() {
           <div className="md:col-span-2 space-y-6">
             {/* Main Tabs */}
             <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-4 w-full overflow-x-auto"> {/* Added overflow-x-auto here */}
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
                 <TabsTrigger value="history">History</TabsTrigger>
@@ -758,7 +758,8 @@ export default function EcoTracker() {
                                   <Leaf className="h-4 w-4 text-muted-foreground" />
                                   <span className="text-sm">{action.co2Impact} kg CO₂ impact</span>
                                 </div>
-                              </div>
+                              </</div>
+
                             </div>
 
                             <div className="flex justify-end mt-4">
