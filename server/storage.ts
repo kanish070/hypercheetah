@@ -103,7 +103,7 @@ export class MemStorage implements IStorage {
     // Create a test user
     const testUser = {
       id: this.userId++,
-      name: "John Doe",
+      name: "Kanish",
       email: "test@example.com",
       passwordHash: "$2a$10$EncryptedPasswordHash", // This would be a real bcrypt hash in production
       role: "user",
