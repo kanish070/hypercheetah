@@ -626,44 +626,85 @@ export default function Social() {
                 </h2>
                 
                 {filteredUsers.map(user => (
-                  <Card key={user.id} className="mb-4">
-                    <CardContent className="p-4">
-                      <div className="flex items-start">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.avatar} />
-                          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="ml-4 flex-1">
-                          <div className="flex justify-between">
-                            <div>
-                              <h3 className="font-medium">{user.name}</h3>
-                              <div className="text-sm text-muted-foreground">@{user.username}</div>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="flex items-center mr-2">
-                                <Car className="h-3.5 w-3.5 text-primary mr-1" />
-                                <span className="text-xs">{user.commonRoutes} common routes</span>
+                  <motion.div 
+                    key={user.id} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="mb-4"
+                  >
+                    <Card className="overflow-hidden border transition-all duration-300 hover:shadow-md hover:border-primary/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start">
+                          <motion.div 
+                            whileHover={{ scale: 1.1 }} 
+                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                          >
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          </motion.div>
+                          
+                          <div className="ml-4 flex-1">
+                            <div className="flex justify-between">
+                              <div>
+                                <motion.h3 
+                                  className="font-medium"
+                                  initial={{ color: "inherit" }}
+                                  whileHover={{ color: "var(--primary)" }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {user.name}
+                                </motion.h3>
+                                <div className="text-sm text-muted-foreground">@{user.username}</div>
                               </div>
-                              <Button size="sm" variant="outline">
-                                Message
-                              </Button>
+                              <div className="flex items-center">
+                                <motion.div 
+                                  className="flex items-center mr-2"
+                                  whileHover={{ scale: 1.05 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <Car className="h-3.5 w-3.5 text-primary mr-1" />
+                                  <span className="text-xs">{user.commonRoutes} common routes</span>
+                                </motion.div>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                >
+                                  <Button size="sm" variant="outline">
+                                    Message
+                                  </Button>
+                                </motion.div>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <p className="text-sm mt-2">{user.bio}</p>
-                          
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {user.interests.map(interest => (
-                              <Badge key={interest} variant="outline" className="text-xs">
-                                {interestIcons[interest]} {interest}
-                              </Badge>
-                            ))}
+                            
+                            <p className="text-sm mt-2">{user.bio}</p>
+                            
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {user.interests.map(interest => (
+                                <motion.div
+                                  key={interest}
+                                  whileHover={{ 
+                                    scale: 1.1, 
+                                    backgroundColor: "var(--primary-50)",
+                                    borderColor: "var(--primary)" 
+                                  }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <Badge variant="outline" className="text-xs transition-colors duration-200">
+                                    {interestIcons[interest]} {interest}
+                                  </Badge>
+                                </motion.div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
               
@@ -674,49 +715,105 @@ export default function Social() {
                 </h2>
                 
                 {friendSuggestions.map(suggestion => (
-                  <Card key={suggestion.id} className="mb-4">
-                    <CardContent className="p-4">
-                      <div className="flex">
-                        <Avatar>
-                          <AvatarImage src={suggestion.avatar} />
-                          <AvatarFallback>{suggestion.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="ml-4 flex-1">
-                          <div className="flex justify-between">
-                            <h3 className="font-medium">{suggestion.name}</h3>
-                            <Button size="sm" onClick={() => handleConnectUser(suggestion.id)}>
-                              <Plus className="h-4 w-4 mr-1" />
-                              Connect
-                            </Button>
-                          </div>
+                  <motion.div 
+                    key={suggestion.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      transition: { duration: 0.2 }
+                    }}
+                    className="mb-4"
+                  >
+                    <Card className="overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/30">
+                      <CardContent className="p-4">
+                        <div className="flex">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                          >
+                            <Avatar>
+                              <AvatarImage src={suggestion.avatar} />
+                              <AvatarFallback>{suggestion.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          </motion.div>
                           
-                          <div className="flex flex-col gap-1 mt-2 text-sm">
-                            <div className="flex items-center text-muted-foreground">
-                              <MapPin className="h-3.5 w-3.5 mr-1" />
-                              {suggestion.location}
+                          <div className="ml-4 flex-1">
+                            <div className="flex justify-between">
+                              <motion.h3 
+                                className="font-medium"
+                                initial={{ color: "inherit" }}
+                                whileHover={{ color: "var(--primary)" }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                {suggestion.name}
+                              </motion.h3>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                              >
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleConnectUser(suggestion.id)}
+                                  className="transition-colors duration-300 hover:bg-primary hover:text-primary-foreground"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Connect
+                                </Button>
+                              </motion.div>
                             </div>
-                            <div className="flex items-center text-muted-foreground">
-                              <Car className="h-3.5 w-3.5 mr-1" />
-                              {suggestion.commonRoutes} common routes
-                            </div>
-                            <div className="flex items-center text-muted-foreground">
-                              <Users className="h-3.5 w-3.5 mr-1" />
-                              {suggestion.mutualConnections} mutual connections
-                            </div>
-                          </div>
                           
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {suggestion.commonInterests.map(interest => (
-                              <Badge key={interest} variant="outline" className="text-xs bg-primary/5">
-                                {interestIcons[interest]} {interest}
-                              </Badge>
-                            ))}
+                            <div className="flex flex-col gap-1 mt-2 text-sm">
+                              <motion.div 
+                                className="flex items-center text-muted-foreground"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <MapPin className="h-3.5 w-3.5 mr-1 text-primary/70" />
+                                {suggestion.location}
+                              </motion.div>
+                              <motion.div 
+                                className="flex items-center text-muted-foreground"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Car className="h-3.5 w-3.5 mr-1 text-primary/70" />
+                                {suggestion.commonRoutes} common routes
+                              </motion.div>
+                              <motion.div 
+                                className="flex items-center text-muted-foreground"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Users className="h-3.5 w-3.5 mr-1 text-primary/70" />
+                                {suggestion.mutualConnections} mutual connections
+                              </motion.div>
+                            </div>
+                          
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {suggestion.commonInterests.map(interest => (
+                                <motion.div
+                                  key={interest}
+                                  whileHover={{ 
+                                    scale: 1.1, 
+                                    backgroundColor: "var(--primary-50)",
+                                    borderColor: "var(--primary)" 
+                                  }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <Badge variant="outline" className="text-xs bg-primary/5 transition-colors duration-200">
+                                    {interestIcons[interest]} {interest}
+                                  </Badge>
+                                </motion.div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -729,31 +826,68 @@ export default function Social() {
                 <h2 className="text-lg font-semibold mb-3">Popular Communities</h2>
                 
                 {communities.map(community => (
-                  <Card key={community.id} className="mb-4">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-xl">{community.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {community.members} members
+                  <motion.div
+                    key={community.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      transition: { duration: 0.2 }
+                    }}
+                    className="mb-4"
+                  >
+                    <Card className="overflow-hidden border transition-all duration-300 hover:shadow-md hover:border-primary/30">
+                      <CardHeader className="pb-2">
+                        <motion.div
+                          initial={{ x: 0 }}
+                          whileHover={{ x: 5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <CardTitle className="text-xl">{community.name}</CardTitle>
+                        </motion.div>
+                      </CardHeader>
+                      <CardContent className="pb-2">
+                        <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                          <motion.div 
+                            className="flex items-center"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Users className="h-4 w-4 mr-1 text-primary" />
+                            {community.members} members
+                          </motion.div>
+                          <motion.div
+                            whileHover={{ 
+                              scale: 1.05,
+                              color: "var(--primary)"
+                            }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {community.activity}
+                          </motion.div>
                         </div>
-                        <div>{community.activity}</div>
-                      </div>
-                      <p className="text-sm">{community.description}</p>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className="w-full" 
-                        variant="outline"
-                        onClick={() => handleJoinCommunity(community.id)}
-                      >
-                        <Users className="h-4 w-4 mr-2" />
-                        Join Community
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                        <p className="text-sm">{community.description}</p>
+                      </CardContent>
+                      <CardFooter>
+                        <motion.div
+                          className="w-full"
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        >
+                          <Button 
+                            className="w-full transition-colors duration-300 hover:bg-primary hover:text-primary-foreground" 
+                            variant="outline"
+                            onClick={() => handleJoinCommunity(community.id)}
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            Join Community
+                          </Button>
+                        </motion.div>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
               
@@ -900,64 +1034,111 @@ export default function Social() {
                   {chatConversations
                     .filter(chat => chat.isRidePartner && chat.status === 'Active')
                     .map(chat => (
-                      <Card 
-                        key={chat.id} 
-                        className={`border cursor-pointer transition-colors hover:border-primary/50 hover:shadow-sm ${
-                          selectedChat === chat.id ? 'border-primary/50 bg-primary/5' : ''
-                        }`}
-                        onClick={() => handleSelectChat(chat.id)}
+                      <motion.div
+                        key={chat.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        whileHover={{ 
+                          scale: 1.03, 
+                          transition: { duration: 0.2 } 
+                        }}
                       >
-                        <CardContent className="p-3 flex flex-col h-full">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="relative">
-                              <Avatar>
-                                <AvatarImage src={chat.user.avatar} />
-                                <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              {chat.unread > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                  {chat.unread}
+                        <Card 
+                          className={`border cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-md ${
+                            selectedChat === chat.id ? 'border-primary/50 bg-primary/5' : ''
+                          }`}
+                          onClick={() => handleSelectChat(chat.id)}
+                        >
+                          <CardContent className="p-3 flex flex-col h-full">
+                            <div className="flex items-center gap-3 mb-2">
+                              <motion.div 
+                                className="relative"
+                                whileHover={{ scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                              >
+                                <Avatar>
+                                  <AvatarImage src={chat.user.avatar} />
+                                  <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                {chat.unread > 0 && (
+                                  <motion.div 
+                                    className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ repeat: Infinity, duration: 2, repeatType: "loop" }}
+                                  >
+                                    {chat.unread}
+                                  </motion.div>
+                                )}
+                              </motion.div>
+                              <div>
+                                <motion.div 
+                                  className="font-medium"
+                                  initial={{ color: "inherit" }}
+                                  whileHover={{ color: "var(--primary)" }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {chat.user.name}
+                                </motion.div>
+                                <div className="text-xs text-muted-foreground">
+                                  {chat.timestamp}
                                 </div>
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium">{chat.user.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {chat.timestamp}
                               </div>
                             </div>
-                          </div>
-                          
-                          <div className="bg-primary/5 rounded-md p-2 mb-2 flex-1">
-                            <div className="flex items-center gap-1 mb-1">
-                              <MapPin className="h-3.5 w-3.5 text-primary" />
-                              <span className="text-xs font-medium">{chat.routeMatch}</span>
+                            
+                            <motion.div 
+                              className="bg-primary/5 rounded-md p-2 mb-2 flex-1"
+                              whileHover={{ backgroundColor: "var(--primary-10)" }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <motion.div 
+                                className="flex items-center gap-1 mb-1"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <MapPin className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs font-medium">{chat.routeMatch}</span>
+                              </motion.div>
+                              <motion.div 
+                                className="flex items-center gap-1 mb-1"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Clock className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs">{chat.departureTime}</span>
+                              </motion.div>
+                              <motion.div 
+                                className="flex items-center gap-1"
+                                whileHover={{ x: 3 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Car className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs">{chat.rideType}</span>
+                              </motion.div>
+                            </motion.div>
+                            
+                            <div className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                              {chat.lastMessage}
                             </div>
-                            <div className="flex items-center gap-1 mb-1">
-                              <Clock className="h-3.5 w-3.5 text-primary" />
-                              <span className="text-xs">{chat.departureTime}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Car className="h-3.5 w-3.5 text-primary" />
-                              <span className="text-xs">{chat.rideType}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                            {chat.lastMessage}
-                          </div>
-                          
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full mt-auto text-xs"
-                            onClick={() => handleSelectChat(chat.id)}
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                            Chat
-                          </Button>
-                        </CardContent>
-                      </Card>
+                            
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                            >
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full mt-auto text-xs transition-colors duration-300 hover:bg-primary hover:text-primary-foreground"
+                                onClick={() => handleSelectChat(chat.id)}
+                              >
+                                <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                                Chat
+                              </Button>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
                     ))}
                     
                   {chatConversations.filter(chat => chat.isRidePartner && chat.status === 'Active').length === 0 && (
