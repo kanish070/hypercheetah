@@ -4,18 +4,21 @@ import { LocationPicker } from "@/components/location-picker";
 import { RouteMap } from "@/components/route-map";
 import { RideMatches } from "@/components/ride-matches";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { calculateRoute } from "@/lib/maps";
+import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Passenger() {
   const [startLocation, setStartLocation] = useState<Location>();
   const [endLocation, setEndLocation] = useState<Location>();
   const [route, setRoute] = useState<Route>();
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [_, setLocation] = useLocation();
 
   const { data: matches = [], isLoading: isLoadingMatches } = useQuery({
@@ -51,14 +54,22 @@ export default function Passenger() {
     if (!startLocation || !endLocation) return;
 
     try {
+      setIsCalculatingRoute(true);
       const calculatedRoute = await calculateRoute(startLocation, endLocation);
       setRoute(calculatedRoute);
+      
+      toast({
+        title: "Route Calculated",
+        description: "We found the fastest route for your journey."
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to calculate route",
         variant: "destructive"
       });
+    } finally {
+      setIsCalculatingRoute(false);
     }
   };
 
@@ -74,6 +85,12 @@ export default function Passenger() {
       routeData: JSON.stringify(route)
     } as any);
   };
+
+  // Calculate route summary if available
+  const routeSummary = route ? {
+    distance: getDistanceInKm(route.start, route.end),
+    time: getEstimatedTime(route.start, route.end)
+  } : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
@@ -103,29 +120,81 @@ export default function Passenger() {
             transition={{ delay: 0.2 }}
             className="space-y-6"
           >
-            <LocationPicker
-              placeholder="Enter pickup location"
-              onLocationSelect={setStartLocation}
-            />
-            <LocationPicker
-              placeholder="Enter destination"
-              onLocationSelect={setEndLocation}
-            />
-            <Button
-              className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
-              onClick={handleRouteCalculation}
-              disabled={!startLocation || !endLocation}
-            >
-              Find Matches
-            </Button>
+            {/* Location input */}
+            <div className="p-4 bg-white rounded-lg shadow-sm space-y-4">
+              <LocationPicker
+                placeholder="Enter pickup location"
+                onLocationSelect={setStartLocation}
+                selectedLocation={startLocation}
+              />
+              <LocationPicker
+                placeholder="Enter destination"
+                onLocationSelect={setEndLocation}
+                selectedLocation={endLocation}
+              />
+              <Button
+                className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
+                onClick={handleRouteCalculation}
+                disabled={!startLocation || !endLocation || isCalculatingRoute}
+              >
+                {isCalculatingRoute ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Calculating Route...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <RouteIcon className="mr-2 h-4 w-4" />
+                    Find Matches
+                  </span>
+                )}
+              </Button>
+            </div>
 
+            {/* Route summary */}
+            {routeSummary && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-medium text-lg mb-3">Journey Details</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="bg-primary/10 p-1">
+                          <MapPin className="h-4 w-4 text-primary" />
+                        </Badge>
+                        <span className="ml-2">Distance:</span>
+                        <span className="ml-2 font-medium">{formatDistance(routeSummary.distance)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="bg-primary/10 p-1">
+                          <Clock className="h-4 w-4 text-primary" />
+                        </Badge>
+                        <span className="ml-2">ETA:</span>
+                        <span className="ml-2 font-medium">{formatTime(routeSummary.time)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Ride matches */}
             {route && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
               >
-                <h2 className="text-xl font-semibold">Available Matches</h2>
+                <div className="flex items-center">
+                  <Car className="mr-2 h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Available Rides</h2>
+                </div>
                 <RideMatches
                   matches={matches}
                   onSelectMatch={handleMatchSelect}

@@ -1,7 +1,60 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Location, Route } from "@shared/schema";
-import { convertToRelativePosition } from "@/lib/maps";
+import { formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for Leaflet default icon issues in bundled environments
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Set up default icon for Leaflet markers
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Custom icons for start and end points
+const startIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const endIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+// Component to recenter the map when props change
+function MapController({ center, route }: { center: Location, route?: Route }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (route) {
+      // If we have a route, fit the map to show the entire route
+      const points = [route.start, ...route.waypoints, route.end];
+      const bounds = L.latLngBounds(points.map(p => [p.lat, p.lng]));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } else {
+      // Otherwise just center on the given location
+      map.setView([center.lat, center.lng], 13);
+    }
+  }, [map, center, route]);
+  
+  return null;
+}
 
 interface RouteMapProps {
   center: Location;
@@ -10,115 +63,93 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ center, route, className = "" }: RouteMapProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Calculate route details if route is available
+  const routeDetails = route ? {
+    distance: getDistanceInKm(route.start, route.end),
+    time: getEstimatedTime(route.start, route.end)
+  } : null;
 
-  // Draw the map and route on the canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Set up the canvas
-    const { width, height } = canvas;
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw the map background (simplified for prototype)
-    ctx.fillStyle = "#f3f4f6";
-    ctx.fillRect(0, 0, width, height);
-    
-    // Draw grid lines
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.lineWidth = 1;
-    
-    // Horizontal grid lines
-    for (let i = 0; i < height; i += 20) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
-      ctx.stroke();
-    }
-    
-    // Vertical grid lines
-    for (let i = 0; i < width; i += 20) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
-      ctx.stroke();
-    }
-    
-    // Draw the route if available
-    if (route) {
-      // Draw the route line
-      ctx.strokeStyle = "#3b82f6"; // Blue
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      
-      // Start with the first waypoint
-      const { x: startX, y: startY } = convertToMapCoordinates(route.start, width, height);
-      
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      
-      // Draw lines to all waypoints in order
-      route.waypoints.forEach(waypoint => {
-        const { x, y } = convertToMapCoordinates(waypoint, width, height);
-        ctx.lineTo(x, y);
-      });
-      
-      // End with the destination
-      const { x: endX, y: endY } = convertToMapCoordinates(route.end, width, height);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-      
-      // Draw the start point
-      drawMapPoint(ctx, startX, startY, "#22c55e", 8); // Green
-      
-      // Draw the end point
-      drawMapPoint(ctx, endX, endY, "#ef4444", 8); // Red
-    } else {
-      // If no route, just draw the center point
-      const { x, y } = convertToMapCoordinates(center, width, height);
-      drawMapPoint(ctx, x, y, "#3b82f6", 8); // Blue
-    }
-  }, [center, route]);
-
-  // Helper function to convert lat/lng to canvas coordinates
-  function convertToMapCoordinates(location: Location, width: number, height: number): { x: number; y: number } {
-    const { x: relX, y: relY } = convertToRelativePosition(location);
-    
-    // Map relative coordinates to canvas
-    const x = width / 2 + relX * (width / 200);
-    const y = height / 2 + relY * (height / 200);
-    
-    return { x, y };
-  }
-  
-  // Helper function to draw a point on the map
-  function drawMapPoint(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size: number): void {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw white border
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  // Prepare route points for the polyline
+  const routePoints: [number, number][] = route 
+    ? [
+        [route.start.lat, route.start.lng] as [number, number],
+        ...route.waypoints.map(wp => [wp.lat, wp.lng] as [number, number]),
+        [route.end.lat, route.end.lng] as [number, number]
+      ] 
+    : [];
 
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <canvas 
-        ref={canvasRef} 
-        width={400} 
-        height={300} 
-        className="w-full h-full"
-      />
+      <div className="h-full">
+        {/* Route details */}
+        {routeDetails && (
+          <div className="bg-muted/50 p-3 border-b flex justify-between items-center">
+            <div>
+              <span className="text-sm font-medium">Distance:</span>
+              <span className="ml-2">{formatDistance(routeDetails.distance)}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium">Estimated Time:</span>
+              <span className="ml-2">{formatTime(routeDetails.time)}</span>
+            </div>
+          </div>
+        )}
+        {/* Map */}
+        <div className="h-[500px]">
+          <MapContainer 
+            center={[center.lat, center.lng]} 
+            zoom={13} 
+            style={{ height: '100%', width: '100%' }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapController center={center} route={route} />
+            
+            {/* Render route if available */}
+            {route && (
+              <>
+                {/* Route line */}
+                <Polyline 
+                  positions={routePoints}
+                  color="#3b82f6"
+                  weight={4}
+                />
+                
+                {/* Start marker */}
+                <Marker 
+                  position={[route.start.lat, route.start.lng]} 
+                  icon={startIcon}
+                >
+                  <Popup>
+                    <strong>Start Location</strong>
+                  </Popup>
+                </Marker>
+                
+                {/* End marker */}
+                <Marker 
+                  position={[route.end.lat, route.end.lng]} 
+                  icon={endIcon}
+                >
+                  <Popup>
+                    <strong>Destination</strong>
+                  </Popup>
+                </Marker>
+              </>
+            )}
+            
+            {/* If no route, just show the center marker */}
+            {!route && (
+              <Marker position={[center.lat, center.lng]}>
+                <Popup>
+                  <strong>Current Location</strong>
+                </Popup>
+              </Marker>
+            )}
+          </MapContainer>
+        </div>
+      </div>
     </Card>
   );
 }
