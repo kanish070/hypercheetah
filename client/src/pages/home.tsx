@@ -287,7 +287,7 @@ export default function Home() {
                 
                 <TabsContent value="chat" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Chat Component</h3>
+                    <h3 className="text-lg font-semibold mb-2">Messaging System</h3>
                     <p className="text-muted-foreground mb-4">The Chat component enables communication between ride partners.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <MessageSquare className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
@@ -331,8 +331,8 @@ export default function Home() {
                 
                 <TabsContent value="tracker" className="p-4">
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Live Location Tracker Component</h3>
-                    <p className="text-muted-foreground mb-4">The LiveLocationTracker component shows real-time ride tracking.</p>
+                    <h3 className="text-lg font-semibold mb-2">Live Tracking</h3>
+                    <p className="text-muted-foreground mb-4 px-4">The LiveLocationTracker component shows real-time ride tracking between partners.</p>
                     <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
                       <Share className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
                       <span className="text-muted-foreground">Real-time location sharing and ride tracking</span>
