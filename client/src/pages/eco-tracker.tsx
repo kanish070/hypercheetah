@@ -758,8 +758,7 @@ export default function EcoTracker() {
                                   <Leaf className="h-4 w-4 text-muted-foreground" />
                                   <span className="text-sm">{action.co2Impact} kg CO₂ impact</span>
                                 </div>
-                              </</div>
-
+                              </div>
                             </div>
 
                             <div className="flex justify-end mt-4">
