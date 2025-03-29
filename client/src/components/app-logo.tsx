@@ -67,7 +67,7 @@ export function AppLogo({
                   className="flex items-center justify-center bg-primary/10 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                   style={{ width: width * 0.8, height: height * 0.8 }}
                 >
-                  <div className="font-mono text-[10px] leading-none whitespace-pre text-primary transform hover:scale-105 transition-transform">
+                  <div className="font-mono text-3xl leading-none whitespace-pre text-primary transform hover:scale-105 transition-transform">
                     {`^..^`}
                   </div>
                 </div>
