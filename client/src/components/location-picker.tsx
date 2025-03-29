@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from 'react';
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Location } from "@shared/schema";
-import { MapPin, Search, X, Navigation, MapPinOff } from "lucide-react";
+import { 
+  MapPin, Search, Home, Building, Briefcase, Star, X, Clock, 
+  Navigation, ChevronRight, Crosshair
+} from "lucide-react";
+import { Location } from '@shared/schema';
 
 interface LocationPickerProps {
   onLocationSelect: (location: Location) => void;
@@ -12,190 +14,262 @@ interface LocationPickerProps {
   selectedLocation?: Location;
 }
 
-// Enhanced location database with more descriptive names and accurate coordinates
-const locationDatabase = [
-  { name: "New York City", desc: "New York, USA", location: { lat: 40.7128, lng: -74.006 } },
-  { name: "Los Angeles", desc: "California, USA", location: { lat: 34.0522, lng: -118.2437 } },
-  { name: "Chicago", desc: "Illinois, USA", location: { lat: 41.8781, lng: -87.6298 } },
-  { name: "San Francisco", desc: "California, USA", location: { lat: 37.7749, lng: -122.4194 } },
-  { name: "Miami", desc: "Florida, USA", location: { lat: 25.7617, lng: -80.1918 } },
-  { name: "Seattle", desc: "Washington, USA", location: { lat: 47.6062, lng: -122.3321 } },
-  { name: "Boston", desc: "Massachusetts, USA", location: { lat: 42.3601, lng: -71.0589 } },
-  { name: "Philadelphia", desc: "Pennsylvania, USA", location: { lat: 39.9526, lng: -75.1652 } },
-  { name: "Houston", desc: "Texas, USA", location: { lat: 29.7604, lng: -95.3698 } },
-  { name: "Phoenix", desc: "Arizona, USA", location: { lat: 33.4484, lng: -112.0740 } },
-  { name: "Dallas", desc: "Texas, USA", location: { lat: 32.7767, lng: -96.7970 } },
-  { name: "Washington D.C.", desc: "USA", location: { lat: 38.9072, lng: -77.0369 } },
-  { name: "San Diego", desc: "California, USA", location: { lat: 32.7157, lng: -117.1611 } },
-  { name: "Las Vegas", desc: "Nevada, USA", location: { lat: 36.1699, lng: -115.1398 } },
-  { name: "London", desc: "United Kingdom", location: { lat: 51.5074, lng: -0.1278 } },
-  { name: "Paris", desc: "France", location: { lat: 48.8566, lng: 2.3522 } },
-  { name: "Tokyo", desc: "Japan", location: { lat: 35.6762, lng: 139.6503 } },
-  { name: "Sydney", desc: "Australia", location: { lat: -33.8688, lng: 151.2093 } },
-  { name: "Toronto", desc: "Canada", location: { lat: 43.6532, lng: -79.3832 } },
-  { name: "Berlin", desc: "Germany", location: { lat: 52.5200, lng: 13.4050 } }
-];
-
 export function LocationPicker({ onLocationSelect, placeholder, selectedLocation }: LocationPickerProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<Array<{ name: string; desc: string; location: Location }>>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isGettingCurrentLocation, setIsGettingCurrentLocation] = useState(false);
-  const [selectedLocationName, setSelectedLocationName] = useState("");
-
-  // Find location name from coordinates if one is selected
-  useEffect(() => {
-    if (selectedLocation) {
-      const found = locationDatabase.find(
-        (item) => 
-          Math.abs(item.location.lat - selectedLocation.lat) < 0.01 && 
-          Math.abs(item.location.lng - selectedLocation.lng) < 0.01
-      );
-      
-      if (found) {
-        setSelectedLocationName(found.name);
-        setSearchTerm(found.name);
-      } else {
-        // Format coordinates as a string if exact location not found
-        setSelectedLocationName(`Location (${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)})`);
-        setSearchTerm(`Location (${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)})`);
-      }
+  const [recentLocations, setRecentLocations] = useState<Array<{ name: string; desc: string; location: Location }>>([
+    { 
+      name: "Home", 
+      desc: "123 Main Street, San Francisco, CA", 
+      location: { lat: 37.7749, lng: -122.4194 } 
+    },
+    { 
+      name: "Work", 
+      desc: "456 Market Street, San Francisco, CA", 
+      location: { lat: 37.7899, lng: -122.4009 } 
+    },
+    { 
+      name: "Gym", 
+      desc: "789 Fitness Avenue, San Francisco, CA", 
+      location: { lat: 37.7833, lng: -122.4167 } 
     }
-  }, [selectedLocation]);
-
-  // Filter suggestions when search term changes
+  ]);
+  
+  const [savedLocations, setSavedLocations] = useState<Array<{ name: string; desc: string; icon: string; location: Location }>>([
+    { 
+      name: "Home", 
+      desc: "123 Main Street, San Francisco, CA", 
+      icon: "home", 
+      location: { lat: 37.7749, lng: -122.4194 } 
+    },
+    { 
+      name: "Office", 
+      desc: "456 Market Street, San Francisco, CA", 
+      icon: "briefcase", 
+      location: { lat: 37.7899, lng: -122.4009 } 
+    },
+    { 
+      name: "Gym", 
+      desc: "789 Fitness Avenue, San Francisco, CA", 
+      icon: "star", 
+      location: { lat: 37.7833, lng: -122.4167 } 
+    }
+  ]);
+  
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Simulate search results - in a real app, this would call a geocoding API
   useEffect(() => {
-    if (searchTerm) {
-      const filteredSuggestions = locationDatabase.filter(loc =>
-        loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loc.desc.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSuggestions(filteredSuggestions);
+    if (searchQuery.length > 2) {
+      const fakeAddresses = [
+        {
+          name: `${searchQuery} Main St`,
+          desc: `San Francisco, CA 94107`,
+          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+        },
+        {
+          name: `${searchQuery} Market St`,
+          desc: `San Francisco, CA 94103`,
+          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+        },
+        {
+          name: `${searchQuery} Valencia St`,
+          desc: `San Francisco, CA 94110`,
+          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+        },
+        {
+          name: `${searchQuery} Hayes St`,
+          desc: `San Francisco, CA 94117`,
+          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+        }
+      ];
+      
+      setSuggestions(fakeAddresses);
+      setShowSuggestions(true);
     } else {
       setSuggestions([]);
+      setShowSuggestions(false);
     }
-  }, [searchTerm]);
-
-  // Handle clicks outside the component to close suggestions
+  }, [searchQuery]);
+  
+  // Handle click outside of search container
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsFocused(false);
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
       }
     }
-
+    
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+  
   const handleSuggestionClick = (suggestion: { name: string; desc: string; location: Location }) => {
     onLocationSelect(suggestion.location);
-    setSearchTerm(suggestion.name);
-    setSelectedLocationName(suggestion.name);
-    setIsFocused(false);
-  };
-
-  const handleClear = () => {
-    setSearchTerm("");
-    setSelectedLocationName("");
-    onLocationSelect({ lat: 0, lng: 0 }); // Reset location
-    inputRef.current?.focus();
-  };
-
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      setIsGettingCurrentLocation(true);
-      
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const currentLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          
-          onLocationSelect(currentLocation);
-          setSearchTerm(`Current Location (${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)})`);
-          setSelectedLocationName(`Current Location`);
-          setIsGettingCurrentLocation(false);
-        },
-        (error) => {
-          console.error("Error getting current location:", error);
-          setIsGettingCurrentLocation(false);
-        }
-      );
+    setSearchQuery(suggestion.name);
+    setShowSuggestions(false);
+    
+    // Add to recent locations if not already in the list
+    if (!recentLocations.some(loc => loc.name === suggestion.name)) {
+      setRecentLocations(prev => [suggestion, ...prev.slice(0, 2)]);
     }
   };
-
+  
+  const renderLocationIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'home':
+        return <Home className="h-4 w-4" />;
+      case 'briefcase':
+        return <Briefcase className="h-4 w-4" />;
+      case 'star':
+        return <Star className="h-4 w-4" />;
+      default:
+        return <MapPin className="h-4 w-4" />;
+    }
+  };
+  
+  const handleUseCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const currentLocation = { lat: latitude, lng: longitude };
+          onLocationSelect(currentLocation);
+          setSearchQuery("Current Location");
+        },
+        (error) => {
+          console.error("Error getting location: ", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+  
+  const clearSearch = () => {
+    setSearchQuery('');
+    setShowSuggestions(false);
+  };
+  
   return (
-    <div className="relative w-full" ref={wrapperRef}>
+    <div className="relative w-full" ref={searchContainerRef}>
       <div className="relative">
         <Input
-          ref={inputRef}
-          type="text"
-          placeholder={placeholder || "Enter location"}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          className="pr-20" // Extra space for the location button
+          placeholder={placeholder || "Enter destination"}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => searchQuery.length > 2 && setShowSuggestions(true)}
+          className="pl-10 pr-10"
         />
-        <div className="absolute right-0 top-0 h-full flex items-center pr-2">
-          {searchTerm ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleClear}
-              title="Clear selection"
-            >
-              <MapPinOff className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={getCurrentLocation}
-              disabled={isGettingCurrentLocation}
-              title="Use current location"
-            >
-              <Navigation className={`h-4 w-4 ${isGettingCurrentLocation ? "animate-pulse text-primary" : ""}`} />
-            </Button>
-          )}
-        </div>
+        <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+        {searchQuery ? (
+          <Button
+            variant="ghost"
+            className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+            onClick={clearSearch}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Search className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
+        )}
       </div>
-
-      {/* Selected location badge */}
-      {selectedLocationName && !isFocused && (
-        <Badge variant="outline" className="mt-2 bg-primary/10">
-          <MapPin className="mr-1 h-3 w-3" />
-          {selectedLocationName}
-        </Badge>
-      )}
-
-      {isFocused && suggestions.length > 0 && (
-        <Card className="absolute z-10 w-full mt-1 shadow-md">
-          <CardContent className="p-0">
-            <ul className="py-2 max-h-60 overflow-auto">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={index}
-                  className="px-3 py-2 hover:bg-accent flex items-start cursor-pointer"
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
-                  <MapPin className="mr-2 h-4 w-4 text-primary mt-1 shrink-0" />
-                  <div>
-                    <p className="font-medium">{suggestion.name}</p>
-                    <p className="text-xs text-muted-foreground">{suggestion.desc}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
+      
+      {/* Suggestions dropdown */}
+      {showSuggestions && (
+        <Card className="absolute mt-1 w-full z-50 shadow-lg overflow-hidden">
+          <div className="max-h-[300px] overflow-y-auto">
+            {/* Use current location */}
+            <div 
+              className="flex items-center p-3 cursor-pointer hover:bg-muted"
+              onClick={handleUseCurrentLocation}
+            >
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                <Crosshair className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <div className="font-medium">Use current location</div>
+                <div className="text-xs text-muted-foreground">Detect your current GPS location</div>
+              </div>
+            </div>
+            
+            {/* Search results */}
+            {suggestions.map((suggestion, index) => (
+              <div 
+                key={`suggestion-${index}`}
+                className="flex items-center p-3 cursor-pointer hover:bg-muted border-t"
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="font-medium">{suggestion.name}</div>
+                  <div className="text-xs text-muted-foreground">{suggestion.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
+      )}
+      
+      {/* Recent locations (when input is empty and not focused) */}
+      {!searchQuery && !showSuggestions && (
+        <div className="mt-4">
+          <div className="text-sm font-medium mb-2 flex items-center">
+            <Clock className="h-4 w-4 mr-1.5" />
+            Recent Locations
+          </div>
+          <div className="space-y-2">
+            {recentLocations.map((location, index) => (
+              <div 
+                key={`recent-${index}`}
+                className="flex items-center p-2 cursor-pointer rounded-md hover:bg-muted"
+                onClick={() => handleSuggestionClick(location)}
+              >
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{location.name}</div>
+                  <div className="text-xs text-muted-foreground">{location.desc}</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Saved locations (when input is empty and not focused) */}
+      {!searchQuery && !showSuggestions && (
+        <div className="mt-4">
+          <div className="text-sm font-medium mb-2 flex items-center">
+            <Star className="h-4 w-4 mr-1.5" />
+            Saved Places
+          </div>
+          <div className="space-y-2">
+            {savedLocations.map((location, index) => (
+              <div 
+                key={`saved-${index}`}
+                className="flex items-center p-2 cursor-pointer rounded-md hover:bg-muted"
+                onClick={() => handleSuggestionClick(location)}
+              >
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                  {renderLocationIcon(location.icon)}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{location.name}</div>
+                  <div className="text-xs text-muted-foreground">{location.desc}</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,12 +1,20 @@
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Message } from "@shared/schema";
-import { Send } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { MessageSquare, Send, Image, MapPin, Paperclip, Smile } from "lucide-react";
+import { toast } from '@/hooks/use-toast';
+
+interface ChatMessage {
+  id: number;
+  senderId: number;
+  text: string;
+  timestamp: string;
+  status: 'sent' | 'delivered' | 'read';
+}
 
 interface ChatProps {
   rideId: number;
@@ -14,152 +22,219 @@ interface ChatProps {
 }
 
 export function Chat({ rideId, userId }: ChatProps) {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  // Fetch existing messages
-  const { data: initialMessages, isLoading } = useQuery({
-    queryKey: ['/api/messages', rideId],
-    queryFn: async () => {
-      return apiRequest<Message[]>(`/api/messages/${rideId}`);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 1,
+      senderId: 2, // other user
+      text: "Hi! Looking forward to our ride tomorrow.",
+      timestamp: "10:30 AM",
+      status: 'read'
     },
-    enabled: !!rideId
-  });
-
-  // Initialize messages from API data
-  useEffect(() => {
-    if (initialMessages) {
-      setMessages(initialMessages);
-    }
-  }, [initialMessages]);
-
-  // Initialize WebSocket connection
-  useEffect(() => {
-    // Create WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const wsConnection = new WebSocket(`${protocol}//${host}/ws-chat`);
-    
-    wsConnection.onopen = () => {
-      console.log('WebSocket connection established');
-      // Initialize the connection with user ID
-      wsConnection.send(JSON.stringify({ 
-        type: 'init', 
-        userId 
-      }));
-    };
-    
-    wsConnection.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === 'chat' && data.message) {
-          setMessages(prevMessages => [...prevMessages, data.message]);
-        }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
-    };
-    
-    wsConnection.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-    
-    wsConnection.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-    
-    setSocket(wsConnection);
-    
-    // Clean up function
-    return () => {
-      wsConnection.close();
-    };
-  }, [userId, rideId]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
-    }
-  }, [messages]);
-
-  const handleSendMessage = () => {
-    if (!message.trim() || !socket) return;
-    
-    // Send the message through WebSocket
-    socket.send(JSON.stringify({
-      type: 'chat',
-      rideId,
+    {
+      id: 2,
       senderId: userId,
-      content: message.trim()
-    }));
+      text: "Hello! Yes, I'll be ready on time. Do you want me to meet you at the corner or directly at the building entrance?",
+      timestamp: "10:35 AM",
+      status: 'read'
+    },
+    {
+      id: 3,
+      senderId: 2,
+      text: "Let's meet at the building entrance, it's easier to find. I'll be driving a blue Toyota Camry.",
+      timestamp: "10:38 AM",
+      status: 'read'
+    }
+  ]);
+  
+  const [newMessage, setNewMessage] = useState('');
+  const [partnerInfo, setPartnerInfo] = useState({
+    id: 2,
+    name: "Alex Johnson",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    status: "online",
+    lastActive: "Active now"
+  });
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  // Send a new message
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
     
-    setMessage("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const message: ChatMessage = {
+      id: messages.length + 1,
+      senderId: userId,
+      text: newMessage,
+      timestamp: currentTime,
+      status: 'sent'
+    };
+    
+    setMessages([...messages, message]);
+    setNewMessage('');
+    
+    // Simulate message status updates
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => {
+        if (m.id === message.id) {
+          return { ...m, status: 'delivered' };
+        }
+        return m;
+      }));
+    }, 1000);
+    
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => {
+        if (m.id === message.id) {
+          return { ...m, status: 'read' };
+        }
+        return m;
+      }));
+    }, 2000);
+    
+    // Simulate partner response
+    if (Math.random() > 0.5) {
+      setTimeout(() => {
+        const responses = [
+          "Sounds good!",
+          "Thanks for letting me know.",
+          "I'll see you then!",
+          "Great, looking forward to it!",
+          "Perfect, thank you!"
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        
+        const responseMessage: ChatMessage = {
+          id: messages.length + 2,
+          senderId: partnerInfo.id,
+          text: randomResponse,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: 'delivered'
+        };
+        
+        setMessages(prev => [...prev, responseMessage]);
+      }, 3000);
     }
   };
-
+  
+  // Message status indicator
+  const getStatusIndicator = (status: string) => {
+    switch (status) {
+      case 'sent':
+        return <span className="text-xs text-gray-400">Sent</span>;
+      case 'delivered':
+        return <span className="text-xs text-gray-400">Delivered</span>;
+      case 'read':
+        return <span className="text-xs text-blue-500">Read</span>;
+      default:
+        return null;
+    }
+  };
+  
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle>Chat</CardTitle>
+      <CardHeader className="pb-2 border-b">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8 mr-2">
+              <AvatarImage src={partnerInfo.avatar} />
+              <AvatarFallback>{partnerInfo.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-base">{partnerInfo.name}</CardTitle>
+              <div className="text-xs text-muted-foreground flex items-center">
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 mr-1.5"></div>
+                {partnerInfo.lastActive}
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <Badge>Ride Partner</Badge>
+          </div>
+        </div>
       </CardHeader>
       
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-muted-foreground">Loading messages...</p>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-muted-foreground">No messages yet</p>
-          </div>
-        ) : (
-          <div className="space-y-4 py-4">
-            {messages.map((msg) => (
+      <CardContent className="p-0 flex-1 overflow-y-auto">
+        <div className="p-4 space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'}`}
+            >
+              {message.senderId !== userId && (
+                <Avatar className="h-8 w-8 mr-2 mt-1">
+                  <AvatarImage src={partnerInfo.avatar} />
+                  <AvatarFallback>{partnerInfo.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              )}
+              
               <div 
-                key={msg.id}
-                className={`flex ${msg.senderId === userId ? 'justify-end' : 'justify-start'}`}
+                className={`max-w-[75%] rounded-lg px-3 py-2 ${
+                  message.senderId === userId 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted'
+                }`}
               >
+                <div>{message.text}</div>
                 <div 
-                  className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                    msg.senderId === userId 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted'
+                  className={`text-xs mt-1 flex justify-end ${
+                    message.senderId === userId 
+                      ? 'text-primary-foreground/70' 
+                      : 'text-muted-foreground'
                   }`}
                 >
-                  <p>{msg.content}</p>
-                  <p className="text-xs opacity-70 mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                  <span>{message.timestamp}</span>
+                  {message.senderId === userId && (
+                    <span className="ml-2">
+                      {getStatusIndicator(message.status)}
+                    </span>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </ScrollArea>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </CardContent>
       
-      <CardFooter className="pt-2">
-        <div className="flex w-full gap-2">
+      <CardFooter className="border-t p-3">
+        <div className="flex w-full items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+            <Smile className="h-5 w-5 text-muted-foreground" />
+          </Button>
+          
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+            <Paperclip className="h-5 w-5 text-muted-foreground" />
+          </Button>
+          
           <Input
             placeholder="Type a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            className="flex-1"
           />
-          <Button onClick={handleSendMessage} disabled={!message.trim()}>
-            <Send className="h-4 w-4" />
+          
+          <Button 
+            size="icon" 
+            className={`h-8 w-8 rounded-full ${!newMessage.trim() ? 'opacity-50' : ''}`}
+            disabled={!newMessage.trim()}
+            onClick={handleSendMessage}
+          >
+            <Send className="h-5 w-5" />
           </Button>
         </div>
       </CardFooter>
