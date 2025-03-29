@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserIcon, Car, Zap, Users, Coffee, MapPin, Sparkles, MessageSquare, Navigation, Share } from "lucide-react";
-import { useLocation } from "wouter";
+import { UserIcon, Car, Zap, Users, Coffee, MapPin, Sparkles, MessageSquare, Navigation, Share, Award, User } from "lucide-react";
+import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { Chat } from "@/components/chat";
 import { RouteMap } from "@/components/route-map";
@@ -59,6 +59,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
+      <div className="flex justify-end max-w-5xl mx-auto mb-4">
+        <Link href="/profile">
+          <Button variant="outline" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>Profile</span>
+            <Badge variant="secondary" className="ml-1">New</Badge>
+          </Button>
+        </Link>
+      </div>
       <div className="max-w-5xl mx-auto space-y-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
