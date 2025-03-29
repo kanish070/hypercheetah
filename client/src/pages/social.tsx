@@ -178,7 +178,9 @@ const chatConversations = [
     unread: 2,
     isRidePartner: true,
     routeMatch: "Brooklyn to Manhattan",
-    status: "Active"
+    status: "Active",
+    departureTime: "Today, 5:30 PM",
+    rideType: "Commute"
   },
   {
     id: 202,
@@ -188,7 +190,21 @@ const chatConversations = [
     unread: 0,
     isRidePartner: true,
     routeMatch: "Queens to Midtown",
-    status: "Completed"
+    status: "Completed",
+    departureTime: "Yesterday, 8:15 AM",
+    rideType: "Morning Commute"
+  },
+  {
+    id: 205,
+    user: users[2],
+    lastMessage: "I'll be at the pickup spot in 10 minutes.",
+    timestamp: "5 mins ago",
+    unread: 3,
+    isRidePartner: true,
+    routeMatch: "Central Park to Downtown",
+    status: "Active",
+    departureTime: "Today, 6:00 PM",
+    rideType: "Evening Ride"
   },
   {
     id: 203,
@@ -433,13 +449,27 @@ export default function Social() {
         {/* Main Tabs */}
         <Tabs defaultValue="feed" className="w-full" onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-            <TabsList className="w-full md:w-auto">
-              <TabsTrigger value="feed" className="flex-1 md:flex-none px-4">Feed</TabsTrigger>
-              <TabsTrigger value="network" className="flex-1 md:flex-none px-4">Network</TabsTrigger>
-              <TabsTrigger value="communities" className="flex-1 md:flex-none px-4">Communities</TabsTrigger>
-              <TabsTrigger value="discover" className="flex-1 md:flex-none px-4">Discover</TabsTrigger>
-              <TabsTrigger value="chats" className="flex-1 md:flex-none px-4">Chats</TabsTrigger>
-            </TabsList>
+            {/* Mobile scrollable tabs for small screens */}
+            <div className="md:hidden w-full overflow-x-auto pb-1">
+              <TabsList className="w-max space-x-1">
+                <TabsTrigger value="feed">Feed</TabsTrigger>
+                <TabsTrigger value="network">Network</TabsTrigger>
+                <TabsTrigger value="chats">Chats</TabsTrigger>
+                <TabsTrigger value="communities">Communities</TabsTrigger>
+                <TabsTrigger value="discover">Discover</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            {/* Desktop tabs for larger screens */}
+            <div className="hidden md:block">
+              <TabsList>
+                <TabsTrigger value="feed">Feed</TabsTrigger>
+                <TabsTrigger value="network">Network</TabsTrigger>
+                <TabsTrigger value="chats">Chats</TabsTrigger>
+                <TabsTrigger value="communities">Communities</TabsTrigger>
+                <TabsTrigger value="discover">Discover</TabsTrigger>
+              </TabsList>
+            </div>
             
             <div className="relative flex items-center w-full md:w-auto">
               <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
@@ -854,13 +884,98 @@ export default function Social() {
           
           {/* Chats Tab Content */}
           <TabsContent value="chats" className="space-y-4">
+            {/* Ride Partners Section */}
+            <Card className="border-primary/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-lg">
+                  <Car className="h-5 w-5 mr-2 text-primary" />
+                  Your Ride Partners
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Chat with your upcoming and past ride companions
+                </p>
+              </CardHeader>
+              <CardContent className="pb-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {chatConversations
+                    .filter(chat => chat.isRidePartner && chat.status === 'Active')
+                    .map(chat => (
+                      <Card 
+                        key={chat.id} 
+                        className={`border cursor-pointer transition-colors hover:border-primary/50 hover:shadow-sm ${
+                          selectedChat === chat.id ? 'border-primary/50 bg-primary/5' : ''
+                        }`}
+                        onClick={() => handleSelectChat(chat.id)}
+                      >
+                        <CardContent className="p-3 flex flex-col h-full">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="relative">
+                              <Avatar>
+                                <AvatarImage src={chat.user.avatar} />
+                                <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              {chat.unread > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                  {chat.unread}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium">{chat.user.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {chat.timestamp}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-primary/5 rounded-md p-2 mb-2 flex-1">
+                            <div className="flex items-center gap-1 mb-1">
+                              <MapPin className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-xs font-medium">{chat.routeMatch}</span>
+                            </div>
+                            <div className="flex items-center gap-1 mb-1">
+                              <Clock className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-xs">{chat.departureTime}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Car className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-xs">{chat.rideType}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                            {chat.lastMessage}
+                          </div>
+                          
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-auto text-xs"
+                            onClick={() => handleSelectChat(chat.id)}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                            Chat
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                  {chatConversations.filter(chat => chat.isRidePartner && chat.status === 'Active').length === 0 && (
+                    <div className="col-span-3 text-center p-6 text-muted-foreground">
+                      No active ride partners at the moment
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
             <div className="flex flex-col md:flex-row gap-6 h-[600px]">
               {/* Chat list sidebar */}
               <Card className="md:w-1/3 w-full overflow-hidden">
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="text-lg flex items-center">
                     <MessageSquare className="h-5 w-5 mr-2 text-primary" />
-                    Your Conversations
+                    All Conversations
                   </CardTitle>
                 </CardHeader>
                 
@@ -870,57 +985,106 @@ export default function Social() {
                       No conversations found
                     </div>
                   ) : (
-                    filteredChats.map(chat => (
-                      <div 
-                        key={chat.id} 
-                        className={`p-3 border-b cursor-pointer transition-colors hover:bg-primary/5 ${selectedChat === chat.id ? 'bg-primary/10' : ''}`}
-                        onClick={() => handleSelectChat(chat.id)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <Avatar>
-                              <AvatarImage src={chat.user.avatar} />
-                              <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            
-                            {chat.unread > 0 && (
-                              <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                {chat.unread}
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <div className="font-medium truncate">{chat.user.name}</div>
-                              <div className="text-xs text-muted-foreground">{chat.timestamp}</div>
-                            </div>
-                            <div className="text-sm text-muted-foreground truncate">
-                              {chat.lastMessage}
-                            </div>
-                            
-                            {chat.isRidePartner && (
-                              <div className="flex items-center mt-1">
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs py-0 px-1.5 ${chat.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}
-                                >
-                                  <Car className="h-3 w-3 mr-1" />
-                                  Ride Partner · {chat.status}
-                                </Badge>
+                    <>
+                      {/* Ride Partners */}
+                      {filteredChats.some(chat => chat.isRidePartner) && (
+                        <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/40">
+                          Ride Partners
+                        </div>
+                      )}
+                      {filteredChats
+                        .filter(chat => chat.isRidePartner)
+                        .map(chat => (
+                          <div 
+                            key={chat.id} 
+                            className={`p-3 border-b cursor-pointer transition-colors hover:bg-primary/5 ${selectedChat === chat.id ? 'bg-primary/10' : ''}`}
+                            onClick={() => handleSelectChat(chat.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <Avatar>
+                                  <AvatarImage src={chat.user.avatar} />
+                                  <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
                                 
-                                {chat.routeMatch && (
-                                  <div className="text-xs ml-2 text-muted-foreground flex items-center">
-                                    <MapPin className="h-3 w-3 mr-1" />
-                                    {chat.routeMatch}
+                                {chat.unread > 0 && (
+                                  <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {chat.unread}
                                   </div>
                                 )}
                               </div>
-                            )}
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center">
+                                  <div className="font-medium truncate">{chat.user.name}</div>
+                                  <div className="text-xs text-muted-foreground">{chat.timestamp}</div>
+                                </div>
+                                <div className="text-sm text-muted-foreground truncate">
+                                  {chat.lastMessage}
+                                </div>
+                                
+                                <div className="flex items-center mt-1">
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs py-0 px-1.5 ${chat.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}
+                                  >
+                                    <Car className="h-3 w-3 mr-1" />
+                                    {chat.status}
+                                  </Badge>
+                                  
+                                  {chat.routeMatch && (
+                                    <div className="text-xs ml-2 text-muted-foreground flex items-center">
+                                      <MapPin className="h-3 w-3 mr-1" />
+                                      {chat.routeMatch}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                        ))}
+                      
+                      {/* Friends and Connections */}
+                      {filteredChats.some(chat => !chat.isRidePartner) && (
+                        <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/40">
+                          Friends & Connections
                         </div>
-                      </div>
-                    ))
+                      )}
+                      {filteredChats
+                        .filter(chat => !chat.isRidePartner)
+                        .map(chat => (
+                          <div 
+                            key={chat.id} 
+                            className={`p-3 border-b cursor-pointer transition-colors hover:bg-primary/5 ${selectedChat === chat.id ? 'bg-primary/10' : ''}`}
+                            onClick={() => handleSelectChat(chat.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <Avatar>
+                                  <AvatarImage src={chat.user.avatar} />
+                                  <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                
+                                {chat.unread > 0 && (
+                                  <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {chat.unread}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center">
+                                  <div className="font-medium truncate">{chat.user.name}</div>
+                                  <div className="text-xs text-muted-foreground">{chat.timestamp}</div>
+                                </div>
+                                <div className="text-sm text-muted-foreground truncate">
+                                  {chat.lastMessage}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </>
                   )}
                 </div>
               </Card>
@@ -942,7 +1106,7 @@ export default function Social() {
                             <div className="font-medium">{currentChat?.user.name}</div>
                             
                             {currentChat?.isRidePartner && (
-                              <div className="flex items-center">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <Badge 
                                   variant="outline" 
                                   className={`text-xs py-0 px-1.5 ${currentChat.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}
@@ -952,9 +1116,16 @@ export default function Social() {
                                 </Badge>
                                 
                                 {currentChat.routeMatch && (
-                                  <div className="text-xs ml-2 text-muted-foreground flex items-center">
+                                  <div className="text-xs text-muted-foreground flex items-center">
                                     <MapPin className="h-3 w-3 mr-1" />
                                     {currentChat.routeMatch}
+                                  </div>
+                                )}
+                                
+                                {currentChat.departureTime && (
+                                  <div className="text-xs text-muted-foreground flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {currentChat.departureTime}
                                   </div>
                                 )}
                               </div>
@@ -1038,6 +1209,7 @@ export default function Social() {
                             size="icon"
                             className="h-10 w-10 rounded-full"
                             onClick={handleAttachRoute}
+                            title="Share Route"
                           >
                             <MapPin className="h-5 w-5 text-primary" />
                           </Button>
@@ -1046,6 +1218,7 @@ export default function Social() {
                             size="icon"
                             className="h-10 w-10 rounded-full"
                             onClick={handleAttachMedia}
+                            title="Attach Media"
                           >
                             <Film className="h-5 w-5 text-primary" />
                           </Button>
@@ -1053,6 +1226,7 @@ export default function Social() {
                             size="icon"
                             className="h-10 w-10 rounded-full"
                             onClick={handleSendMessage}
+                            title="Send Message"
                           >
                             <ArrowLeft className="h-5 w-5 rotate-180" />
                           </Button>
@@ -1080,12 +1254,9 @@ export default function Social() {
             
             <Card className="bg-primary/5 border border-primary/10">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Social Connection Tips</CardTitle>
+                <CardTitle className="text-lg">Make the Most of Your Ride Connections</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Make the most of your ride-sharing experience by connecting with people who share your routes.
-                </p>
                 <div className="grid md:grid-cols-3 gap-4 text-sm">
                   <div className="flex items-start">
                     <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-2 mt-0.5">
@@ -1093,7 +1264,7 @@ export default function Social() {
                     </div>
                     <div>
                       <span className="font-medium">Connect Before Rides</span>
-                      <p className="text-muted-foreground">Chat with your ride partner before meeting to coordinate details</p>
+                      <p className="text-muted-foreground">Chat with your ride partner before meeting to coordinate pickup details and arrival times</p>
                     </div>
                   </div>
                   <div className="flex items-start">
@@ -1101,8 +1272,8 @@ export default function Social() {
                       <MapPin className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div>
-                      <span className="font-medium">Share Routes</span>
-                      <p className="text-muted-foreground">Exchange favorite routes and shortcuts with frequent travelers</p>
+                      <span className="font-medium">Share Routes & Tips</span>
+                      <p className="text-muted-foreground">Exchange favorite routes, shortcuts, and local knowledge with fellow travelers</p>
                     </div>
                   </div>
                   <div className="flex items-start">
@@ -1110,8 +1281,8 @@ export default function Social() {
                       <Heart className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div>
-                      <span className="font-medium">Build Your Network</span>
-                      <p className="text-muted-foreground">Connect with compatible ride partners for future journeys</p>
+                      <span className="font-medium">Turn Rides into Friendships</span>
+                      <p className="text-muted-foreground">Build lasting connections with compatible ride partners who share your interests</p>
                     </div>
                   </div>
                 </div>
