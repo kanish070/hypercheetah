@@ -2,44 +2,113 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Location, Route } from '@shared/schema';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
+
+// Type declaration for Leaflet routing machine
+declare global {
+  namespace L {
+    namespace Routing {
+      function control(options: any): any;
+      function osrmv1(options: any): any;
+    }
+  }
+}
 
 // Fix for Leaflet default icon issues
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Setup default Leaflet icon
-const DefaultIcon = L.icon({
+// Custom icons for start, waypoint and destination
+const startIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
+  popupAnchor: [1, -34],
+  className: 'start-icon' // For potential custom styling
 });
-L.Marker.prototype.options.icon = DefaultIcon;
+
+const waypointIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  className: 'waypoint-icon'
+});
+
+const destinationIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  className: 'destination-icon'
+});
+
+// Default icon for general usage
+L.Marker.prototype.options.icon = startIcon;
 
 // Custom color for route line
-const routeOptions = { color: 'blue', weight: 4, opacity: 0.7 };
+const routeOptions = { color: '#1e88e5', weight: 5, opacity: 0.8 };
 
 // Map controller component that sets view and draws route
 function MapController({ center, route }: { center: Location, route?: Route }) {
   const map = useMap();
+  const [routingControl, setRoutingControl] = useState<any>(null);
   
   useEffect(() => {
     // Center the map on the provided location
     map.setView([center.lat, center.lng], 13);
     
-    // If a route is provided, fit bounds to include all route points
+    // If a route is provided, setup routing
     if (route) {
-      const points = [
-        [route.start.lat, route.start.lng],
-        ...route.waypoints.map(wp => [wp.lat, wp.lng]),
-        [route.end.lat, route.end.lng]
+      // Remove previous routing control if exists
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+      
+      const waypoints = [
+        L.latLng(route.start.lat, route.start.lng),
+        ...route.waypoints.map(wp => L.latLng(wp.lat, wp.lng)),
+        L.latLng(route.end.lat, route.end.lng)
       ];
       
-      const bounds = L.latLngBounds(points.map(p => L.latLng(p[0], p[1])));
+      // Create routing control
+      const control = L.Routing.control({
+        waypoints,
+        router: L.Routing.osrmv1({
+          serviceUrl: 'https://router.project-osrm.org/route/v1',
+          profile: 'driving'
+        }),
+        lineOptions: {
+          styles: [{ color: '#4CAF50', weight: 4, opacity: 0.7 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        showAlternatives: false,
+        createMarker: function() { return null; } // Disable default markers
+      });
+      
+      control.addTo(map);
+      setRoutingControl(control);
+      
+      // Calculate bounds to fit
+      const bounds = L.latLngBounds(waypoints);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
+    
+    return () => {
+      // Clean up control when component unmounts or updates
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+    };
   }, [map, center, route]);
   
   return null;
@@ -52,13 +121,6 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ center, route, className = "" }: RouteMapProps) {
-  // If route exists, calculate route points for polyline
-  const routePoints = route ? [
-    [route.start.lat, route.start.lng],
-    ...route.waypoints.map(wp => [wp.lat, wp.lng]),
-    [route.end.lat, route.end.lng]
-  ] : [];
-  
   return (
     <div className={`rounded-md overflow-hidden ${className}`} style={{ height: '400px' }}>
       <MapContainer 
@@ -71,13 +133,19 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Map controller to handle view changes */}
+        {/* Map controller to handle view changes and routing */}
         <MapController center={center} route={route} />
         
         {/* Start marker */}
         {route && (
-          <Marker position={[route.start.lat, route.start.lng]}>
-            <Popup>Starting point</Popup>
+          <Marker 
+            position={[route.start.lat, route.start.lng]} 
+            icon={startIcon}
+          >
+            <Popup>
+              <div className="font-medium">Starting point</div>
+              <div className="text-xs text-muted-foreground">Pickup location</div>
+            </Popup>
           </Marker>
         )}
         
@@ -86,24 +154,26 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
           <Marker 
             key={`waypoint-${index}`} 
             position={[waypoint.lat, waypoint.lng]}
+            icon={waypointIcon}
           >
-            <Popup>Waypoint {index + 1}</Popup>
+            <Popup>
+              <div className="font-medium">Waypoint {index + 1}</div>
+              <div className="text-xs text-muted-foreground">Stop {index + 1}</div>
+            </Popup>
           </Marker>
         ))}
         
         {/* End marker */}
         {route && (
-          <Marker position={[route.end.lat, route.end.lng]}>
-            <Popup>Destination</Popup>
+          <Marker 
+            position={[route.end.lat, route.end.lng]} 
+            icon={destinationIcon}
+          >
+            <Popup>
+              <div className="font-medium">Destination</div>
+              <div className="text-xs text-muted-foreground">Dropoff location</div>
+            </Popup>
           </Marker>
-        )}
-        
-        {/* Route line */}
-        {route && (
-          <Polyline 
-            positions={routePoints as [number, number][]} 
-            pathOptions={routeOptions} 
-          />
         )}
       </MapContainer>
     </div>

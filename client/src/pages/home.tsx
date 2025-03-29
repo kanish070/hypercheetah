@@ -262,26 +262,26 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="chat" className="w-full">
-                <TabsList className="grid grid-cols-5 w-full">
-                  <TabsTrigger value="chat">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+                  <TabsTrigger value="chat" className="w-full">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Chat
                   </TabsTrigger>
-                  <TabsTrigger value="map">
+                  <TabsTrigger value="map" className="w-full">
                     <MapPin className="h-4 w-4 mr-2" />
                     Route Map
                   </TabsTrigger>
-                  <TabsTrigger value="location">
+                  <TabsTrigger value="location" className="w-full">
                     <Navigation className="h-4 w-4 mr-2" />
-                    Location Picker
+                    Location
                   </TabsTrigger>
-                  <TabsTrigger value="rides">
+                  <TabsTrigger value="rides" className="w-full">
                     <Car className="h-4 w-4 mr-2" />
-                    Ride Matches
+                    Rides
                   </TabsTrigger>
-                  <TabsTrigger value="tracker">
+                  <TabsTrigger value="tracker" className="w-full">
                     <Share className="h-4 w-4 mr-2" />
-                    Location Tracker
+                    Tracker
                   </TabsTrigger>
                 </TabsList>
                 
