@@ -166,17 +166,17 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <Card className="absolute mt-1 w-full z-50 shadow-lg overflow-hidden">
+        <Card className="absolute mt-1 w-full z-50 shadow-lg overflow-hidden border border-primary/20">
           <div className="max-h-[300px] overflow-y-auto">
             {/* Use current location */}
             <div 
-              className="flex items-center p-2 cursor-pointer hover:bg-muted border-b"
+              className="flex items-center p-3 cursor-pointer hover:bg-primary/5 border-b"
               onClick={handleUseCurrentLocation}
             >
-              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mr-2">
-                <Crosshair className="h-3 w-3 text-primary" />
+              <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center mr-3">
+                <Crosshair className="h-4 w-4 text-primary" />
               </div>
-              <div className="font-medium text-sm">Use current location</div>
+              <div className="font-medium">Use current location</div>
             </div>
             
             {/* Search results */}
@@ -185,24 +185,24 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
               return (
                 <div 
                   key={`suggestion-${index}`}
-                  className={`flex items-center p-2 cursor-pointer ${
+                  className={`flex items-center p-3 cursor-pointer ${
                     isSelected 
                       ? 'bg-primary/10 border-l-2 border-l-primary' 
-                      : 'hover:bg-muted'
+                      : 'hover:bg-muted/70'
                   }`}
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
-                  <div className={`h-6 w-6 rounded-full ${
-                    isSelected ? 'bg-primary/30' : 'bg-primary/10'
-                  } flex items-center justify-center mr-2`}>
-                    <MapPin className="h-3 w-3 text-primary" />
+                  <div className={`h-8 w-8 rounded-full ${
+                    isSelected ? 'bg-primary/30' : 'bg-primary/15'
+                  } flex items-center justify-center mr-3`}>
+                    <MapPin className="h-4 w-4 text-primary" />
                   </div>
                   <div className="overflow-hidden">
-                    <div className={`font-medium text-sm ${isSelected ? 'text-primary' : ''}`}>
+                    <div className={`font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                       {suggestion.name}
                       {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">{suggestion.desc}</div>
+                    <div className="text-sm text-foreground/70 truncate">{suggestion.desc}</div>
                   </div>
                 </div>
               );
@@ -213,38 +213,41 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       
       {/* Quick access locations */}
       {!searchQuery && !showSuggestions && (
-        <div className="mt-2 grid grid-cols-1 gap-1">
-          {/* Show just a combined compact list of saved locations */}
-          {savedLocations.slice(0, 3).map((location: any, index: number) => {
-            const isSelected = isLocationSelected(location.location);
-            return (
-              <div 
-                key={`location-${index}`}
-                className={`flex items-center p-1.5 cursor-pointer rounded-md ${
-                  isSelected 
-                    ? 'bg-primary/10 border border-primary/40' 
-                    : 'hover:bg-muted/70'
-                }`}
-                onClick={() => handleSuggestionClick(location)}
-              >
-                <div className={`h-6 w-6 rounded-full ${
-                  isSelected ? 'bg-primary/30' : 'bg-primary/10'
-                } flex items-center justify-center mr-2`}>
-                  {renderLocationIcon(location.icon)}
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <div className={`font-medium text-sm truncate ${isSelected ? 'text-primary' : ''}`}>
-                    {location.name}
-                    {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
+        <Card className="mt-2 border border-primary/20">
+          <div className="p-1">
+            {/* Show just a combined compact list of saved locations */}
+            {savedLocations.slice(0, 3).map((location: any, index: number) => {
+              const isSelected = isLocationSelected(location.location);
+              return (
+                <div 
+                  key={`location-${index}`}
+                  className={`flex items-center p-2.5 cursor-pointer rounded-md ${
+                    isSelected 
+                      ? 'bg-primary/10 border border-primary/40' 
+                      : 'hover:bg-muted/70'
+                  } ${index < savedLocations.slice(0, 3).length - 1 ? 'border-b' : ''}`}
+                  onClick={() => handleSuggestionClick(location)}
+                >
+                  <div className={`h-8 w-8 rounded-full ${
+                    isSelected ? 'bg-primary/30' : 'bg-primary/15'
+                  } flex items-center justify-center mr-3`}>
+                    {renderLocationIcon(location.icon)}
                   </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div className={`font-medium truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                      {location.name}
+                      {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
+                    </div>
+                    <div className="text-sm text-foreground/70 truncate">{location.desc}</div>
+                  </div>
+                  <ChevronRight className={`h-4 w-4 ml-1 ${
+                    isSelected ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
                 </div>
-                <ChevronRight className={`h-3 w-3 ml-1 ${
-                  isSelected ? 'text-primary' : 'text-muted-foreground'
-                }`} />
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
     </div>
   );
