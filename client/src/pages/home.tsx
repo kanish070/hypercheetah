@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserIcon, Car, Zap, Users, Coffee, MapPin, Sparkles, MessageSquare, Navigation, Share, Award, User } from "lucide-react";
+import { UserIcon, Car, Zap, Users, Coffee, MapPin, Sparkles, MessageSquare, Navigation, Share, Award, User, Leaf } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { Chat } from "@/components/chat";
@@ -59,7 +59,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
-      <div className="flex justify-end max-w-5xl mx-auto mb-4">
+      <div className="flex justify-end max-w-5xl mx-auto mb-4 gap-2">
+        <Link href="/eco-tracker">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Leaf className="h-4 w-4 text-green-500" />
+            <span>Eco Impact</span>
+            <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700">New</Badge>
+          </Button>
+        </Link>
         <Link href="/profile">
           <Button variant="outline" className="flex items-center gap-2">
             <User className="h-4 w-4" />

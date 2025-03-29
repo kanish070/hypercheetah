@@ -8,6 +8,7 @@ import Passenger from "@/pages/passenger";
 import Rider from "@/pages/rider";
 import Social from "@/pages/social";
 import Profile from "@/pages/profile";
+import EcoTracker from "@/pages/eco-tracker";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/rider" component={Rider} />
       <Route path="/social" component={Social} />
       <Route path="/profile" component={Profile} />
+      <Route path="/eco-tracker" component={EcoTracker} />
       <Route component={NotFound} />
     </Switch>
   );

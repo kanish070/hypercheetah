@@ -424,17 +424,91 @@ export async function registerRoutes(app: Express) {
     try {
       const userId = parseInt(req.params.userId);
       // This would typically come from analyzing the user's rides
-      // For now, we'll return mock data
+      // For now, we'll return structured data
       res.json({
         co2Saved: 135,
         treesEquivalent: 6,
         milesDriven: 842,
         fuelSaved: 56,
         singleUseRides: 13,
-        sharedRides: 21
+        sharedRides: 21,
+        plasticSaved: 42,
+        waterSaved: 320,
+        energySaved: 178,
+        carbonFootprint: 245
       });
     } catch (error) {
       console.error("Error getting eco impact:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+  // Green achievements endpoints
+  app.get("/api/users/:userId/eco-achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      // Get all user achievements first
+      const allAchievements = await storage.getUserAchievements(userId);
+      // Filter only eco-related achievements
+      const ecoAchievements = allAchievements.filter(
+        achievement => achievement.achievement.category === 'eco'
+      );
+      res.json(ecoAchievements);
+    } catch (error) {
+      console.error("Error getting eco achievements:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+  // Eco goals endpoints
+  app.get("/api/users/:userId/eco-goals", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      // For this demo, we'll return structured sample data
+      res.json([
+        {
+          id: 1,
+          name: "Reduce CO2 emissions",
+          target: 200,
+          current: 135,
+          unit: "kg",
+          dueDate: "Apr 30, 2025",
+          category: "carbon",
+          completed: false
+        },
+        {
+          id: 2,
+          name: "Share more rides",
+          target: 30,
+          current: 21,
+          unit: "rides",
+          dueDate: "May 15, 2025",
+          category: "carbon",
+          completed: false
+        },
+        {
+          id: 3,
+          name: "Plant trees equivalence",
+          target: 10,
+          current: 6,
+          unit: "trees",
+          dueDate: "Jun 20, 2025",
+          category: "trees",
+          completed: false
+        },
+        {
+          id: 4,
+          name: "Save fuel",
+          target: 50,
+          current: 56,
+          unit: "L",
+          dueDate: "Apr 10, 2025",
+          category: "energy",
+          completed: true
+        }
+      ]);
+    } catch (error) {
+      console.error("Error getting eco goals:", error);
       res.status(500).json({ error: "Server error" });
     }
   });
