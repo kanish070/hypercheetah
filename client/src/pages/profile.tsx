@@ -123,7 +123,7 @@ export default function Profile() {
           <div className="flex flex-col md:flex-row gap-6 relative z-10 mt-8 md:mt-0">
             <div className="flex flex-col items-center md:items-start">
               <Avatar className="h-24 w-24 border-4 border-white shadow-md">
-                <AvatarImage src="https://randomuser.me/api/portraits/men/42.jpg" alt="User Profile" />
+                <AvatarImage src="/profile-photo.jpeg" alt="User Profile" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
               

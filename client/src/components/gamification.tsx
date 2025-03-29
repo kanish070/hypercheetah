@@ -196,7 +196,8 @@ export function Gamification({ userId }: GamificationProps) {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pr-1">
+      {/* Added right padding to ensure content doesn't get cut off */}
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="achievements" className="flex items-center gap-2">
@@ -265,7 +266,8 @@ export function Gamification({ userId }: GamificationProps) {
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-x-hidden w-full">
+            {/* Added overflow-x-hidden and w-full to prevent content from extending beyond container */}
             {isAchievementsLoading ? (
               <div className="col-span-full flex justify-center py-10">
                 <div className="flex flex-col items-center">
@@ -498,7 +500,8 @@ export function Gamification({ userId }: GamificationProps) {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-x-hidden w-full">
+                  {/* Added overflow-x-hidden and w-full to prevent content from extending beyond container */}
                   {rewards?.map((reward: Reward) => (
                     <div key={reward.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-all">
                       <div className="h-32 overflow-hidden">
