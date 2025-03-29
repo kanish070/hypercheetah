@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="90" fill="#f4f4f4" stroke="#4f46e5" stroke-width="4"/>
+  
+  <!-- Stylized Cheetah Silhouette -->
+  <path d="M50,70 C60,50 80,40 100,40 C120,40 140,50 150,70 C160,90 160,110 150,130 C140,150 120,160 100,160 C80,160 60,150 50,130 C40,110 40,90 50,70 Z" 
+        fill="#ffb700" stroke="#000" stroke-width="2"/>
+  
+  <!-- Lightning Bolt -->
+  <path d="M90,70 L110,70 L100,90 L120,90 L80,140 L90,110 L70,110 Z" 
+        fill="#4f46e5" stroke="#000" stroke-width="1"/>
+  
+  <!-- Spots -->
+  <circle cx="70" cy="80" r="5" fill="#000"/>
+  <circle cx="130" cy="80" r="5" fill="#000"/>
+  <circle cx="80" cy="100" r="4" fill="#000"/>
+  <circle cx="120" cy="100" r="4" fill="#000"/>
+  <circle cx="90" cy="120" r="5" fill="#000"/>
+  <circle cx="110" cy="120" r="5" fill="#000"/>
+</svg>
