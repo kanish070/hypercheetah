@@ -137,245 +137,41 @@ export function Gamification({ userId }: GamificationProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   
   // Mock data - in a real app, this would come from the API
-  const { data: userAchievements, isLoading: isAchievementsLoading } = useQuery({
+  const { data: userAchievementsData, isLoading: isAchievementsLoading } = useQuery({
     queryKey: ['/api/users', userId, 'achievements'],
-    queryFn: async () => {
-      // Mock data until the API is fully implemented
-      const mockAchievements: Achievement[] = [
-        {
-          id: 1,
-          name: "First Ride",
-          description: "Complete your first ride",
-          points: 50,
-          icon: "car",
-          unlocked: true,
-          progress: 100,
-          criteria: "Complete 1 ride",
-          category: "ride",
-          tier: "bronze"
-        },
-        {
-          id: 2,
-          name: "Road Warrior",
-          description: "Complete 50 rides",
-          points: 200,
-          icon: "gauge",
-          unlocked: false,
-          progress: 68,
-          criteria: "Complete 50 rides",
-          category: "ride",
-          tier: "silver"
-        },
-        {
-          id: 3,
-          name: "Social Butterfly",
-          description: "Connect with 10 new riders",
-          points: 100,
-          icon: "users",
-          unlocked: true,
-          progress: 100,
-          criteria: "Connect with 10 riders",
-          category: "social",
-          tier: "bronze"
-        },
-        {
-          id: 4,
-          name: "Green Commuter",
-          description: "Save 100kg of CO2",
-          points: 150,
-          icon: "leaf",
-          unlocked: true,
-          progress: 100,
-          criteria: "Reduce carbon emissions by sharing rides",
-          category: "eco",
-          tier: "bronze"
-        },
-        {
-          id: 5,
-          name: "Eco Warrior",
-          description: "Save 500kg of CO2",
-          points: 300,
-          icon: "leaf",
-          unlocked: false,
-          progress: 27,
-          criteria: "Reduce carbon emissions by sharing rides",
-          category: "eco",
-          tier: "silver"
-        },
-        {
-          id: 6,
-          name: "Perfect Rating",
-          description: "Receive 10 five-star ratings",
-          points: 200,
-          icon: "star",
-          unlocked: false,
-          progress: 80,
-          criteria: "Maintain excellent service as a rider",
-          category: "social",
-          tier: "silver"
-        },
-        {
-          id: 7,
-          name: "Long Distance",
-          description: "Complete a ride over 100km",
-          points: 250,
-          icon: "gauge",
-          unlocked: false,
-          progress: 0,
-          criteria: "Take on longer journeys",
-          category: "ride",
-          tier: "gold"
-        },
-        {
-          id: 8,
-          name: "Top Contributor",
-          description: "Be in the top 1% of all riders",
-          points: 500,
-          icon: "trophy",
-          unlocked: false,
-          progress: 0,
-          criteria: "Consistently offer rides and maintain high ratings",
-          category: "milestone",
-          tier: "platinum"
-        }
-      ];
-      return mockAchievements;
-    },
+    queryFn: () => fetch(`/api/users/${userId}/achievements`).then(res => res.json()),
   });
+  
+  // Process the data from the API to match our Achievement interface
+  const userAchievements = userAchievementsData?.map((item: any) => ({
+    id: item.id,
+    name: item.achievement.name,
+    description: item.achievement.description,
+    points: item.achievement.points,
+    icon: item.achievement.icon,
+    unlocked: item.unlocked,
+    progress: item.progress,
+    criteria: item.achievement.criteria,
+    category: item.achievement.category,
+    tier: item.achievement.tier
+  }));
   
   const { data: leaderboard, isLoading: isLeaderboardLoading } = useQuery({
     queryKey: ['/api/leaderboard'],
-    queryFn: async () => {
-      // Mock data until the API is fully implemented
-      const mockLeaderboard: LeaderboardEntry[] = [
-        {
-          id: 2,
-          name: "Emily Chen",
-          avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-          points: 1250,
-          rank: 1,
-          level: 8,
-          achievements: 15,
-          isCurrentUser: false
-        },
-        {
-          id: 3,
-          name: "Michael Rodriguez",
-          avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-          points: 980,
-          rank: 2,
-          level: 7,
-          achievements: 12,
-          isCurrentUser: false
-        },
-        {
-          id: 1,
-          name: "John Doe",
-          avatar: "https://randomuser.me/api/portraits/men/42.jpg",
-          points: 850,
-          rank: 3,
-          level: 4,
-          achievements: 9,
-          isCurrentUser: true
-        },
-        {
-          id: 4,
-          name: "Sarah Johnson",
-          avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-          points: 720,
-          rank: 4,
-          level: 5,
-          achievements: 8,
-          isCurrentUser: false
-        },
-        {
-          id: 5,
-          name: "David Kim",
-          avatar: "https://randomuser.me/api/portraits/men/62.jpg",
-          points: 650,
-          rank: 5,
-          level: 4,
-          achievements: 7,
-          isCurrentUser: false
-        }
-      ];
-      return mockLeaderboard;
-    },
+    queryFn: () => fetch('/api/leaderboard').then(res => res.json()),
   });
   
   const { data: rewards, isLoading: isRewardsLoading } = useQuery({
     queryKey: ['/api/rewards'],
-    queryFn: async () => {
-      // Mock data until the API is fully implemented
-      const mockRewards: Reward[] = [
-        {
-          id: 1,
-          name: "Free Ride Credit",
-          description: "Get a $15 credit towards your next ride",
-          cost: 300,
-          type: "free_ride",
-          expiry: null,
-          image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZHJpdmluZ3xlbnwwfHwwfHx8MA%3D%3D",
-          isNew: true,
-          isFeatured: true
-        },
-        {
-          id: 2,
-          name: "Coffee Discount",
-          description: "20% off at participating coffee shops",
-          cost: 150,
-          type: "partner",
-          expiry: "2025-06-30",
-          image: "https://images.unsplash.com/photo-1509042239860-f0ca3bf6d889?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29mZmVlfGVufDB8fDB8fHww",
-          isNew: false,
-          isFeatured: false,
-          partner: "Local Brew"
-        },
-        {
-          id: 3,
-          name: "Premium Features",
-          description: "Unlock premium app features for 30 days",
-          cost: 500,
-          type: "upgrade",
-          expiry: null,
-          image: "https://images.unsplash.com/photo-1556155092-490a1ba16284?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXBncmFkZXxlbnwwfHwwfHx8MA%3D%3D",
-          isNew: false,
-          isFeatured: true
-        },
-        {
-          id: 4,
-          name: "Gas Discount",
-          description: "10% off at participating gas stations",
-          cost: 250,
-          type: "partner",
-          expiry: "2025-05-15",
-          image: "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2FzJTIwc3RhdGlvbnxlbnwwfHwwfHx8MA%3D%3D",
-          isNew: true,
-          isFeatured: false,
-          partner: "QuickFuel"
-        }
-      ];
-      return mockRewards;
-    },
+    queryFn: () => fetch('/api/rewards').then(res => res.json()),
   });
   
   const { data: ecoImpact, isLoading: isEcoImpactLoading } = useQuery({
     queryKey: ['/api/users', userId, 'eco-impact'],
-    queryFn: async () => {
-      // Mock data until the API is fully implemented
-      const mockEcoImpact: EcoImpact = {
-        co2Saved: 135,
-        treesEquivalent: 6,
-        milesDriven: 842,
-        fuelSaved: 56,
-        singleUseRides: 13,
-        sharedRides: 21
-      };
-      return mockEcoImpact;
-    },
+    queryFn: () => fetch(`/api/users/${userId}/eco-impact`).then(res => res.json()),
   });
   
-  const filteredAchievements = userAchievements?.filter(achievement => 
+  const filteredAchievements = userAchievements?.filter((achievement: Achievement) => 
     selectedCategory === "all" || achievement.category === selectedCategory
   );
   
@@ -485,7 +281,7 @@ export function Gamification({ userId }: GamificationProps) {
                 </div>
               </div>
             ) : (
-              filteredAchievements?.map(achievement => {
+              filteredAchievements?.map((achievement: Achievement) => {
                 const tierColors = getTierColor(achievement.tier);
                 const categoryDetails = getCategoryDetails(achievement.category);
                 
@@ -624,7 +420,7 @@ export function Gamification({ userId }: GamificationProps) {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {leaderboard?.map((entry) => (
+                  {leaderboard?.map((entry: LeaderboardEntry) => (
                     <div 
                       key={entry.id} 
                       className={`flex items-center gap-4 p-3 rounded-lg ${
@@ -703,7 +499,7 @@ export function Gamification({ userId }: GamificationProps) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {rewards?.map((reward) => (
+                  {rewards?.map((reward: Reward) => (
                     <div key={reward.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-all">
                       <div className="h-32 overflow-hidden">
                         <img 
