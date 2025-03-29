@@ -55,6 +55,30 @@ export const userRatings = pgTable("user_ratings", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
+// Achievements table
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  points: integer("points").notNull(),
+  icon: text("icon").notNull(),
+  criteria: text("criteria").notNull(),
+  category: text("category").notNull(), // 'ride', 'social', 'eco', 'milestone'
+  tier: text("tier").notNull(), // 'bronze', 'silver', 'gold', 'platinum'
+  createdAt: timestamp("created_at").notNull().defaultNow()
+});
+
+// User Achievements table (tracks which users have which achievements)
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  achievementId: integer("achievement_id").notNull(),
+  progress: integer("progress").notNull().default(0), // 0-100
+  unlocked: boolean("unlocked").notNull().default(false),
+  unlockedAt: timestamp("unlocked_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow()
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true,
@@ -84,6 +108,17 @@ export const insertUserRatingSchema = createInsertSchema(userRatings).omit({
   createdAt: true 
 });
 
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  createdAt: true
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+  unlockedAt: true,
+  createdAt: true
+});
+
 // Type definitions for frontend use
 export type Location = {
   lat: number;
@@ -109,3 +144,7 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertUserRating = z.infer<typeof insertUserRatingSchema>;
 export type UserRating = typeof userRatings.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;

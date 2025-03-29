@@ -4,6 +4,8 @@ import {
   rideMatches, 
   messages, 
   userRatings,
+  achievements,
+  userAchievements,
   type User, 
   type InsertUser, 
   type Ride, 
@@ -15,7 +17,11 @@ import {
   type Message, 
   type InsertMessage, 
   type UserRating, 
-  type InsertUserRating
+  type InsertUserRating,
+  type Achievement,
+  type InsertAchievement,
+  type UserAchievement,
+  type InsertUserAchievement
 } from "@shared/schema";
 
 export interface IStorage {
@@ -44,6 +50,17 @@ export interface IStorage {
   // Rating operations
   createRating(rating: InsertUserRating): Promise<UserRating>;
   getUserRatings(userId: number): Promise<UserRating[]>;
+  
+  // Achievement operations
+  getAchievement(id: number): Promise<Achievement | undefined>;
+  getAllAchievements(): Promise<Achievement[]>;
+  getAchievementsByCategory(category: string): Promise<Achievement[]>;
+  createAchievement(achievement: InsertAchievement): Promise<Achievement>;
+  
+  // User Achievement operations
+  getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]>;
+  createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement>;
+  updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement>;
 }
 
 export class MemStorage implements IStorage {
@@ -52,11 +69,15 @@ export class MemStorage implements IStorage {
   private rideMatches: Map<number, RideMatch>;
   private messages: Map<number, Message>;
   private userRatings: Map<number, UserRating>;
+  private achievements: Map<number, Achievement>;
+  private userAchievements: Map<number, UserAchievement>;
   private userId: number;
   private rideId: number;
   private rideMatchId: number;
   private messageId: number;
   private userRatingId: number;
+  private achievementId: number;
+  private userAchievementId: number;
 
   constructor() {
     this.users = new Map();
@@ -64,11 +85,209 @@ export class MemStorage implements IStorage {
     this.rideMatches = new Map();
     this.messages = new Map();
     this.userRatings = new Map();
+    this.achievements = new Map();
+    this.userAchievements = new Map();
     this.userId = 1;
     this.rideId = 1;
     this.rideMatchId = 1;
     this.messageId = 1;
     this.userRatingId = 1;
+    this.achievementId = 1;
+    this.userAchievementId = 1;
+    
+    // Initialize with mock data
+    this.initMockData();
+  }
+  
+  private initMockData() {
+    // Create a test user
+    const testUser = {
+      id: this.userId++,
+      name: "John Doe",
+      email: "test@example.com",
+      passwordHash: "$2a$10$EncryptedPasswordHash", // This would be a real bcrypt hash in production
+      role: "user",
+      createdAt: new Date()
+    };
+    this.users.set(testUser.id, testUser);
+    
+    // Create achievements
+    const achievements = [
+      {
+        id: this.achievementId++,
+        name: "First Ride",
+        description: "Complete your first ride",
+        points: 50,
+        icon: "car",
+        criteria: "Complete 1 ride",
+        category: "ride",
+        tier: "bronze",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Road Warrior",
+        description: "Complete 50 rides",
+        points: 200,
+        icon: "gauge",
+        criteria: "Complete 50 rides",
+        category: "ride",
+        tier: "silver",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Social Butterfly",
+        description: "Connect with 10 new riders",
+        points: 100,
+        icon: "users",
+        criteria: "Connect with 10 riders",
+        category: "social",
+        tier: "bronze",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Green Commuter",
+        description: "Save 100kg of CO2",
+        points: 150,
+        icon: "leaf",
+        criteria: "Reduce carbon emissions by sharing rides",
+        category: "eco",
+        tier: "bronze",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Eco Warrior",
+        description: "Save 500kg of CO2",
+        points: 300,
+        icon: "leaf",
+        criteria: "Reduce carbon emissions by sharing rides",
+        category: "eco",
+        tier: "silver",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Perfect Rating",
+        description: "Receive 10 five-star ratings",
+        points: 200,
+        icon: "star",
+        criteria: "Maintain excellent service as a rider",
+        category: "social",
+        tier: "silver",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Long Distance",
+        description: "Complete a ride over 100km",
+        points: 250,
+        icon: "gauge",
+        criteria: "Take on longer journeys",
+        category: "ride",
+        tier: "gold",
+        createdAt: new Date()
+      },
+      {
+        id: this.achievementId++,
+        name: "Top Contributor",
+        description: "Be in the top 1% of all riders",
+        points: 500,
+        icon: "trophy",
+        criteria: "Consistently offer rides and maintain high ratings",
+        category: "milestone",
+        tier: "platinum",
+        createdAt: new Date()
+      }
+    ];
+    
+    // Add achievements to storage
+    achievements.forEach(achievement => {
+      this.achievements.set(achievement.id, achievement);
+    });
+    
+    // Create user achievements for the test user
+    const userAchievements = [
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 1, // First Ride
+        progress: 100,
+        unlocked: true,
+        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), // 15 days ago
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 2, // Road Warrior
+        progress: 68,
+        unlocked: false,
+        unlockedAt: null,
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 3, // Social Butterfly
+        progress: 100,
+        unlocked: true,
+        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 4, // Green Commuter
+        progress: 100,
+        unlocked: true,
+        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 5, // Eco Warrior
+        progress: 27,
+        unlocked: false,
+        unlockedAt: null,
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 6, // Perfect Rating
+        progress: 80,
+        unlocked: false,
+        unlockedAt: null,
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 7, // Long Distance
+        progress: 0,
+        unlocked: false,
+        unlockedAt: null,
+        createdAt: new Date()
+      },
+      {
+        id: this.userAchievementId++,
+        userId: testUser.id,
+        achievementId: 8, // Top Contributor
+        progress: 0,
+        unlocked: false,
+        unlockedAt: null,
+        createdAt: new Date()
+      }
+    ];
+    
+    // Add user achievements to storage
+    userAchievements.forEach(userAchievement => {
+      this.userAchievements.set(userAchievement.id, userAchievement);
+    });
   }
 
   // User operations
@@ -265,6 +484,93 @@ export class MemStorage implements IStorage {
     return Array.from(this.userRatings.values())
       .filter(rating => rating.ratedUserId === userId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  // Achievement operations
+  async getAchievement(id: number): Promise<Achievement | undefined> {
+    return this.achievements.get(id);
+  }
+  
+  async getAllAchievements(): Promise<Achievement[]> {
+    return Array.from(this.achievements.values())
+      .sort((a, b) => a.id - b.id);
+  }
+  
+  async getAchievementsByCategory(category: string): Promise<Achievement[]> {
+    return Array.from(this.achievements.values())
+      .filter(achievement => achievement.category === category)
+      .sort((a, b) => a.id - b.id);
+  }
+  
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
+    const id = this.achievementId++;
+    const newAchievement: Achievement = {
+      id,
+      ...achievement,
+      createdAt: new Date()
+    };
+    this.achievements.set(id, newAchievement);
+    return newAchievement;
+  }
+  
+  // User Achievement operations
+  async getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]> {
+    return Array.from(this.userAchievements.values())
+      .filter(userAchievement => userAchievement.userId === userId)
+      .map(userAchievement => {
+        const achievement = this.achievements.get(userAchievement.achievementId);
+        if (!achievement) {
+          throw new Error(`Achievement with id ${userAchievement.achievementId} not found`);
+        }
+        return {
+          ...userAchievement,
+          achievement
+        };
+      })
+      .sort((a, b) => {
+        // Sort by unlocked status first, then by most recently unlocked
+        if (a.unlocked && !b.unlocked) return -1;
+        if (!a.unlocked && b.unlocked) return 1;
+        if (a.unlocked && b.unlocked && a.unlockedAt && b.unlockedAt) {
+          return b.unlockedAt.getTime() - a.unlockedAt.getTime();
+        }
+        // If they're both not unlocked, sort by progress
+        return b.progress - a.progress;
+      });
+  }
+  
+  async createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement> {
+    const id = this.userAchievementId++;
+    const newUserAchievement: UserAchievement = {
+      id,
+      ...userAchievement,
+      progress: userAchievement.progress || 0,
+      unlocked: userAchievement.unlocked || false,
+      unlockedAt: userAchievement.unlocked ? new Date() : null,
+      createdAt: new Date()
+    };
+    this.userAchievements.set(id, newUserAchievement);
+    return newUserAchievement;
+  }
+  
+  async updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement> {
+    const userAchievement = this.userAchievements.get(id);
+    if (!userAchievement) {
+      throw new Error(`User achievement with id ${id} not found`);
+    }
+    
+    const wasUnlocked = userAchievement.unlocked;
+    const isNowUnlocked = unlocked ?? (progress >= 100 ? true : wasUnlocked);
+    
+    const updatedUserAchievement: UserAchievement = {
+      ...userAchievement,
+      progress: Math.min(100, progress),
+      unlocked: isNowUnlocked,
+      unlockedAt: isNowUnlocked && !wasUnlocked ? new Date() : userAchievement.unlockedAt
+    };
+    
+    this.userAchievements.set(id, updatedUserAchievement);
+    return updatedUserAchievement;
   }
 }
 

@@ -8,6 +8,8 @@ import {
   insertRideMatchSchema, 
   insertMessageSchema, 
   insertUserRatingSchema,
+  insertAchievementSchema,
+  insertUserAchievementSchema,
   Location,
   Route 
 } from "@shared/schema";
@@ -259,6 +261,102 @@ export async function registerRoutes(app: Express) {
       res.status(500).json({ error: "Failed to fetch user ratings" });
     }
   });
+  
+  // Achievement routes
+  app.get("/api/achievements", async (req, res) => {
+    try {
+      const category = req.query.category as string;
+      let achievements;
+      
+      if (category) {
+        achievements = await storage.getAchievementsByCategory(category);
+      } else {
+        achievements = await storage.getAllAchievements();
+      }
+      
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+  
+  app.get("/api/achievements/:id", async (req, res) => {
+    try {
+      const achievementId = parseInt(req.params.id);
+      const achievement = await storage.getAchievement(achievementId);
+      
+      if (!achievement) {
+        return res.status(404).json({ error: "Achievement not found" });
+      }
+      
+      res.json(achievement);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch achievement" });
+    }
+  });
+  
+  app.post("/api/achievements", async (req, res) => {
+    try {
+      const achievementData = insertAchievementSchema.parse(req.body);
+      const achievement = await storage.createAchievement(achievementData);
+      res.status(201).json(achievement);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid achievement data" });
+    }
+  });
+  
+  // User Achievement routes
+  app.get("/api/users/:userId/achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const achievements = await storage.getUserAchievements(userId);
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user achievements" });
+    }
+  });
+  
+  app.post("/api/users/:userId/achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { achievementId, progress, unlocked } = z.object({
+        achievementId: z.number(),
+        progress: z.number().default(0),
+        unlocked: z.boolean().default(false)
+      }).parse(req.body);
+      
+      const userAchievement = await storage.createUserAchievement({
+        userId,
+        achievementId,
+        progress,
+        unlocked
+      });
+      
+      res.status(201).json(userAchievement);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid user achievement data" });
+    }
+  });
+  
+  app.patch("/api/user-achievements/:id", async (req, res) => {
+    try {
+      const userAchievementId = parseInt(req.params.id);
+      const { progress, unlocked } = z.object({
+        progress: z.number(),
+        unlocked: z.boolean().optional()
+      }).parse(req.body);
+      
+      const updatedUserAchievement = await storage.updateUserAchievementProgress(
+        userAchievementId,
+        progress,
+        unlocked
+      );
+      
+      res.json(updatedUserAchievement);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid user achievement update" });
+    }
+  });
 
   // Create HTTP server and WebSocket server
   const httpServer = createServer(app);
@@ -319,6 +417,148 @@ export async function registerRoutes(app: Express) {
     ws.on("close", () => {
       // Clean up any resources if needed
     });
+  });
+  
+  // Eco impact routes
+  app.get("/api/users/:userId/eco-impact", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      // This would typically come from analyzing the user's rides
+      // For now, we'll return mock data
+      res.json({
+        co2Saved: 135,
+        treesEquivalent: 6,
+        milesDriven: 842,
+        fuelSaved: 56,
+        singleUseRides: 13,
+        sharedRides: 21
+      });
+    } catch (error) {
+      console.error("Error getting eco impact:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Leaderboard route
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      // This would typically come from analyzing all users' achievements
+      // For now, we'll return mock data
+      res.json([
+        {
+          id: 2,
+          name: "Emily Chen",
+          avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+          points: 1250,
+          rank: 1,
+          level: 8,
+          achievements: 15,
+          isCurrentUser: false
+        },
+        {
+          id: 3,
+          name: "Michael Rodriguez",
+          avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+          points: 980,
+          rank: 2,
+          level: 7,
+          achievements: 12,
+          isCurrentUser: false
+        },
+        {
+          id: 1,
+          name: "John Doe",
+          avatar: "https://randomuser.me/api/portraits/men/42.jpg",
+          points: 850,
+          rank: 3,
+          level: 4,
+          achievements: 9,
+          isCurrentUser: true
+        },
+        {
+          id: 4,
+          name: "Sarah Johnson",
+          avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+          points: 720,
+          rank: 4,
+          level: 5,
+          achievements: 8,
+          isCurrentUser: false
+        },
+        {
+          id: 5,
+          name: "David Kim",
+          avatar: "https://randomuser.me/api/portraits/men/62.jpg",
+          points: 650,
+          rank: 5,
+          level: 4,
+          achievements: 7,
+          isCurrentUser: false
+        }
+      ]);
+    } catch (error) {
+      console.error("Error getting leaderboard:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Rewards route
+  app.get("/api/rewards", async (req, res) => {
+    try {
+      // This would typically come from a database
+      // For now, we'll return mock data
+      res.json([
+        {
+          id: 1,
+          name: "Free Ride Credit",
+          description: "Get a $15 credit towards your next ride",
+          cost: 300,
+          type: "free_ride",
+          expiry: null,
+          image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZHJpdmluZ3xlbnwwfHwwfHx8MA%3D%3D",
+          isNew: true,
+          isFeatured: true
+        },
+        {
+          id: 2,
+          name: "Coffee Discount",
+          description: "20% off at participating coffee shops",
+          cost: 150,
+          type: "partner",
+          expiry: "2025-06-30",
+          image: "https://images.unsplash.com/photo-1509042239860-f0ca3bf6d889?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29mZmVlfGVufDB8fDB8fHww",
+          isNew: false,
+          isFeatured: false,
+          partner: "Local Brew"
+        },
+        {
+          id: 3,
+          name: "Premium Features",
+          description: "Unlock premium app features for 30 days",
+          cost: 500,
+          type: "upgrade",
+          expiry: null,
+          image: "https://images.unsplash.com/photo-1556155092-490a1ba16284?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXBncmFkZXxlbnwwfHwwfHx8MA%3D%3D",
+          isNew: false,
+          isFeatured: true
+        },
+        {
+          id: 4,
+          name: "Gas Discount",
+          description: "10% off at participating gas stations",
+          cost: 250,
+          type: "partner",
+          expiry: "2025-05-15",
+          image: "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2FzJTIwc3RhdGlvbnxlbnwwfHwwfHx8MA%3D%3D",
+          isNew: true,
+          isFeatured: false,
+          partner: "QuickFuel"
+        }
+      ]);
+    } catch (error) {
+      console.error("Error getting rewards:", error);
+      res.status(500).json({ error: "Server error" });
+    }
   });
   
   // Ping all clients every 30 seconds to keep connections alive
