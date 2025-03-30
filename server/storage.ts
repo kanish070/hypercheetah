@@ -107,7 +107,7 @@ export class MemStorage implements IStorage {
       email: "test@example.com",
       passwordHash: "$2a$10$EncryptedPasswordHash", // This would be a real bcrypt hash in production
       role: "user",
-      avatar: "/images/kanish-profile.jpg",
+      avatar: "/images/kanish-selfie.jpg",
       createdAt: new Date()
     };
     this.users.set(testUser.id, testUser);
