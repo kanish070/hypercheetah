@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { DialogMapHandler } from '@/components/dialog-map-handler';
 import { Ride } from '@shared/schema';
 import { 
   Share2, Download, QrCode, Copy, CalendarPlus, Check, 
@@ -199,13 +200,16 @@ export function RideShareQR({ ride, userName = "Rider" }: RideShareQRProps) {
       </Button>
       
       <Dialog open={showQR} onOpenChange={setShowQR}>
-        <DialogContent className="sm:max-w-md z-50">
+        <DialogContent className="sm:max-w-md z-[999] relative bg-background">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <Share2 className="h-5 w-5 mr-2 text-primary" />
               Share Ride Details
             </DialogTitle>
           </DialogHeader>
+          
+          {/* Fallback for browsers without :has() selector support */}
+          <DialogMapHandler isOpen={showQR} />
           
           <Tabs defaultValue="qr" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Chat } from "@/components/chat";
 import { RideShareQR } from "@/components/ride-share-qr";
+import { DialogMapHandler } from "@/components/dialog-map-handler";
 import { Ride } from '@shared/schema';
 import { motion } from "framer-motion";
 import { 
@@ -295,7 +296,7 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
       
       {/* Chat Dialog */}
       <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0 z-50">
+        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0 z-[999]">
           <DialogHeader className="px-4 pt-4 pb-0">
             <DialogTitle className="flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-primary" />
@@ -304,7 +305,7 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
           </DialogHeader>
           
           {selectedRide && (
-            <div className="flex-1 h-full overflow-hidden">
+            <div className="flex-1 h-full overflow-hidden relative bg-background">
               <Chat 
                 rideId={selectedRide.id}
                 userId={1} // Current user ID
@@ -313,6 +314,9 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Fallback for browsers without :has() selector support */}
+      <DialogMapHandler isOpen={chatOpen} />
     </div>
   );
 }

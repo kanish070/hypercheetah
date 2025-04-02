@@ -11,3 +11,24 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Hide map when dialogs are open */
+  body:has([data-state="open"]) .leaflet-container {
+    visibility: hidden !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+  }
+
+  /* Ensure dialog content appears above all other elements */
+  .dialog-content-overlay {
+    z-index: 999 !important;
+    position: relative;
+  }
+
+  /* Fix for chat and QR dialogs */
+  [role="dialog"] {
+    isolation: isolate;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
