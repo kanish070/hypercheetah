@@ -152,7 +152,6 @@ export function AppLogo({
                                 <span className="text-xs font-medium">Quick Actions</span>
                               </motion.div>
                             </motion.div>
-                          )}
                         )}
                       </AnimatePresence>
                     </div>
