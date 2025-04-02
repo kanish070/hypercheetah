@@ -11,7 +11,7 @@ import { DialogMapHandler } from '@/components/dialog-map-handler';
 import { Ride } from '@shared/schema';
 import { 
   Share2, Download, QrCode, Copy, CalendarPlus, Check, 
-  Smartphone, Mail, MessageSquare, Clipboard
+  Smartphone, Mail, MessageSquare, Clipboard, X
 } from 'lucide-react';
 
 interface RideShareQRProps {
@@ -201,18 +201,22 @@ export function RideShareQR({ ride, userName = "Rider" }: RideShareQRProps) {
       
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent 
-          className="sm:max-w-md z-[999] relative backdrop-blur-lg bg-background/95 shadow-xl border-0 rounded-xl overflow-hidden transition-all duration-300 ease-in-out"
-          style={{
-            transform: showQR ? 'scale(1)' : 'scale(0.95)',
-            opacity: showQR ? 1 : 0
-          }}
+          className="sm:max-w-md z-[999] shadow-xl border border-border bg-background rounded-md overflow-hidden"
         >
-          <DialogHeader className="border-b">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
             <DialogTitle className="flex items-center">
               <Share2 className="h-5 w-5 mr-2 text-primary" />
               Share Ride Details
             </DialogTitle>
-          </DialogHeader>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full"
+              onClick={() => setShowQR(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           
           {/* Fallback for browsers without :has() selector support */}
           <DialogMapHandler isOpen={showQR} />
