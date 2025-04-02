@@ -133,9 +133,8 @@ export function AppLogo({
                       </picture>
 
                       <AnimatePresence>
-                        {isActive && !showQuickMenu && (
-                          {isOpen && ( // Conditional rendering based on isOpen state
-                            <motion.div 
+                        {isActive && !showQuickMenu && isOpen && (
+                          <motion.div 
                               className="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
