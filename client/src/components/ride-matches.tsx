@@ -296,8 +296,14 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
       
       {/* Chat Dialog */}
       <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0 z-[999]">
-          <DialogHeader className="px-4 pt-4 pb-0">
+        <DialogContent 
+          className="sm:max-w-[500px] h-[80vh] p-0 z-[999] shadow-xl border-0 backdrop-blur-lg bg-background/95 rounded-xl overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            transform: chatOpen ? 'scale(1)' : 'scale(0.95)',
+            opacity: chatOpen ? 1 : 0
+          }}
+        >
+          <DialogHeader className="px-4 pt-4 pb-0 border-b">
             <DialogTitle className="flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-primary" />
               Chat with {selectedRide ? (selectedRide as ExtendedRide).driverName : "Rider"}
@@ -305,7 +311,7 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
           </DialogHeader>
           
           {selectedRide && (
-            <div className="flex-1 h-full overflow-hidden relative bg-background">
+            <div className="flex-1 h-full overflow-hidden relative bg-background/90">
               <Chat 
                 rideId={selectedRide.id}
                 userId={1} // Current user ID

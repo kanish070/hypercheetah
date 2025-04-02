@@ -200,8 +200,14 @@ export function RideShareQR({ ride, userName = "Rider" }: RideShareQRProps) {
       </Button>
       
       <Dialog open={showQR} onOpenChange={setShowQR}>
-        <DialogContent className="sm:max-w-md z-[999] relative bg-background">
-          <DialogHeader>
+        <DialogContent 
+          className="sm:max-w-md z-[999] relative backdrop-blur-lg bg-background/95 shadow-xl border-0 rounded-xl overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            transform: showQR ? 'scale(1)' : 'scale(0.95)',
+            opacity: showQR ? 1 : 0
+          }}
+        >
+          <DialogHeader className="border-b">
             <DialogTitle className="flex items-center">
               <Share2 className="h-5 w-5 mr-2 text-primary" />
               Share Ride Details

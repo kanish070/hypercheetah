@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 /**
- * This component handles hiding and showing the map when dialog opens/closes
+ * This component handles applying blur effects to maps when dialogs open/close
  * It's a fallback for browsers that don't support the :has() selector
  */
 export function DialogMapHandler({ isOpen }: { isOpen: boolean }) {
@@ -10,19 +10,34 @@ export function DialogMapHandler({ isOpen }: { isOpen: boolean }) {
     const maps = document.querySelectorAll('.leaflet-container');
     
     if (isOpen) {
-      // When dialog is open, hide maps and disable interaction
+      // When dialog is open, blur maps and disable interaction
       maps.forEach(map => {
-        map.setAttribute('style', 'visibility: hidden !important; z-index: -1 !important; pointer-events: none !important;');
+        map.setAttribute('style', `
+          filter: blur(4px) !important;
+          opacity: 0.7 !important;
+          pointer-events: none !important;
+          transition: filter 0.3s ease, opacity 0.3s ease !important;
+        `);
       });
     } else {
-      // When dialog is closed, show maps and enable interaction
+      // When dialog is closed, reset map styles with animation
       maps.forEach(map => {
-        map.setAttribute('style', '');
+        map.setAttribute('style', `
+          filter: blur(0) !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          transition: filter 0.3s ease, opacity 0.3s ease !important;
+        `);
+        
+        // Remove inline styles after transition completes
+        setTimeout(() => {
+          map.removeAttribute('style');
+        }, 300);
       });
     }
     
     return () => {
-      // Cleanup - make sure maps are visible when component unmounts
+      // Cleanup - make sure maps are reset when component unmounts
       maps.forEach(map => {
         map.setAttribute('style', '');
       });
