@@ -498,7 +498,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
                       : isSelected ? 'bg-primary/30' : 'bg-primary/15'
                   } flex items-center justify-center mr-3`}>
                     {isCustom ? (
-                      <Plus className="h-4 w-4 text-primary" />
+                      <Star className="h-4 w-4 text-primary" />
                     ) : (
                       <MapPin className="h-4 w-4 text-primary" />
                     )}
