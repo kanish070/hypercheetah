@@ -295,7 +295,7 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
       
       {/* Chat Dialog */}
       <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0">
+        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0 z-50">
           <DialogHeader className="px-4 pt-4 pb-0">
             <DialogTitle className="flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-primary" />

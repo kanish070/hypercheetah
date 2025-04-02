@@ -81,13 +81,58 @@ export function RideShareQR({ ride, userName = "Rider" }: RideShareQRProps) {
   const endLocation = routeData.end ? formatLocation(routeData.end) : "Destination";
   const departureTime = formatDate(ride.departureTime);
   
+  // Calculate total fare based on distance and vehicle type
+  const calculateTotalFare = () => {
+    // Calculate distance from the route data or use default
+    const calculateRouteDistance = () => {
+      try {
+        if (ride.route && ride.route.start && ride.route.end) {
+          // Simple distance calculation using the Haversine formula
+          const lat1 = ride.route.start.lat;
+          const lng1 = ride.route.start.lng;
+          const lat2 = ride.route.end.lat;
+          const lng2 = ride.route.end.lng;
+          
+          const R = 6371; // Radius of the earth in km
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lng2 - lng1) * Math.PI / 180;
+          const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const distance = R * c; // Distance in km
+          
+          return Math.round(distance * 10) / 10; // Round to 1 decimal place
+        }
+      } catch (e) {
+        console.error("Error calculating distance:", e);
+      }
+      
+      return 5; // Default to 5km if calculation fails
+    };
+    
+    const distance = calculateRouteDistance();
+    const ratePerKm = ride.vehicleType === 'bike' 
+      ? 6 
+      : (ride.isPooling ? 12 : 15);
+    
+    return {
+      total: Math.round(distance * ratePerKm),
+      perKm: ratePerKm,
+      distance
+    };
+  };
+  
+  const fareDetails = calculateTotalFare();
+  
   const rideDetails = `
 🚗 Ride Details from ${userName}:
 
 📍 From: ${startLocation}
 📍 To: ${endLocation}
 🕒 Time: ${departureTime}
-💰 Price: ₹${ride.price || 'Free'}
+💰 Price: ₹${ride.price || fareDetails.total} (₹${fareDetails.perKm}/km × ${fareDetails.distance}km)
 🚶 Seats: ${ride.availableSeats || 1}
 
 📱 Book this ride: ${shareUrl}
@@ -154,7 +199,7 @@ export function RideShareQR({ ride, userName = "Rider" }: RideShareQRProps) {
       </Button>
       
       <Dialog open={showQR} onOpenChange={setShowQR}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md z-50">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <Share2 className="h-5 w-5 mr-2 text-primary" />
