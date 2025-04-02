@@ -472,13 +472,13 @@ export class MemStorage implements IStorage {
     const distance = this.getDistanceInKm(route.start, route.end);
     
     // Calculate price based on vehicle type
-    let pricePerKm = 10; // Default price for car is 10 rupees per km
+    let pricePerKm = 15; // Default price for car is 15 rupees per km
     
     if (vehicleType === 'bike') {
-      pricePerKm = 3; // Price for bike is 3 rupees per km
+      pricePerKm = 6; // Price for bike is 6 rupees per km
     } else if (vehicleType === 'car' && isPooling) {
       // For carpooling, the price per km is reduced since costs are shared
-      pricePerKm = 8; // Slightly reduced rate for carpooling
+      pricePerKm = 12; // Slightly reduced rate for carpooling
     }
     
     const price = Math.ceil(distance * pricePerKm); // Round up to nearest rupee

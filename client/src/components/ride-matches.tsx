@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { Chat } from "@/components/chat";
 import { Ride } from '@shared/schema';
 import { motion } from "framer-motion";
 import { 
@@ -29,6 +37,16 @@ interface RideMatchesProps {
 }
 
 export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
+  // State for chat dialog
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
+
+  // Open chat dialog with selected ride
+  const handleOpenChat = (ride: Ride) => {
+    setSelectedRide(ride);
+    setChatOpen(true);
+  };
+
   // Cast to extended ride for UI purposes
   const extendedMatches = matches.map(ride => {
     const extendedRide = ride as ExtendedRide;
@@ -212,13 +230,29 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                         <div className="flex items-center text-sm font-medium text-primary">
                           {ride.type === 'offer' ? (
                             ride.price ? (
-                              <span>₹{ride.price} • 3 rupees/km</span>
+                              <span>
+                                ₹{ride.price} • 
+                                {ride.vehicleType === 'bike' 
+                                  ? " ₹6 per km" 
+                                  : ride.isPooling 
+                                    ? " ₹12 per km" 
+                                    : " ₹15 per km"
+                                }
+                              </span>
                             ) : (
                               <span>Free ride</span>
                             )
                           ) : (
                             ride.price ? (
-                              <span>₹{ride.price} • 3 rupees/km</span>
+                              <span>
+                                ₹{ride.price} •
+                                {ride.vehicleType === 'bike' 
+                                  ? " ₹6 per km" 
+                                  : ride.isPooling 
+                                    ? " ₹12 per km" 
+                                    : " ₹15 per km"
+                                }
+                              </span>
                             ) : (
                               <span>No price specified</span>
                             )
@@ -226,7 +260,12 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                         </div>
                         
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="h-8">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8"
+                            onClick={() => handleOpenChat(ride)}
+                          >
                             <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
                             Message
                           </Button>
@@ -248,6 +287,27 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
           ))}
         </div>
       )}
+      
+      {/* Chat Dialog */}
+      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0">
+          <DialogHeader className="px-4 pt-4 pb-0">
+            <DialogTitle className="flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+              Chat with {selectedRide ? (selectedRide as ExtendedRide).driverName : "Rider"}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedRide && (
+            <div className="flex-1 h-full overflow-hidden">
+              <Chat 
+                rideId={selectedRide.id}
+                userId={1} // Current user ID
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

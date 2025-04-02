@@ -292,25 +292,25 @@ export default function Rider() {
                         <div className="font-medium mb-1">Price:</div>
                         <div className="text-sm text-muted-foreground mb-2">
                           {vehicleType === "bike" 
-                            ? "Calculated at 3 rupees per km for bike" 
+                            ? "Calculated at 6 rupees per km for bike" 
                             : isPooling 
-                              ? "Calculated at 8 rupees per km (carpooling rate)" 
-                              : "Calculated at 10 rupees per km for car"
+                              ? "Calculated at 12 rupees per km (carpooling rate)" 
+                              : "Calculated at 15 rupees per km for car"
                           }
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Badge className="bg-primary/10 border-primary text-primary font-medium">
                             {vehicleType === "bike" 
-                              ? "₹3 per km" 
+                              ? "₹6 per km" 
                               : isPooling 
-                                ? "₹8 per km" 
-                                : "₹10 per km"
+                                ? "₹12 per km" 
+                                : "₹15 per km"
                             }
                           </Badge>
                           {routeSummary && (
                             <Badge className="bg-green-50 text-green-700 border-green-200">
                               Est. ₹{Math.ceil(routeSummary.distance * (
-                                vehicleType === "bike" ? 3 : (isPooling ? 8 : 10)
+                                vehicleType === "bike" ? 6 : (isPooling ? 12 : 15)
                               ))} for {formatDistance(routeSummary.distance)}
                             </Badge>
                           )}
