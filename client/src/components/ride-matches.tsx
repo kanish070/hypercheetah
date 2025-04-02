@@ -212,13 +212,13 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                         <div className="flex items-center text-sm font-medium text-primary">
                           {ride.type === 'offer' ? (
                             ride.price ? (
-                              <span>${ride.price.toFixed(2)} per passenger</span>
+                              <span>₹{ride.price} • 3 rupees/km</span>
                             ) : (
                               <span>Free ride</span>
                             )
                           ) : (
                             ride.price ? (
-                              <span>Offering ${ride.price.toFixed(2)}</span>
+                              <span>₹{ride.price} • 3 rupees/km</span>
                             ) : (
                               <span>No price specified</span>
                             )

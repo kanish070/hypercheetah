@@ -125,26 +125,34 @@ export class MemStorage implements IStorage {
     this.users.set(secondUser.id, secondUser);
     
     // Create sample rides with Vadodara locations
+    const alkapuriToMSURoute = {
+      start: { lat: 22.3071, lng: 73.1812 },
+      end: { lat: 22.3149, lng: 73.1873 },
+      waypoints: []
+    };
+    
     const alkapuriToMSURide = {
       id: this.rideId++,
       userId: testUser.id,
       type: "offer",
       status: "active",
       availableSeats: 3,
-      price: 80.00, // in INR
+      price: this.calculatePrice(alkapuriToMSURoute), // Automatically calculated at 3 rupees per km
       departureTime: new Date(Date.now() + 3600000), // 1 hour from now
       routeData: JSON.stringify({
         start: { name: "Alkapuri", lat: 22.3071, lng: 73.1812 },
         end: { name: "MS University", lat: 22.3149, lng: 73.1873 }
       }),
-      route: {
-        start: { lat: 22.3071, lng: 73.1812 },
-        end: { lat: 22.3149, lng: 73.1873 },
-        waypoints: []
-      },
+      route: alkapuriToMSURoute,
       createdAt: new Date()
     };
     this.rides.set(alkapuriToMSURide.id, alkapuriToMSURide);
+    
+    const fatehgunjToAirportRoute = {
+      start: { lat: 22.3218, lng: 73.1794 },
+      end: { lat: 22.3358, lng: 73.2274 },
+      waypoints: []
+    };
     
     const fatehgunjToAirportRide = {
       id: this.rideId++,
@@ -152,39 +160,37 @@ export class MemStorage implements IStorage {
       type: "offer",
       status: "active",
       availableSeats: 2,
-      price: 150.00, // in INR
+      price: this.calculatePrice(fatehgunjToAirportRoute), // Automatically calculated at 3 rupees per km
       departureTime: new Date(Date.now() + 7200000), // 2 hours from now
       routeData: JSON.stringify({
         start: { name: "Fatehgunj", lat: 22.3218, lng: 73.1794 },
         end: { name: "Vadodara Airport", lat: 22.3358, lng: 73.2274 }
       }),
-      route: {
-        start: { lat: 22.3218, lng: 73.1794 },
-        end: { lat: 22.3358, lng: 73.2274 },
-        waypoints: []
-      },
+      route: fatehgunjToAirportRoute,
       createdAt: new Date()
     };
     this.rides.set(fatehgunjToAirportRide.id, fatehgunjToAirportRide);
     
     // Create a request ride
+    const sayajiToRailwayRoute = {
+      start: { lat: 22.3149, lng: 73.1857 },
+      end: { lat: 22.3095, lng: 73.1813 },
+      waypoints: []
+    };
+    
     const sayajiToRailwayRide = {
       id: this.rideId++,
       userId: secondUser.id,
       type: "request",
       status: "active",
       availableSeats: 1,
-      price: null, // Passenger doesn't set price
+      price: this.calculatePrice(sayajiToRailwayRoute), // Automatically calculated at 3 rupees per km
       departureTime: new Date(Date.now() + 2700000), // 45 minutes from now
       routeData: JSON.stringify({
         start: { name: "Sayajigunj", lat: 22.3149, lng: 73.1857 },
         end: { name: "Railway Station", lat: 22.3095, lng: 73.1813 }
       }),
-      route: {
-        start: { lat: 22.3149, lng: 73.1857 },
-        end: { lat: 22.3095, lng: 73.1813 },
-        waypoints: []
-      },
+      route: sayajiToRailwayRoute,
       createdAt: new Date()
     };
     this.rides.set(sayajiToRailwayRide.id, sayajiToRailwayRide);
@@ -454,15 +460,30 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
+  // Calculate price based on distance (3 rupees per kilometer)
+  private calculatePrice(route: Route): number {
+    // Get distance between start and end points
+    const distance = this.getDistanceInKm(route.start, route.end);
+    
+    // Calculate price at 3 rupees per km
+    const pricePerKm = 3;
+    const price = Math.ceil(distance * pricePerKm); // Round up to nearest rupee
+    
+    return price;
+  }
+
   async createRide(rideData: InsertRide & { route: Route }): Promise<Ride> {
     const id = this.rideId++;
     const { route, ...insertRide } = rideData;
+    
+    // Calculate price automatically at 3 rupees per km
+    const calculatedPrice = this.calculatePrice(route);
     
     const ride: Ride = {
       id,
       ...insertRide,
       availableSeats: insertRide.availableSeats ?? 4, // Default to 4 if undefined
-      price: insertRide.price ?? null,
+      price: calculatedPrice, // Use calculated price based on distance
       departureTime: insertRide.departureTime ?? null,
       routeData: route, // Store the route in routeData
       route, // Keep the route for frontend convenience

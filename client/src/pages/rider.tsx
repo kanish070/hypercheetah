@@ -11,7 +11,7 @@ import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimat
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Users, DollarSign, Bell } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Users, IndianRupee, Bell } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Rider() {
@@ -227,20 +227,22 @@ export default function Rider() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                      <div className="font-medium">Price:</div>
-                      <div className="flex space-x-2">
-                        {[5, 10, 15, 20].map(num => (
-                          <Badge 
-                            key={num}
-                            variant={price === num ? "default" : "outline"}
-                            className="cursor-pointer hover:bg-primary/20"
-                            onClick={() => setPrice(num)}
-                          >
-                            ${num}
+                    <div className="flex items-start space-x-2">
+                      <IndianRupee className="h-4 w-4 text-primary mt-1" />
+                      <div>
+                        <div className="font-medium mb-1">Price:</div>
+                        <div className="text-sm text-muted-foreground mb-2">Calculated at 3 rupees per km</div>
+                        <div className="flex flex-wrap gap-2">
+                          {/* Note: Price is now automatically calculated in the backend at 3 rupees per km */}
+                          <Badge className="bg-primary/10 border-primary text-primary font-medium">
+                            ₹3 per km
                           </Badge>
-                        ))}
+                          {routeSummary && (
+                            <Badge className="bg-green-50 text-green-700 border-green-200">
+                              Est. ₹{Math.ceil(routeSummary.distance * 3)} for {formatDistance(routeSummary.distance)}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
 
