@@ -136,64 +136,30 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         const { latitude, longitude } = position.coords;
         const currentLocation = { lat: latitude, lng: longitude };
         
-        // Attempt to find the nearest known location for user-friendly display
-        // In production, you would use a proper reverse geocoding service
-        const indianLocations = [
-          { name: "Delhi", lat: 28.6139, lng: 77.2090 },
-          { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
-          { name: "Bangalore", lat: 12.9716, lng: 77.5946 },
-          { name: "Hyderabad", lat: 17.3850, lng: 78.4867 },
-          { name: "Chennai", lat: 13.0827, lng: 80.2707 },
-          { name: "Kolkata", lat: 22.5726, lng: 88.3639 },
-          { name: "Ahmedabad", lat: 23.0225, lng: 72.5714 },
-          { name: "Pune", lat: 18.5204, lng: 73.8567 },
-          { name: "Jaipur", lat: 26.9124, lng: 75.7873 },
-          { name: "Lucknow", lat: 26.8467, lng: 80.9462 },
-          { name: "Noida", lat: 28.5355, lng: 77.3910 },
-          { name: "Gurugram", lat: 28.4595, lng: 77.0266 },
-          { name: "Chandigarh", lat: 30.7333, lng: 76.7794 },
-          { name: "Indore", lat: 22.7196, lng: 75.8577 },
-          { name: "Bhopal", lat: 23.2599, lng: 77.4126 },
-        ];
-        
-        // Find closest city using Haversine formula for better approximation
-        const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-          const R = 6371; // Radius of the earth in km
-          const dLat = (lat2 - lat1) * Math.PI / 180;
-          const dLon = (lon2 - lon1) * Math.PI / 180;
-          const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          return R * c;
+        // Format the coordinates for better display
+        const formatCoordinate = (coord: number): string => {
+          return coord.toFixed(6);
         };
         
-        // Find closest city
-        let closestCity = indianLocations[0];
-        let minDistance = getDistanceInKm(latitude, longitude, closestCity.lat, closestCity.lng);
+        // Create a precise location name with exact coordinates
+        const locationName = "Your Exact Current Location";
         
-        indianLocations.forEach(city => {
-          const distance = getDistanceInKm(latitude, longitude, city.lat, city.lng);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestCity = city;
-          }
-        });
-        
-        const locationName = `Current Location (near ${closestCity.name})`;
+        // For a more user-friendly description, we'll use the coordinates in a readable format
+        const locationDesc = `Coordinates: ${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`;
         
         // Add this location to saved locations for quick access
         const locationObj = {
           name: locationName,
-          desc: `${closestCity.name}, India`,
-          icon: "navigation",
+          desc: locationDesc,
+          icon: "navigation", 
           location: currentLocation
         };
         
-        if (!savedLocations.some(loc => loc.name.includes("Current Location"))) {
-          setSavedLocations(prev => [locationObj, ...prev.slice(0, 2)]);
-        }
+        // Filter out any existing current location entries
+        const filteredLocations = savedLocations.filter(loc => !loc.name.includes("Current Location"));
+        
+        // Add the new current location to the saved locations
+        setSavedLocations([locationObj, ...filteredLocations.slice(0, 2)]);
         
         // Update the search query and pass location to parent
         setSearchQuery(locationName);
@@ -202,7 +168,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         // Show success notification
         toast({
           title: "Location detected",
-          description: `Using your location near ${closestCity.name}`,
+          description: `Using your exact location at ${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`,
         });
         
         setIsLoadingLocation(false);
@@ -233,7 +199,6 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 0,
         maximumAge: 0
       }
     );
