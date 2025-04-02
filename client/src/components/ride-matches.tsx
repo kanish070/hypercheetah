@@ -17,7 +17,7 @@ import { Ride } from '@shared/schema';
 import { motion } from "framer-motion";
 import { 
   MapPin, Clock, User, Car, Star, ChevronRight, MessageSquare, Share2,
-  Calendar, Music, VolumeX, Cigarette, Dices, X
+  Calendar, Music, VolumeX, Cigarette, Dices
 } from 'lucide-react';
 
 // Extended Ride with additional properties for UI
@@ -296,26 +296,16 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
       
       {/* Chat Dialog */}
       <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent 
-          className="sm:max-w-[500px] h-[80vh] p-0 z-[999] shadow-xl border border-border bg-background rounded-md overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+        <DialogContent className="sm:max-w-[500px] h-[80vh] p-0 z-[999]">
+          <DialogHeader className="px-4 pt-4 pb-0">
             <DialogTitle className="flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-primary" />
               Chat with {selectedRide ? (selectedRide as ExtendedRide).driverName : "Rider"}
             </DialogTitle>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full"
-              onClick={() => setChatOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          </DialogHeader>
           
           {selectedRide && (
-            <div className="h-[calc(80vh-56px)] overflow-hidden">
+            <div className="flex-1 h-full overflow-hidden relative bg-background">
               <Chat 
                 rideId={selectedRide.id}
                 userId={1} // Current user ID
