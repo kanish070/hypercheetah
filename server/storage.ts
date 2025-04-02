@@ -112,6 +112,137 @@ export class MemStorage implements IStorage {
     };
     this.users.set(testUser.id, testUser);
     
+    // Create a second user
+    const secondUser = {
+      id: this.userId++,
+      name: "Priya",
+      email: "priya@example.com",
+      passwordHash: "$2a$10$EncryptedPasswordHash",
+      role: "user",
+      avatar: "/images/priya-avatar.jpg",
+      createdAt: new Date()
+    };
+    this.users.set(secondUser.id, secondUser);
+    
+    // Create sample rides with Indian locations
+    const delhiGurgaonRide = {
+      id: this.rideId++,
+      userId: testUser.id,
+      type: "offer",
+      status: "active",
+      availableSeats: 3,
+      price: 350.00, // in INR
+      departureTime: new Date(Date.now() + 3600000), // 1 hour from now
+      routeData: JSON.stringify({
+        start: { name: "New Delhi", lat: 28.6139, lng: 77.2090 },
+        end: { name: "Gurugram", lat: 28.4595, lng: 77.0266 }
+      }),
+      route: {
+        start: { lat: 28.6139, lng: 77.2090 },
+        end: { lat: 28.4595, lng: 77.0266 },
+        waypoints: []
+      },
+      createdAt: new Date()
+    };
+    this.rides.set(delhiGurgaonRide.id, delhiGurgaonRide);
+    
+    const mumbaiBangaloreRide = {
+      id: this.rideId++,
+      userId: secondUser.id,
+      type: "offer",
+      status: "active",
+      availableSeats: 2,
+      price: 2500.00, // in INR
+      departureTime: new Date(Date.now() + 7200000), // 2 hours from now
+      routeData: JSON.stringify({
+        start: { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+        end: { name: "Bangalore", lat: 12.9716, lng: 77.5946 }
+      }),
+      route: {
+        start: { lat: 19.0760, lng: 72.8777 },
+        end: { lat: 12.9716, lng: 77.5946 },
+        waypoints: []
+      },
+      createdAt: new Date()
+    };
+    this.rides.set(mumbaiBangaloreRide.id, mumbaiBangaloreRide);
+    
+    // Create a request ride
+    const delhiNoida = {
+      id: this.rideId++,
+      userId: secondUser.id,
+      type: "request",
+      status: "active",
+      availableSeats: 1,
+      price: null, // Passenger doesn't set price
+      departureTime: new Date(Date.now() + 2700000), // 45 minutes from now
+      routeData: JSON.stringify({
+        start: { name: "New Delhi", lat: 28.6139, lng: 77.2090 },
+        end: { name: "Noida", lat: 28.5355, lng: 77.3910 }
+      }),
+      route: {
+        start: { lat: 28.6139, lng: 77.2090 },
+        end: { lat: 28.5355, lng: 77.3910 },
+        waypoints: []
+      },
+      createdAt: new Date()
+    };
+    this.rides.set(delhiNoida.id, delhiNoida);
+    
+    // Create a ride match between Delhi-Gurugram and Delhi-Noida rides
+    const matchDelhiRides = {
+      id: this.rideMatchId++,
+      requestRideId: delhiNoida.id,
+      offerRideId: delhiGurgaonRide.id,
+      status: "accepted",
+      createdAt: new Date(Date.now() - 1800000) // 30 minutes ago
+    };
+    this.rideMatches.set(matchDelhiRides.id, matchDelhiRides);
+    
+    // Add some messages to the ride match
+    const messages = [
+      {
+        id: this.messageId++,
+        rideMatchId: matchDelhiRides.id,
+        senderId: testUser.id,
+        text: "Hi! I'm heading to Gurugram but can drop you at Noida on the way.",
+        createdAt: new Date(Date.now() - 1700000) // 28 minutes ago
+      },
+      {
+        id: this.messageId++,
+        rideMatchId: matchDelhiRides.id,
+        senderId: secondUser.id,
+        text: "That would be great! What time are you planning to leave?",
+        createdAt: new Date(Date.now() - 1600000) // 27 minutes ago
+      },
+      {
+        id: this.messageId++,
+        rideMatchId: matchDelhiRides.id,
+        senderId: testUser.id,
+        text: "I'll be leaving in about an hour. Is that okay for you?",
+        createdAt: new Date(Date.now() - 1500000) // 25 minutes ago
+      },
+      {
+        id: this.messageId++,
+        rideMatchId: matchDelhiRides.id,
+        senderId: secondUser.id,
+        text: "Perfect! I'll be ready. Where should I meet you?",
+        createdAt: new Date(Date.now() - 1400000) // 23 minutes ago
+      },
+      {
+        id: this.messageId++,
+        rideMatchId: matchDelhiRides.id,
+        senderId: testUser.id,
+        text: "Let's meet at the Connaught Place metro station. I'll be in a white Swift.",
+        createdAt: new Date(Date.now() - 1300000) // 22 minutes ago
+      }
+    ];
+    
+    // Add messages to storage
+    messages.forEach(message => {
+      this.messages.set(message.id, message);
+    });
+    
     // Create achievements
     const achievements = [
       {

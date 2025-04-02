@@ -15,7 +15,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [_, setLocation] = useLocation();
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number }>({ lat: 37.7749, lng: -122.4194 });
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number }>({ lat: 28.6139, lng: 77.2090 }); // New Delhi
   
   const sampleMatches = [
     {
@@ -24,16 +24,16 @@ export default function Home() {
       type: "offer",
       departureTime: new Date(),
       status: "active",
-      price: 15.50,
+      price: 350.00, // In INR
       availableSeats: 3,
       routeData: JSON.stringify({
-        start: { name: "Downtown SF", lat: 37.7749, lng: -122.4194 },
-        end: { name: "Berkeley", lat: 37.8715, lng: -122.2730 }
+        start: { name: "New Delhi", lat: 28.6139, lng: 77.2090 },
+        end: { name: "Gurugram", lat: 28.4595, lng: 77.0266 }
       }),
       createdAt: new Date(),
       route: {
-        start: { lat: 37.7749, lng: -122.4194 },
-        end: { lat: 37.8715, lng: -122.2730 },
+        start: { lat: 28.6139, lng: 77.2090 },
+        end: { lat: 28.4595, lng: 77.0266 },
         waypoints: []
       }
     },
@@ -43,16 +43,16 @@ export default function Home() {
       type: "request",
       departureTime: new Date(Date.now() + 3600000),
       status: "active",
-      price: 12.00,
+      price: 250.00, // In INR
       availableSeats: 1,
       routeData: JSON.stringify({
-        start: { name: "San Jose", lat: 37.3382, lng: -121.8863 },
-        end: { name: "Palo Alto", lat: 37.4419, lng: -122.1430 }
+        start: { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+        end: { name: "Pune", lat: 18.5204, lng: 73.8567 }
       }),
       createdAt: new Date(),
       route: {
-        start: { lat: 37.3382, lng: -121.8863 },
-        end: { lat: 37.4419, lng: -122.1430 },
+        start: { lat: 19.0760, lng: 72.8777 },
+        end: { lat: 18.5204, lng: 73.8567 },
         waypoints: []
       }
     }

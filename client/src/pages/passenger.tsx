@@ -29,12 +29,12 @@ export default function Passenger() {
     if (quickParam === 'true') {
       setIsQuickMode(true);
       
-      // Set default popular locations for quick route finding
-      const sfLocation = { lat: 37.7749, lng: -122.4194 }; // San Francisco
-      const sjLocation = { lat: 37.3382, lng: -121.8863 }; // San Jose
+      // Set default popular locations for quick route finding in India
+      const delhiLocation = { lat: 28.6139, lng: 77.2090 }; // New Delhi
+      const gurugramLocation = { lat: 28.4595, lng: 77.0266 }; // Gurugram
       
-      setStartLocation(sfLocation);
-      setEndLocation(sjLocation);
+      setStartLocation(delhiLocation);
+      setEndLocation(gurugramLocation);
       
       // Show toast notification for quick mode
       toast({
@@ -46,7 +46,7 @@ export default function Passenger() {
       setTimeout(async () => {
         try {
           setIsCalculatingRoute(true);
-          const calculatedRoute = await calculateRoute(sfLocation, sjLocation);
+          const calculatedRoute = await calculateRoute(delhiLocation, gurugramLocation);
           setRoute(calculatedRoute);
           
           toast({
@@ -268,7 +268,7 @@ export default function Passenger() {
             transition={{ delay: 0.4 }}
           >
             <RouteMap
-              center={startLocation || { lat: 40.7128, lng: -74.0060 }}
+              center={startLocation || { lat: 20.5937, lng: 78.9629 }} // Default to center of India if no location selected
               route={route}
               className="h-[600px] shadow-xl rounded-xl overflow-hidden"
             />
