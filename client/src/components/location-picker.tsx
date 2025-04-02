@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   MapPin, Search, Home, Building, Briefcase, Star, X, Clock, 
-  Navigation, ChevronRight, Crosshair, AlertCircle, Loader2
+  Navigation, ChevronRight, Crosshair, AlertCircle, Loader2, Plus
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Location } from '@shared/schema';
@@ -48,7 +48,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   
   // Search results for Vadodara locations
   useEffect(() => {
-    if (searchQuery.length > 2) {
+    if (searchQuery.length > 1) {
       const vadodaraLocations = [
         // Main areas and landmarks in Vadodara
         {
@@ -125,6 +125,61 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           name: "Karelibaug",
           desc: "Karelibaug, Vadodara, Gujarat 390018",
           location: { lat: 22.3313, lng: 73.2037 }
+        },
+        {
+          name: "Gorwa",
+          desc: "Gorwa, Vadodara, Gujarat 390016",
+          location: { lat: 22.3363, lng: 73.1686 }
+        },
+        {
+          name: "Waghodia Road",
+          desc: "Waghodia Road, Vadodara, Gujarat 390019",
+          location: { lat: 22.3281, lng: 73.2184 }
+        },
+        {
+          name: "Sama",
+          desc: "Sama, Vadodara, Gujarat 390008",
+          location: { lat: 22.3321, lng: 73.1921 }
+        },
+        {
+          name: "Subhanpura",
+          desc: "Subhanpura, Vadodara, Gujarat 390023",
+          location: { lat: 22.2931, lng: 73.1637 }
+        },
+        {
+          name: "Vasna",
+          desc: "Vasna, Vadodara, Gujarat 390015",
+          location: { lat: 22.2726, lng: 73.1562 }
+        },
+        {
+          name: "Harni",
+          desc: "Harni, Vadodara, Gujarat 390022",
+          location: { lat: 22.3394, lng: 73.2106 }
+        },
+        {
+          name: "Tarsali",
+          desc: "Tarsali, Vadodara, Gujarat 390009",
+          location: { lat: 22.2448, lng: 73.1981 }
+        },
+        {
+          name: "New VIP Road",
+          desc: "New VIP Road, Vadodara, Gujarat 390007",
+          location: { lat: 22.3171, lng: 73.1747 }
+        },
+        {
+          name: "Old Padra Road",
+          desc: "Old Padra Road, Vadodara, Gujarat 390015",
+          location: { lat: 22.2870, lng: 73.1731 }
+        },
+        {
+          name: "Atladara",
+          desc: "Atladara, Vadodara, Gujarat 390012",
+          location: { lat: 22.2714, lng: 73.2016 }
+        },
+        {
+          name: "Maneja",
+          desc: "Maneja, Vadodara, Gujarat 390013",
+          location: { lat: 22.3486, lng: 73.1968 }
         }
       ];
 
@@ -135,7 +190,26 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       );
 
       // Limit to top 5 results to avoid cluttering
-      setSuggestions(matchingLocations.slice(0, 5));
+      const results = matchingLocations.slice(0, 5);
+      
+      // Create a custom location option for when user wants to add a new location
+      // This will always be an option as long as there's search text
+      const customLocation = {
+        name: searchQuery,
+        desc: `Custom location in Vadodara (${searchQuery})`,
+        location: { 
+          // Use center of Vadodara with slight randomization for custom locations
+          // In a real app, this would be geocoded
+          lat: 22.3072 + (Math.random() * 0.02 - 0.01),
+          lng: 73.1812 + (Math.random() * 0.02 - 0.01)
+        },
+        isCustom: true
+      };
+      
+      // Always add the custom location option at the top
+      results.unshift(customLocation);
+      
+      setSuggestions(results);
       setShowSuggestions(true);
     } else {
       setSuggestions([]);
@@ -404,8 +478,10 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
             </div>
             
             {/* Search results */}
-            {suggestions.map((suggestion, index) => {
+            {suggestions.map((suggestion: any, index) => {
               const isSelected = isLocationSelected(suggestion.location);
+              const isCustom = suggestion.isCustom;
+              
               return (
                 <div 
                   key={`suggestion-${index}`}
@@ -413,20 +489,28 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
                     isSelected 
                       ? 'bg-primary/10 border-l-2 border-l-primary' 
                       : 'hover:bg-muted/70'
-                  }`}
+                  } ${isCustom ? 'border-t border-dashed border-primary/30' : ''}`}
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
                   <div className={`h-8 w-8 rounded-full ${
-                    isSelected ? 'bg-primary/30' : 'bg-primary/15'
+                    isCustom
+                      ? 'bg-primary/20 border border-primary/40'
+                      : isSelected ? 'bg-primary/30' : 'bg-primary/15'
                   } flex items-center justify-center mr-3`}>
-                    <MapPin className="h-4 w-4 text-primary" />
+                    {isCustom ? (
+                      <Plus className="h-4 w-4 text-primary" />
+                    ) : (
+                      <MapPin className="h-4 w-4 text-primary" />
+                    )}
                   </div>
                   <div className="overflow-hidden">
                     <div className={`font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>
-                      {suggestion.name}
+                      {isCustom ? `Add custom: "${suggestion.name}"` : suggestion.name}
                       {isSelected && <span className="ml-1 text-xs text-primary-foreground bg-primary rounded-full px-1.5 py-0">✓</span>}
                     </div>
-                    <div className="text-sm text-foreground/70 truncate">{suggestion.desc}</div>
+                    <div className="text-sm text-foreground/70 truncate">
+                      {suggestion.desc}
+                    </div>
                   </div>
                 </div>
               );
