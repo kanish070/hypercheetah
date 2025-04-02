@@ -181,9 +181,17 @@ export function LiveLocationTracker({
         },
         (error) => {
           console.error("Error getting location: ", error);
+          let errorMessage = "Unable to access your location";
+          
+          if (error.code === 2) {
+            errorMessage = "Location accuracy is low. Please ensure you have GPS enabled and are in an area with good signal.";
+          } else if (error.code === 3) {
+            errorMessage = "Location request timed out. Please try again in an area with better GPS signal.";
+          }
+          
           toast({
             title: "Location Error",
-            description: "Unable to access your location. Please check your settings.",
+            description: errorMessage,
             variant: "destructive"
           });
         }

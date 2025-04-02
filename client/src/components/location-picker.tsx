@@ -232,7 +232,8 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       },
       {
         enableHighAccuracy: true,
-        timeout: 8000,
+        timeout: 15000,
+        maximumAge: 0,
         maximumAge: 0
       }
     );
