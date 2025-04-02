@@ -22,48 +22,120 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
   const { toast } = useToast();
   
-  // Simplified saved locations - combining saved and recent into a single list
+  // Vadodara-specific saved locations
   const [savedLocations, setSavedLocations] = useState<Array<{ name: string; desc: string; icon: string; location: Location }>>([
     { 
       name: "Home", 
-      desc: "B-14 Vasant Kunj, New Delhi, 110070", 
+      desc: "Alkapuri, Vadodara, Gujarat 390007", 
       icon: "home", 
-      location: { lat: 28.5424, lng: 77.1562 } 
+      location: { lat: 22.3071, lng: 73.1812 } 
     },
     { 
       name: "Work", 
-      desc: "Cyber City, Gurugram, Haryana, 122002", 
+      desc: "Race Course Circle, Vadodara, Gujarat 390007", 
       icon: "briefcase", 
-      location: { lat: 28.4968, lng: 77.0881 } 
+      location: { lat: 22.3119, lng: 73.1795 } 
     },
     { 
-      name: "Gym", 
-      desc: "Sector 29, Gurugram, Haryana, 122001", 
+      name: "MS University", 
+      desc: "Pratapgunj, Vadodara, Gujarat 390002", 
       icon: "star", 
-      location: { lat: 28.4685, lng: 77.0636 } 
+      location: { lat: 22.3149, lng: 73.1873 } 
     }
   ]);
   
   const searchContainerRef = useRef<HTMLDivElement>(null);
   
-  // Simulate search results - in a real app, this would call a geocoding API
+  // Search results for Vadodara locations
   useEffect(() => {
     if (searchQuery.length > 2) {
-      // Limit to just 2 suggestions to prevent cluttering
-      const fakeAddresses = [
+      const vadodaraLocations = [
+        // Main areas and landmarks in Vadodara
         {
-          name: `${searchQuery} Road`,
-          desc: `Connaught Place, New Delhi, 110001`,
-          location: { lat: 28.6139 + Math.random() * 0.01, lng: 77.2090 + Math.random() * 0.01 }
+          name: "Alkapuri",
+          desc: "R.C. Dutt Road, Vadodara, Gujarat 390007",
+          location: { lat: 22.3071, lng: 73.1812 }
         },
         {
-          name: `${searchQuery} Marg`,
-          desc: `Saket, New Delhi, 110017`,
-          location: { lat: 28.5280 + Math.random() * 0.01, lng: 77.2130 + Math.random() * 0.01 }
+          name: "Sayajigunj",
+          desc: "Sayajigunj, Vadodara, Gujarat 390005",
+          location: { lat: 22.3149, lng: 73.1857 }
+        },
+        {
+          name: "Fatehgunj",
+          desc: "Fatehgunj, Vadodara, Gujarat 390002",
+          location: { lat: 22.3218, lng: 73.1794 }
+        },
+        {
+          name: "Railway Station",
+          desc: "Vadodara Railway Station, Alkapuri, Vadodara, Gujarat 390005",
+          location: { lat: 22.3095, lng: 73.1813 }
+        },
+        {
+          name: "Vadodara Airport",
+          desc: "Harni Road, Vadodara, Gujarat 390022",
+          location: { lat: 22.3358, lng: 73.2274 }
+        },
+        {
+          name: "Laxmi Vilas Palace",
+          desc: "Moti Baug, Vadodara, Gujarat 390001",
+          location: { lat: 22.2937, lng: 73.1954 }
+        },
+        {
+          name: "M S University",
+          desc: "Pratapgunj, Vadodara, Gujarat 390002",
+          location: { lat: 22.3149, lng: 73.1873 }
+        },
+        {
+          name: "Kirti Mandir",
+          desc: "Raopura, Vadodara, Gujarat 390001",
+          location: { lat: 22.3007, lng: 73.2016 }
+        },
+        {
+          name: "Mandvi Gate",
+          desc: "Raopura, Vadodara, Gujarat 390001",
+          location: { lat: 22.3006, lng: 73.2029 }
+        },
+        {
+          name: "Nizampura",
+          desc: "Nizampura, Vadodara, Gujarat 390002",
+          location: { lat: 22.3251, lng: 73.1611 }
+        },
+        {
+          name: "Makarpura",
+          desc: "Makarpura, Vadodara, Gujarat 390014",
+          location: { lat: 22.2548, lng: 73.1853 }
+        },
+        {
+          name: "Chhani",
+          desc: "Chhani, Vadodara, Gujarat 391740",
+          location: { lat: 22.3534, lng: 73.1559 }
+        },
+        {
+          name: "Manjalpur",
+          desc: "Manjalpur, Vadodara, Gujarat 390011",
+          location: { lat: 22.2665, lng: 73.1707 }
+        },
+        {
+          name: "Akota",
+          desc: "Akota, Vadodara, Gujarat 390020",
+          location: { lat: 22.3012, lng: 73.1678 }
+        },
+        {
+          name: "Karelibaug",
+          desc: "Karelibaug, Vadodara, Gujarat 390018",
+          location: { lat: 22.3313, lng: 73.2037 }
         }
       ];
-      
-      setSuggestions(fakeAddresses);
+
+      // Filter locations based on search query
+      const matchingLocations = vadodaraLocations.filter(loc => 
+        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        loc.desc.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      // Limit to top 5 results to avoid cluttering
+      setSuggestions(matchingLocations.slice(0, 5));
       setShowSuggestions(true);
     } else {
       setSuggestions([]);
@@ -141,11 +213,58 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           return coord.toFixed(6);
         };
         
-        // Create a precise location name with exact coordinates
-        const locationName = "Your Exact Current Location";
+        // For area detection in Vadodara
+        const vadodaraAreas = [
+          { name: "Alkapuri", lat: 22.3071, lng: 73.1812, radius: 1.5 },
+          { name: "Sayajigunj", lat: 22.3149, lng: 73.1857, radius: 1.0 },
+          { name: "Fatehgunj", lat: 22.3218, lng: 73.1794, radius: 1.0 },
+          { name: "Nizampura", lat: 22.3251, lng: 73.1611, radius: 1.5 },
+          { name: "Makarpura", lat: 22.2548, lng: 73.1853, radius: 2.0 },
+          { name: "Chhani", lat: 22.3534, lng: 73.1559, radius: 2.0 },
+          { name: "Manjalpur", lat: 22.2665, lng: 73.1707, radius: 1.5 },
+          { name: "Akota", lat: 22.3012, lng: 73.1678, radius: 1.2 },
+          { name: "Karelibaug", lat: 22.3313, lng: 73.2037, radius: 1.5 },
+          { name: "Gorwa", lat: 22.3363, lng: 73.1686, radius: 1.5 },
+          { name: "Waghodia Road", lat: 22.3281, lng: 73.2184, radius: 2.0 },
+          { name: "Sama", lat: 22.3321, lng: 73.1921, radius: 1.5 },
+          { name: "Subhanpura", lat: 22.2931, lng: 73.1637, radius: 1.2 },
+          { name: "Vasna", lat: 22.2726, lng: 73.1562, radius: 1.5 },
+          { name: "Harni", lat: 22.3394, lng: 73.2106, radius: 1.8 },
+          { name: "Tarsali", lat: 22.2448, lng: 73.1981, radius: 2.0 },
+          { name: "New VIP Road", lat: 22.3171, lng: 73.1747, radius: 1.0 },
+          { name: "Old Padra Road", lat: 22.2870, lng: 73.1731, radius: 1.5 },
+          { name: "Atladara", lat: 22.2714, lng: 73.2016, radius: 1.8 },
+          { name: "Maneja", lat: 22.3486, lng: 73.1968, radius: 1.8 }
+        ];
         
-        // For a more user-friendly description, we'll use the coordinates in a readable format
-        const locationDesc = `Coordinates: ${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`;
+        // Calculate distance in km using Haversine formula
+        const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+          const R = 6371; // Radius of the earth in km
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          return R * c;
+        };
+        
+        // Determine nearby area in Vadodara
+        let nearestArea = "Vadodara";
+        let minDistance = 10; // Initialize with a large number (km)
+        
+        vadodaraAreas.forEach(area => {
+          const distance = getDistanceInKm(latitude, longitude, area.lat, area.lng);
+          if (distance < minDistance && distance <= area.radius) {
+            minDistance = distance;
+            nearestArea = area.name;
+          }
+        });
+        
+        // Use exact coordinates and nearby area
+        const locationName = `Your Current Location (${nearestArea})`;
+        const locationDesc = `${nearestArea}, Vadodara - ${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`;
         
         // Add this location to saved locations for quick access
         const locationObj = {
@@ -168,7 +287,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         // Show success notification
         toast({
           title: "Location detected",
-          description: `Using your exact location at ${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`,
+          description: `Using exact location in ${nearestArea}, Vadodara (${formatCoordinate(latitude)}, ${formatCoordinate(longitude)})`,
         });
         
         setIsLoadingLocation(false);
@@ -220,10 +339,10 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
     <div className="relative w-full" ref={searchContainerRef}>
       <div className="relative">
         <Input
-          placeholder={placeholder || "Enter destination"}
+          placeholder={placeholder || "Search for Vadodara locations"}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => searchQuery.length > 2 && setShowSuggestions(true)}
+          onFocus={() => setShowSuggestions(true)}
           className="pl-10 pr-10 bg-background"
         />
         <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-primary" />
@@ -233,7 +352,7 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
             variant="ghost"
             onClick={handleUseCurrentLocation}
             className="h-full px-2 text-muted-foreground"
-            title="Use current location"
+            title="Use exact current location"
             disabled={isLoadingLocation}
           >
             {isLoadingLocation ? (
@@ -277,7 +396,10 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
                 )}
               </div>
               <div className="font-medium">
-                {isLoadingLocation ? "Detecting your location..." : "Use current location"}
+                {isLoadingLocation ? 
+                  "Detecting your exact Vadodara location..." : 
+                  "Use your exact current location in Vadodara"
+                }
               </div>
             </div>
             

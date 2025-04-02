@@ -124,51 +124,51 @@ export class MemStorage implements IStorage {
     };
     this.users.set(secondUser.id, secondUser);
     
-    // Create sample rides with Indian locations
-    const delhiGurgaonRide = {
+    // Create sample rides with Vadodara locations
+    const alkapuriToMSURide = {
       id: this.rideId++,
       userId: testUser.id,
       type: "offer",
       status: "active",
       availableSeats: 3,
-      price: 350.00, // in INR
+      price: 80.00, // in INR
       departureTime: new Date(Date.now() + 3600000), // 1 hour from now
       routeData: JSON.stringify({
-        start: { name: "New Delhi", lat: 28.6139, lng: 77.2090 },
-        end: { name: "Gurugram", lat: 28.4595, lng: 77.0266 }
+        start: { name: "Alkapuri", lat: 22.3071, lng: 73.1812 },
+        end: { name: "MS University", lat: 22.3149, lng: 73.1873 }
       }),
       route: {
-        start: { lat: 28.6139, lng: 77.2090 },
-        end: { lat: 28.4595, lng: 77.0266 },
+        start: { lat: 22.3071, lng: 73.1812 },
+        end: { lat: 22.3149, lng: 73.1873 },
         waypoints: []
       },
       createdAt: new Date()
     };
-    this.rides.set(delhiGurgaonRide.id, delhiGurgaonRide);
+    this.rides.set(alkapuriToMSURide.id, alkapuriToMSURide);
     
-    const mumbaiBangaloreRide = {
+    const fatehgunjToAirportRide = {
       id: this.rideId++,
       userId: secondUser.id,
       type: "offer",
       status: "active",
       availableSeats: 2,
-      price: 2500.00, // in INR
+      price: 150.00, // in INR
       departureTime: new Date(Date.now() + 7200000), // 2 hours from now
       routeData: JSON.stringify({
-        start: { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
-        end: { name: "Bangalore", lat: 12.9716, lng: 77.5946 }
+        start: { name: "Fatehgunj", lat: 22.3218, lng: 73.1794 },
+        end: { name: "Vadodara Airport", lat: 22.3358, lng: 73.2274 }
       }),
       route: {
-        start: { lat: 19.0760, lng: 72.8777 },
-        end: { lat: 12.9716, lng: 77.5946 },
+        start: { lat: 22.3218, lng: 73.1794 },
+        end: { lat: 22.3358, lng: 73.2274 },
         waypoints: []
       },
       createdAt: new Date()
     };
-    this.rides.set(mumbaiBangaloreRide.id, mumbaiBangaloreRide);
+    this.rides.set(fatehgunjToAirportRide.id, fatehgunjToAirportRide);
     
     // Create a request ride
-    const delhiNoida = {
+    const sayajiToRailwayRide = {
       id: this.rideId++,
       userId: secondUser.id,
       type: "request",
@@ -177,64 +177,64 @@ export class MemStorage implements IStorage {
       price: null, // Passenger doesn't set price
       departureTime: new Date(Date.now() + 2700000), // 45 minutes from now
       routeData: JSON.stringify({
-        start: { name: "New Delhi", lat: 28.6139, lng: 77.2090 },
-        end: { name: "Noida", lat: 28.5355, lng: 77.3910 }
+        start: { name: "Sayajigunj", lat: 22.3149, lng: 73.1857 },
+        end: { name: "Railway Station", lat: 22.3095, lng: 73.1813 }
       }),
       route: {
-        start: { lat: 28.6139, lng: 77.2090 },
-        end: { lat: 28.5355, lng: 77.3910 },
+        start: { lat: 22.3149, lng: 73.1857 },
+        end: { lat: 22.3095, lng: 73.1813 },
         waypoints: []
       },
       createdAt: new Date()
     };
-    this.rides.set(delhiNoida.id, delhiNoida);
+    this.rides.set(sayajiToRailwayRide.id, sayajiToRailwayRide);
     
-    // Create a ride match between Delhi-Gurugram and Delhi-Noida rides
-    const matchDelhiRides = {
+    // Create a ride match between two Vadodara rides
+    const matchVadodaraRides = {
       id: this.rideMatchId++,
-      requestRideId: delhiNoida.id,
-      offerRideId: delhiGurgaonRide.id,
+      requestRideId: sayajiToRailwayRide.id,
+      offerRideId: alkapuriToMSURide.id,
       status: "accepted",
       matchScore: 0.85, // High match score
       createdAt: new Date(Date.now() - 1800000) // 30 minutes ago
     };
-    this.rideMatches.set(matchDelhiRides.id, matchDelhiRides);
+    this.rideMatches.set(matchVadodaraRides.id, matchVadodaraRides);
     
     // Add some messages to the ride match
     const messages = [
       {
         id: this.messageId++,
-        rideMatchId: matchDelhiRides.id,
+        rideMatchId: matchVadodaraRides.id,
         senderId: testUser.id,
-        content: "Hi! I'm heading to Gurugram but can drop you at Noida on the way.",
+        content: "Hi! I'm heading to MS University and I can drop you at the Railway Station on the way.",
         createdAt: new Date(Date.now() - 1700000) // 28 minutes ago
       },
       {
         id: this.messageId++,
-        rideMatchId: matchDelhiRides.id,
+        rideMatchId: matchVadodaraRides.id,
         senderId: secondUser.id,
-        content: "That would be great! What time are you planning to leave?",
+        content: "That would be great! What time are you planning to leave from Alkapuri?",
         createdAt: new Date(Date.now() - 1600000) // 27 minutes ago
       },
       {
         id: this.messageId++,
-        rideMatchId: matchDelhiRides.id,
+        rideMatchId: matchVadodaraRides.id,
         senderId: testUser.id,
         content: "I'll be leaving in about an hour. Is that okay for you?",
         createdAt: new Date(Date.now() - 1500000) // 25 minutes ago
       },
       {
         id: this.messageId++,
-        rideMatchId: matchDelhiRides.id,
+        rideMatchId: matchVadodaraRides.id,
         senderId: secondUser.id,
-        content: "Perfect! I'll be ready. Where should I meet you?",
+        content: "Perfect! I'll be ready. Where should I meet you in Sayajigunj?",
         createdAt: new Date(Date.now() - 1400000) // 23 minutes ago
       },
       {
         id: this.messageId++,
-        rideMatchId: matchDelhiRides.id,
+        rideMatchId: matchVadodaraRides.id,
         senderId: testUser.id,
-        content: "Let's meet at the Connaught Place metro station. I'll be in a white Swift.",
+        content: "Let's meet at Sayajigunj bus stop. I'll be in a white Swift with GJ-06 number plate.",
         createdAt: new Date(Date.now() - 1300000) // 22 minutes ago
       }
     ];
