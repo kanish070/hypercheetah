@@ -11,6 +11,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Chat } from "@/components/chat";
+import { RideShareQR } from "@/components/ride-share-qr";
 import { Ride } from '@shared/schema';
 import { motion } from "framer-motion";
 import { 
@@ -260,6 +261,10 @@ export function RideMatches({ matches, onSelectMatch }: RideMatchesProps) {
                         </div>
                         
                         <div className="flex gap-2">
+                          <RideShareQR 
+                            ride={ride} 
+                            userName={ride.driverName}
+                          />
                           <Button 
                             variant="outline" 
                             size="sm" 
