@@ -30,6 +30,7 @@ export function AppLogo({
   const [_, navigate] = useLocation();
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Added isOpen state
 
   const dimensions = {
     sm: { width: 40, height: 40 },
@@ -42,13 +43,14 @@ export function AppLogo({
   // Enhanced quick actions functionality
   const handleQuickAction = () => {
     if (!interactive) return;
-    
+
     setIsActive(true);
     setShowQuickMenu(true);
-    
+    setIsOpen(true); // Set isOpen to true when quick actions are triggered
+
     // Show tooltip briefly before showing the full quick menu
     setTooltipOpen(true);
-    
+
     // Auto close tooltip after a short delay
     setTimeout(() => {
       setTooltipOpen(false);
@@ -59,6 +61,7 @@ export function AppLogo({
   const handleMenuClose = () => {
     setIsActive(false);
     setShowQuickMenu(false);
+    setIsOpen(false); // Set isOpen to false when menu closes
   };
 
   // Quick actions
@@ -116,11 +119,11 @@ export function AppLogo({
                               div.className = "flex items-center justify-center bg-primary/10 rounded-lg shadow-md";
                               div.style.width = `${width}px`;
                               div.style.height = `${height}px`;
-                              
+
                               const textDiv = document.createElement('div');
                               textDiv.className = "font-mono text-3xl leading-none whitespace-pre text-primary";
                               textDiv.textContent = "^..^";
-                              
+
                               div.appendChild(textDiv);
                               parent.replaceChild(div, target);
                             }
@@ -128,32 +131,34 @@ export function AppLogo({
                           className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 object-cover"
                         />
                       </picture>
-                      
+
                       <AnimatePresence>
                         {isActive && !showQuickMenu && (
-                          <motion.div 
-                            className="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0 }}
-                              transition={{ delay: 0.1, type: "spring" }}
-                              className="flex items-center justify-center gap-1 bg-white p-2 rounded-full shadow-lg"
+                          {isOpen && ( // Conditional rendering based on isOpen state
+                            <motion.div 
+                              className="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <Zap className="h-4 w-4 text-primary" />
-                              <span className="text-xs font-medium">Quick Actions</span>
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ delay: 0.1, type: "spring" }}
+                                className="flex items-center justify-center gap-1 bg-white p-2 rounded-full shadow-lg"
+                              >
+                                <Zap className="h-4 w-4 text-primary" />
+                                <span className="text-xs font-medium">Quick Actions</span>
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
+                          )}
                         )}
                       </AnimatePresence>
                     </div>
                   </motion.div>
-                  
+
                   {/* Floating elements for visual interest */}
                   <motion.div 
                     className="absolute -right-2 -top-2"
@@ -169,7 +174,7 @@ export function AppLogo({
                   >
                     <Zap className="h-5 w-5 text-primary" />
                   </motion.div>
-                  
+
                   <motion.div 
                     className="absolute -left-2 -bottom-2"
                     animate={{ 
@@ -195,7 +200,7 @@ export function AppLogo({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        
+
         <PopoverContent 
           className="w-64 p-3 z-50" 
           align="center"
@@ -206,7 +211,7 @@ export function AppLogo({
             <h3 className="font-bold text-center text-lg mb-3 bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
               Quick Actions
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-2">
               <Button 
                 variant="outline" 
@@ -219,7 +224,7 @@ export function AppLogo({
                 <span className="text-sm font-medium">Quick Route</span>
                 <span className="text-xs text-muted-foreground">Fastest route</span>
               </Button>
-              
+
               <Button 
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 hover:bg-primary/5 hover:border-primary transition-colors duration-200"
@@ -231,7 +236,7 @@ export function AppLogo({
                 <span className="text-sm font-medium">Offer Ride</span>
                 <span className="text-xs text-muted-foreground">Driver mode</span>
               </Button>
-              
+
               <Button 
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 hover:bg-primary/5 hover:border-primary transition-colors duration-200"
@@ -243,7 +248,7 @@ export function AppLogo({
                 <span className="text-sm font-medium">Eco Impact</span>
                 <span className="text-xs text-muted-foreground">Track savings</span>
               </Button>
-              
+
               <Button 
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 hover:bg-primary/5 hover:border-primary transition-colors duration-200"
