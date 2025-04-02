@@ -20,6 +20,8 @@ export const rides = pgTable("rides", {
   type: text("type").notNull(), // "offer" or "request"
   status: text("status").notNull(), // "active", "completed", "cancelled"
   routeData: jsonb("route_data").notNull(), // JSON containing route information
+  vehicleType: text("vehicle_type").default("car"), // "car" or "bike"
+  isPooling: boolean("is_pooling").default(false), // Whether this is a carpool ride (for price calculation)
   availableSeats: integer("available_seats").default(4),
   price: doublePrecision("price"),
   departureTime: timestamp("departure_time"),

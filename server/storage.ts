@@ -136,8 +136,10 @@ export class MemStorage implements IStorage {
       userId: testUser.id,
       type: "offer",
       status: "active",
-      availableSeats: 3,
-      price: this.calculatePrice(alkapuriToMSURoute), // Automatically calculated at 3 rupees per km
+      vehicleType: "bike", // Using bike - 3 rupees per km
+      isPooling: false,
+      availableSeats: 1, // Bike can only have 1 passenger
+      price: this.calculatePrice(alkapuriToMSURoute, "bike", false), // Calculate price for bike
       departureTime: new Date(Date.now() + 3600000), // 1 hour from now
       routeData: JSON.stringify({
         start: { name: "Alkapuri", lat: 22.3071, lng: 73.1812 },
@@ -159,8 +161,10 @@ export class MemStorage implements IStorage {
       userId: secondUser.id,
       type: "offer",
       status: "active",
-      availableSeats: 2,
-      price: this.calculatePrice(fatehgunjToAirportRoute), // Automatically calculated at 3 rupees per km
+      vehicleType: "car", // Using car - 10 rupees per km
+      isPooling: true, // This is a carpool ride - reduced fare of 8 rupees per km
+      availableSeats: 3,
+      price: this.calculatePrice(fatehgunjToAirportRoute, "car", true), // Calculate price for carpooling
       departureTime: new Date(Date.now() + 7200000), // 2 hours from now
       routeData: JSON.stringify({
         start: { name: "Fatehgunj", lat: 22.3218, lng: 73.1794 },
@@ -183,8 +187,10 @@ export class MemStorage implements IStorage {
       userId: secondUser.id,
       type: "request",
       status: "active",
+      vehicleType: "car", // Requesting a car
+      isPooling: false, // No pooling for request
       availableSeats: 1,
-      price: this.calculatePrice(sayajiToRailwayRoute), // Automatically calculated at 3 rupees per km
+      price: this.calculatePrice(sayajiToRailwayRoute, "car", false), // Calculate price for car
       departureTime: new Date(Date.now() + 2700000), // 45 minutes from now
       routeData: JSON.stringify({
         start: { name: "Sayajigunj", lat: 22.3149, lng: 73.1857 },
@@ -460,13 +466,21 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  // Calculate price based on distance (3 rupees per kilometer)
-  private calculatePrice(route: Route): number {
+  // Calculate price based on distance and vehicle type
+  private calculatePrice(route: Route, vehicleType: string = 'car', isPooling: boolean = false): number {
     // Get distance between start and end points
     const distance = this.getDistanceInKm(route.start, route.end);
     
-    // Calculate price at 3 rupees per km
-    const pricePerKm = 3;
+    // Calculate price based on vehicle type
+    let pricePerKm = 10; // Default price for car is 10 rupees per km
+    
+    if (vehicleType === 'bike') {
+      pricePerKm = 3; // Price for bike is 3 rupees per km
+    } else if (vehicleType === 'car' && isPooling) {
+      // For carpooling, the price per km is reduced since costs are shared
+      pricePerKm = 8; // Slightly reduced rate for carpooling
+    }
+    
     const price = Math.ceil(distance * pricePerKm); // Round up to nearest rupee
     
     return price;
@@ -476,14 +490,20 @@ export class MemStorage implements IStorage {
     const id = this.rideId++;
     const { route, ...insertRide } = rideData;
     
-    // Calculate price automatically at 3 rupees per km
-    const calculatedPrice = this.calculatePrice(route);
+    // Get vehicle type and pooling status from the request (or use defaults)
+    const vehicleType = insertRide.vehicleType || 'car';
+    const isPooling = insertRide.isPooling || false;
+    
+    // Calculate price based on vehicle type and pooling status
+    const calculatedPrice = this.calculatePrice(route, vehicleType, isPooling);
     
     const ride: Ride = {
       id,
       ...insertRide,
+      vehicleType: vehicleType, // Use the provided vehicle type or default
+      isPooling: isPooling, // Use the provided pooling status or default
       availableSeats: insertRide.availableSeats ?? 4, // Default to 4 if undefined
-      price: calculatedPrice, // Use calculated price based on distance
+      price: calculatedPrice, // Use calculated price based on distance and vehicle type
       departureTime: insertRide.departureTime ?? null,
       routeData: route, // Store the route in routeData
       route, // Keep the route for frontend convenience

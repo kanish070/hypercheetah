@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Users, IndianRupee, Bell } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Bike, Users, IndianRupee, Bell } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Rider() {
@@ -20,8 +23,9 @@ export default function Rider() {
   const [route, setRoute] = useState<Route>();
   const [isActive, setIsActive] = useState(false);
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [vehicleType, setVehicleType] = useState<"car" | "bike">("car");
+  const [isPooling, setIsPooling] = useState(false); 
   const [availableSeats, setAvailableSeats] = useState(3);
-  const [price, setPrice] = useState(10);
   const [_, setLocation] = useLocation();
 
   const { data: nearbyRequests = [], isLoading } = useQuery({
@@ -46,8 +50,9 @@ export default function Rider() {
           type: "offer",
           route,
           status: "active",
+          vehicleType, // Include vehicle type
+          isPooling, // Include pooling status
           availableSeats, // Use state value
-          price, // Use state value
           departureTime: new Date().toISOString(),
           routeData: JSON.stringify(route)
         } as any)
@@ -210,11 +215,64 @@ export default function Rider() {
                       </div>
                     )}
 
+                    {/* Vehicle Type Selection */}
+                    <div className="space-y-3">
+                      <div className="font-medium">Vehicle Type:</div>
+                      <RadioGroup 
+                        value={vehicleType} 
+                        onValueChange={(v: "car" | "bike") => {
+                          setVehicleType(v);
+                          // When changing to bike, disable pooling and set seats to 1
+                          if (v === "bike") {
+                            setIsPooling(false);
+                            setAvailableSeats(1);
+                          } else {
+                            // For car, default to 3 seats
+                            setAvailableSeats(3);
+                          }
+                        }}
+                        className="flex space-x-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="car" id="car" />
+                          <Label htmlFor="car" className="flex items-center gap-1 cursor-pointer">
+                            <Car className="h-4 w-4" />
+                            <span>Car</span>
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="bike" id="bike" />
+                          <Label htmlFor="bike" className="flex items-center gap-1 cursor-pointer">
+                            <Bike className="h-4 w-4" />
+                            <span>Bike</span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    
+                    {/* Carpooling option (only for cars) */}
+                    {vehicleType === "car" && (
+                      <div className="flex items-center space-x-2">
+                        <div className="font-medium">Enable Carpooling:</div>
+                        <Switch
+                          checked={isPooling}
+                          onCheckedChange={setIsPooling}
+                        />
+                        {isPooling && (
+                          <span className="text-xs text-muted-foreground">
+                            (Reduced price: ₹8 per km)
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Seats Selection */}
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4 text-primary" />
                       <div className="font-medium">Available Seats:</div>
                       <div className="flex space-x-2">
-                        {[1, 2, 3, 4].map(num => (
+                        {/* Show only 1 seat for bike, or up to 4 for car */}
+                        {(vehicleType === "bike" ? [1] : [1, 2, 3, 4]).map(num => (
                           <Badge 
                             key={num}
                             variant={availableSeats === num ? "default" : "outline"}
@@ -227,19 +285,33 @@ export default function Rider() {
                       </div>
                     </div>
 
+                    {/* Price Display */}
                     <div className="flex items-start space-x-2">
                       <IndianRupee className="h-4 w-4 text-primary mt-1" />
                       <div>
                         <div className="font-medium mb-1">Price:</div>
-                        <div className="text-sm text-muted-foreground mb-2">Calculated at 3 rupees per km</div>
+                        <div className="text-sm text-muted-foreground mb-2">
+                          {vehicleType === "bike" 
+                            ? "Calculated at 3 rupees per km for bike" 
+                            : isPooling 
+                              ? "Calculated at 8 rupees per km (carpooling rate)" 
+                              : "Calculated at 10 rupees per km for car"
+                          }
+                        </div>
                         <div className="flex flex-wrap gap-2">
-                          {/* Note: Price is now automatically calculated in the backend at 3 rupees per km */}
                           <Badge className="bg-primary/10 border-primary text-primary font-medium">
-                            ₹3 per km
+                            {vehicleType === "bike" 
+                              ? "₹3 per km" 
+                              : isPooling 
+                                ? "₹8 per km" 
+                                : "₹10 per km"
+                            }
                           </Badge>
                           {routeSummary && (
                             <Badge className="bg-green-50 text-green-700 border-green-200">
-                              Est. ₹{Math.ceil(routeSummary.distance * 3)} for {formatDistance(routeSummary.distance)}
+                              Est. ₹{Math.ceil(routeSummary.distance * (
+                                vehicleType === "bike" ? 3 : (isPooling ? 8 : 10)
+                              ))} for {formatDistance(routeSummary.distance)}
                             </Badge>
                           )}
                         </div>
@@ -260,8 +332,12 @@ export default function Rider() {
                         </span>
                       ) : (
                         <span className="flex items-center">
-                          <Car className="mr-2 h-4 w-4" />
-                          Start Offering Rides
+                          {vehicleType === "bike" ? (
+                            <Bike className="mr-2 h-4 w-4" />
+                          ) : (
+                            <Car className="mr-2 h-4 w-4" />
+                          )}
+                          Start Offering {vehicleType === "bike" ? "Bike" : "Car"} Rides
                         </span>
                       )}
                     </Button>
