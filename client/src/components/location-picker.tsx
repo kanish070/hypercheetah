@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   MapPin, Search, Home, Building, Briefcase, Star, X, Clock, 
-  Navigation, ChevronRight, Crosshair
+  Navigation, ChevronRight, Crosshair, AlertCircle, Loader2
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Location } from '@shared/schema';
 
 interface LocationPickerProps {
@@ -18,6 +19,8 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<Array<{ name: string; desc: string; location: Location }>>([]);
+  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
+  const { toast } = useToast();
   
   // Simplified saved locations - combining saved and recent into a single list
   const [savedLocations, setSavedLocations] = useState<Array<{ name: string; desc: string; icon: string; location: Location }>>([
@@ -105,27 +108,134 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
         return <Briefcase className="h-4 w-4" />;
       case 'star':
         return <Star className="h-4 w-4" />;
+      case 'navigation':
+        return <Navigation className="h-4 w-4" />;
+      case 'clock':
+        return <Clock className="h-4 w-4" />;
       default:
         return <MapPin className="h-4 w-4" />;
     }
   };
   
   const handleUseCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const currentLocation = { lat: latitude, lng: longitude };
-          onLocationSelect(currentLocation);
-          setSearchQuery("Current Location");
-        },
-        (error) => {
-          console.error("Error getting location: ", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
+    setIsLoadingLocation(true);
+    setShowSuggestions(false);
+    
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location Error",
+        description: "Your browser doesn't support geolocation services",
+        variant: "destructive"
+      });
+      setIsLoadingLocation(false);
+      return;
     }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const currentLocation = { lat: latitude, lng: longitude };
+        
+        // Attempt to find the nearest known location for user-friendly display
+        // In production, you would use a proper reverse geocoding service
+        const indianLocations = [
+          { name: "Delhi", lat: 28.6139, lng: 77.2090 },
+          { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+          { name: "Bangalore", lat: 12.9716, lng: 77.5946 },
+          { name: "Hyderabad", lat: 17.3850, lng: 78.4867 },
+          { name: "Chennai", lat: 13.0827, lng: 80.2707 },
+          { name: "Kolkata", lat: 22.5726, lng: 88.3639 },
+          { name: "Ahmedabad", lat: 23.0225, lng: 72.5714 },
+          { name: "Pune", lat: 18.5204, lng: 73.8567 },
+          { name: "Jaipur", lat: 26.9124, lng: 75.7873 },
+          { name: "Lucknow", lat: 26.8467, lng: 80.9462 },
+          { name: "Noida", lat: 28.5355, lng: 77.3910 },
+          { name: "Gurugram", lat: 28.4595, lng: 77.0266 },
+          { name: "Chandigarh", lat: 30.7333, lng: 76.7794 },
+          { name: "Indore", lat: 22.7196, lng: 75.8577 },
+          { name: "Bhopal", lat: 23.2599, lng: 77.4126 },
+        ];
+        
+        // Find closest city using Haversine formula for better approximation
+        const getDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+          const R = 6371; // Radius of the earth in km
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          return R * c;
+        };
+        
+        // Find closest city
+        let closestCity = indianLocations[0];
+        let minDistance = getDistanceInKm(latitude, longitude, closestCity.lat, closestCity.lng);
+        
+        indianLocations.forEach(city => {
+          const distance = getDistanceInKm(latitude, longitude, city.lat, city.lng);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestCity = city;
+          }
+        });
+        
+        const locationName = `Current Location (near ${closestCity.name})`;
+        
+        // Add this location to saved locations for quick access
+        const locationObj = {
+          name: locationName,
+          desc: `${closestCity.name}, India`,
+          icon: "navigation",
+          location: currentLocation
+        };
+        
+        if (!savedLocations.some(loc => loc.name.includes("Current Location"))) {
+          setSavedLocations(prev => [locationObj, ...prev.slice(0, 2)]);
+        }
+        
+        // Update the search query and pass location to parent
+        setSearchQuery(locationName);
+        onLocationSelect(currentLocation);
+        
+        // Show success notification
+        toast({
+          title: "Location detected",
+          description: `Using your location near ${closestCity.name}`,
+        });
+        
+        setIsLoadingLocation(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLoadingLocation(false);
+        
+        let errorMessage = "Unable to detect your location";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission denied. Please enable location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable at this time.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please try again.";
+            break;
+        }
+        
+        toast({
+          title: "Location Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 0
+      }
+    );
   };
   
   const clearSearch = () => {
@@ -151,17 +261,37 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           className="pl-10 pr-10 bg-background"
         />
         <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-primary" />
-        {searchQuery ? (
+        <div className="absolute right-0 top-0 h-full flex">
+          {/* Current location button */}
           <Button
             variant="ghost"
-            className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
-            onClick={clearSearch}
+            onClick={handleUseCurrentLocation}
+            className="h-full px-2 text-muted-foreground"
+            title="Use current location"
+            disabled={isLoadingLocation}
           >
-            <X className="h-4 w-4" />
+            {isLoadingLocation ? (
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            ) : (
+              <Crosshair className="h-4 w-4 text-primary" />
+            )}
           </Button>
-        ) : (
-          <Search className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
-        )}
+
+          {/* Clear button or search icon */}
+          {searchQuery ? (
+            <Button
+              variant="ghost"
+              className="h-full px-2 text-muted-foreground"
+              onClick={clearSearch}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="flex items-center px-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Suggestions dropdown */}
@@ -170,13 +300,19 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
           <div className="max-h-[300px] overflow-y-auto">
             {/* Use current location */}
             <div 
-              className="flex items-center p-3 cursor-pointer hover:bg-primary/5 border-b"
-              onClick={handleUseCurrentLocation}
+              className={`flex items-center p-3 ${isLoadingLocation ? 'cursor-wait opacity-70' : 'cursor-pointer hover:bg-primary/5'} border-b`}
+              onClick={!isLoadingLocation ? handleUseCurrentLocation : undefined}
             >
               <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center mr-3">
-                <Crosshair className="h-4 w-4 text-primary" />
+                {isLoadingLocation ? (
+                  <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                ) : (
+                  <Crosshair className="h-4 w-4 text-primary" />
+                )}
               </div>
-              <div className="font-medium">Use current location</div>
+              <div className="font-medium">
+                {isLoadingLocation ? "Detecting your location..." : "Use current location"}
+              </div>
             </div>
             
             {/* Search results */}
