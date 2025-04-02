@@ -23,21 +23,21 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
   const [savedLocations, setSavedLocations] = useState<Array<{ name: string; desc: string; icon: string; location: Location }>>([
     { 
       name: "Home", 
-      desc: "123 Main Street, San Francisco, CA", 
+      desc: "B-14 Vasant Kunj, New Delhi, 110070", 
       icon: "home", 
-      location: { lat: 37.7749, lng: -122.4194 } 
+      location: { lat: 28.5424, lng: 77.1562 } 
     },
     { 
       name: "Work", 
-      desc: "456 Market Street, San Francisco, CA", 
+      desc: "Cyber City, Gurugram, Haryana, 122002", 
       icon: "briefcase", 
-      location: { lat: 37.7899, lng: -122.4009 } 
+      location: { lat: 28.4968, lng: 77.0881 } 
     },
     { 
       name: "Gym", 
-      desc: "789 Fitness Avenue, San Francisco, CA", 
+      desc: "Sector 29, Gurugram, Haryana, 122001", 
       icon: "star", 
-      location: { lat: 37.7833, lng: -122.4167 } 
+      location: { lat: 28.4685, lng: 77.0636 } 
     }
   ]);
   
@@ -49,14 +49,14 @@ export function LocationPicker({ onLocationSelect, placeholder, selectedLocation
       // Limit to just 2 suggestions to prevent cluttering
       const fakeAddresses = [
         {
-          name: `${searchQuery} Main St`,
-          desc: `San Francisco, CA 94107`,
-          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+          name: `${searchQuery} Road`,
+          desc: `Connaught Place, New Delhi, 110001`,
+          location: { lat: 28.6139 + Math.random() * 0.01, lng: 77.2090 + Math.random() * 0.01 }
         },
         {
-          name: `${searchQuery} Market St`,
-          desc: `San Francisco, CA 94103`,
-          location: { lat: 37.7749 + Math.random() * 0.01, lng: -122.4194 + Math.random() * 0.01 }
+          name: `${searchQuery} Marg`,
+          desc: `Saket, New Delhi, 110017`,
+          location: { lat: 28.5280 + Math.random() * 0.01, lng: 77.2130 + Math.random() * 0.01 }
         }
       ];
       

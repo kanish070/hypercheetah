@@ -195,6 +195,7 @@ export class MemStorage implements IStorage {
       requestRideId: delhiNoida.id,
       offerRideId: delhiGurgaonRide.id,
       status: "accepted",
+      matchScore: 0.85, // High match score
       createdAt: new Date(Date.now() - 1800000) // 30 minutes ago
     };
     this.rideMatches.set(matchDelhiRides.id, matchDelhiRides);
@@ -205,35 +206,35 @@ export class MemStorage implements IStorage {
         id: this.messageId++,
         rideMatchId: matchDelhiRides.id,
         senderId: testUser.id,
-        text: "Hi! I'm heading to Gurugram but can drop you at Noida on the way.",
+        content: "Hi! I'm heading to Gurugram but can drop you at Noida on the way.",
         createdAt: new Date(Date.now() - 1700000) // 28 minutes ago
       },
       {
         id: this.messageId++,
         rideMatchId: matchDelhiRides.id,
         senderId: secondUser.id,
-        text: "That would be great! What time are you planning to leave?",
+        content: "That would be great! What time are you planning to leave?",
         createdAt: new Date(Date.now() - 1600000) // 27 minutes ago
       },
       {
         id: this.messageId++,
         rideMatchId: matchDelhiRides.id,
         senderId: testUser.id,
-        text: "I'll be leaving in about an hour. Is that okay for you?",
+        content: "I'll be leaving in about an hour. Is that okay for you?",
         createdAt: new Date(Date.now() - 1500000) // 25 minutes ago
       },
       {
         id: this.messageId++,
         rideMatchId: matchDelhiRides.id,
         senderId: secondUser.id,
-        text: "Perfect! I'll be ready. Where should I meet you?",
+        content: "Perfect! I'll be ready. Where should I meet you?",
         createdAt: new Date(Date.now() - 1400000) // 23 minutes ago
       },
       {
         id: this.messageId++,
         rideMatchId: matchDelhiRides.id,
         senderId: testUser.id,
-        text: "Let's meet at the Connaught Place metro station. I'll be in a white Swift.",
+        content: "Let's meet at the Connaught Place metro station. I'll be in a white Swift.",
         createdAt: new Date(Date.now() - 1300000) // 22 minutes ago
       }
     ];
