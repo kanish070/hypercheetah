@@ -4,7 +4,14 @@ import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 
@@ -15,7 +22,7 @@ export default function AuthPage() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   // Redirect if already logged in
@@ -33,7 +40,7 @@ export default function AuthPage() {
     if (registerData.password !== registerData.confirmPassword) {
       return; // Add validation error here
     }
-    
+
     const { confirmPassword, ...registrationData } = registerData;
     registerMutation.mutate(registrationData);
   };
@@ -45,15 +52,17 @@ export default function AuthPage() {
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold mb-2">Welcome to RideSync</h1>
-            <p className="text-muted-foreground">Sign in to your account or create a new one</p>
+            <p className="text-muted-foreground">
+              Sign in to your account or create a new one
+            </p>
           </div>
-          
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <Card>
                 <form onSubmit={handleLoginSubmit}>
@@ -63,39 +72,53 @@ export default function AuthPage() {
                       Enter your email and password to access your account
                     </CardDescription>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input 
+                      <Input
                         id="email"
-                        type="email" 
-                        placeholder="you@example.com" 
+                        type="email"
+                        placeholder="you@example.com"
                         value={loginData.email}
-                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        onChange={(e) =>
+                          setLoginData({ ...loginData, email: e.target.value })
+                        }
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="password">Password</Label>
-                        <a href="#" className="text-sm text-primary hover:underline">
+                        <a
+                          href="#"
+                          className="text-sm text-primary hover:underline"
+                        >
                           Forgot password?
                         </a>
                       </div>
-                      <Input 
+                      <Input
                         id="password"
-                        type="password" 
+                        type="password"
                         value={loginData.password}
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        onChange={(e) =>
+                          setLoginData({
+                            ...loginData,
+                            password: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
                   </CardContent>
-                  
+
                   <CardFooter>
-                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={loginMutation.isPending}
+                    >
                       {loginMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -109,7 +132,7 @@ export default function AuthPage() {
                 </form>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="register">
               <Card>
                 <form onSubmit={handleRegisterSubmit}>
@@ -119,63 +142,86 @@ export default function AuthPage() {
                       Enter your details to create a new account
                     </CardDescription>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <Input 
+                      <Input
                         id="name"
-                        placeholder="John Doe" 
+                        placeholder="John Doe"
                         value={registerData.name}
-                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            name: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="registerEmail">Email</Label>
-                      <Input 
+                      <Input
                         id="registerEmail"
-                        type="email" 
-                        placeholder="you@example.com" 
+                        type="email"
+                        placeholder="you@example.com"
                         value={registerData.email}
-                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            email: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="registerPassword">Password</Label>
-                      <Input 
+                      <Input
                         id="registerPassword"
-                        type="password" 
+                        type="password"
                         value={registerData.password}
-                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            password: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input 
+                      <Input
                         id="confirmPassword"
-                        type="password" 
+                        type="password"
                         value={registerData.confirmPassword}
-                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            confirmPassword: e.target.value,
+                          })
+                        }
                         required
                       />
-                      {registerData.password !== registerData.confirmPassword && registerData.confirmPassword && (
-                        <p className="text-sm text-destructive mt-1">Passwords do not match</p>
-                      )}
+                      {registerData.password !== registerData.confirmPassword &&
+                        registerData.confirmPassword && (
+                          <p className="text-sm text-destructive mt-1">
+                            Passwords do not match
+                          </p>
+                        )}
                     </div>
                   </CardContent>
-                  
+
                   <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
+                    <Button
+                      type="submit"
+                      className="w-full"
                       disabled={
-                        registerMutation.isPending || 
+                        registerMutation.isPending ||
                         registerData.password !== registerData.confirmPassword
                       }
                     >
@@ -195,7 +241,7 @@ export default function AuthPage() {
           </Tabs>
         </div>
       </div>
-      
+
       {/* Hero Section */}
       <div className="hidden md:flex flex-1 bg-gradient-to-br from-primary to-primary/70 p-12 flex-col justify-center">
         <div className="max-w-xl space-y-8">
@@ -204,24 +250,38 @@ export default function AuthPage() {
             Transform your daily commute experience
           </h2>
           <p className="text-xl text-white/80">
-            Join our community of riders and passengers to make urban mobility smarter, more sustainable, and more social. Connect with like-minded travelers and contribute to a greener future.
+            Join our community of riders and passengers to make urban mobility
+            smarter, more sustainable, and more social. Connect with like-minded
+            travelers and contribute to a greener future.
           </p>
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <h3 className="text-xl font-medium text-white mb-2">Eco-Friendly</h3>
-              <p className="text-white/80">Reduce your carbon footprint with every shared ride</p>
+              <h3 className="text-xl font-medium text-white mb-2">
+                Eco-Friendly
+              </h3>
+              <p className="text-white/80">
+                Reduce your carbon footprint with every shared ride
+              </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
               <h3 className="text-xl font-medium text-white mb-2">Community</h3>
-              <p className="text-white/80">Connect with people and expand your network</p>
+              <p className="text-white/80">
+                Connect with people and expand your network
+              </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <h3 className="text-xl font-medium text-white mb-2">Save Money</h3>
-              <p className="text-white/80">Split costs and save on transportation expenses</p>
+              <h3 className="text-xl font-medium text-white mb-2">
+                Save Money
+              </h3>
+              <p className="text-white/80">
+                Split costs and save on transportation expenses
+              </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
               <h3 className="text-xl font-medium text-white mb-2">Gamified</h3>
-              <p className="text-white/80">Earn achievements and rewards as you ride</p>
+              <p className="text-white/80">
+                Earn achievements and rewards as you ride
+              </p>
             </div>
           </div>
         </div>
