@@ -154,12 +154,43 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Location and type are required" });
       }
       
-      const location = JSON.parse(locationStr) as Location;
+      let location;
+      try {
+        location = JSON.parse(locationStr) as Location;
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid location format" });
+      }
+      
+      if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
+        return res.status(400).json({ error: "Invalid location format" });
+      }
+      
       const radius = radiusStr ? parseInt(radiusStr) : 10; // Default 10km radius
       
       const nearbyRides = await storage.getNearbyRides(location, type, radius);
-      res.json(nearbyRides);
+      
+      // Map to include user info for each ride
+      const ridesWithUserInfo = await Promise.all(nearbyRides.map(async (ride) => {
+        try {
+          const user = await storage.getUser(ride.userId);
+          const userInfo = user ? {
+            name: user.name,
+            avatar: user.avatar
+          } : null;
+          
+          return {
+            ...ride,
+            userInfo
+          };
+        } catch (error) {
+          console.error(`Error getting user info for ride ${ride.id}:`, error);
+          return ride;
+        }
+      }));
+      
+      res.json(ridesWithUserInfo);
     } catch (error) {
+      console.error("Error fetching nearby rides:", error);
       res.status(500).json({ error: "Failed to fetch nearby rides" });
     }
   });

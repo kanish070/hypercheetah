@@ -923,40 +923,235 @@ export class DatabaseStorage implements IStorage {
     return [];
   }
 
-  async createRide(ride: InsertRide & { route: Route }): Promise<Ride> {
-    throw new Error("Method not implemented");
+  async createRide(rideData: InsertRide & { route: Route }): Promise<Ride> {
+    try {
+      // Serialize the route data to JSON for storage
+      const routeDataJson = JSON.stringify(rideData.route);
+      
+      // Insert the ride into the database
+      const result = await db.insert(rides).values({
+        userId: rideData.userId,
+        type: rideData.type,
+        status: rideData.status,
+        routeData: routeDataJson as any,
+        vehicleType: rideData.vehicleType,
+        isPooling: rideData.isPooling,
+        availableSeats: rideData.availableSeats,
+        departureTime: rideData.departureTime,
+        comfortPreferences: rideData.comfortPreferences as any,
+        price: rideData.price
+      }).returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error("Failed to create ride");
+      }
+      
+      // Parse the route data and return as part of the ride object
+      const ride = {
+        ...result[0],
+        route: rideData.route
+      };
+      
+      return ride;
+    } catch (error) {
+      console.error("Error creating ride:", error);
+      throw error;
+    }
   }
 
   async updateRideStatus(id: number, status: string, comfortPreferences?: ComfortPreferences): Promise<Ride> {
-    throw new Error("Method not implemented");
+    try {
+      // Create an update object with the status
+      const updateData: any = { status };
+      
+      // Add comfort preferences if provided
+      if (comfortPreferences) {
+        updateData.comfortPreferences = comfortPreferences;
+      }
+      
+      // Update the ride in the database
+      const result = await db.update(rides)
+        .set(updateData)
+        .where(eq(rides.id, id))
+        .returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error(`Ride with ID ${id} not found`);
+      }
+      
+      // Parse the route data from JSON
+      const routeData = JSON.parse(result[0].routeData as string);
+      
+      return {
+        ...result[0],
+        route: routeData
+      };
+    } catch (error) {
+      console.error("Error updating ride status:", error);
+      throw error;
+    }
   }
 
   async getNearbyRides(location: Location, type: string, radius: number): Promise<Ride[]> {
-    return [];
+    try {
+      // Get all rides of the specified type that are active
+      const allRides = await db.select().from(rides)
+        .where(
+          and(
+            eq(rides.type, type),
+            eq(rides.status, "active")
+          )
+        );
+      
+      // Calculate distance between the given location and each ride's start location
+      // and filter to include only those within the radius
+      const nearbyRides = allRides.map(ride => {
+        try {
+          const routeData = JSON.parse(ride.routeData as string);
+          return {
+            ...ride,
+            route: routeData
+          };
+        } catch (e) {
+          console.error(`Error parsing route data for ride ${ride.id}:`, e);
+          return null;
+        }
+      }).filter(ride => {
+        if (!ride) return false;
+        
+        // Calculate the distance between the given location and the ride's start location
+        const rideStart = ride.route.start;
+        const distance = this.calculateDistance(
+          location.lat, 
+          location.lng, 
+          rideStart.lat, 
+          rideStart.lng
+        );
+        
+        // Include the ride if it's within the radius
+        return distance <= radius;
+      }) as Ride[];
+      
+      return nearbyRides;
+    } catch (error) {
+      console.error("Error getting nearby rides:", error);
+      return [];
+    }
+  }
+  
+  // Helper function to calculate distance between two coordinates using Haversine formula
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLng = this.toRadians(lng2 - lng1);
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in kilometers
+    return distance;
+  }
+  
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
   }
 
   async findRideMatches(route: Route, type: string): Promise<Ride[]> {
     return [];
   }
 
-  async createRideMatch(match: InsertRideMatch): Promise<RideMatch> {
-    throw new Error("Method not implemented");
+  async createRideMatch(matchData: InsertRideMatch): Promise<RideMatch> {
+    try {
+      // Insert the ride match into the database
+      const result = await db.insert(rideMatches).values({
+        requestRideId: matchData.requestRideId,
+        offerRideId: matchData.offerRideId,
+        status: matchData.status || 'pending', // Default to pending if not provided
+        matchScore: matchData.matchScore
+      }).returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error("Failed to create ride match");
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error creating ride match:", error);
+      throw error;
+    }
   }
 
   async getRideMatches(rideId: number): Promise<RideMatch[]> {
-    return [];
+    try {
+      // Find ride matches where this ride is either the request or the offer
+      const matches = await db.select().from(rideMatches).where(
+        or(
+          eq(rideMatches.requestRideId, rideId),
+          eq(rideMatches.offerRideId, rideId)
+        )
+      );
+      
+      return matches;
+    } catch (error) {
+      console.error("Error getting ride matches:", error);
+      return [];
+    }
   }
 
   async updateRideMatchStatus(id: number, status: string): Promise<RideMatch> {
-    throw new Error("Method not implemented");
+    try {
+      // Update the ride match status in the database
+      const result = await db.update(rideMatches)
+        .set({ status })
+        .where(eq(rideMatches.id, id))
+        .returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error(`Ride match with ID ${id} not found`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error updating ride match status:", error);
+      throw error;
+    }
   }
 
   async getMessages(rideMatchId: number): Promise<Message[]> {
-    return [];
+    try {
+      // Get all messages for this ride match, ordered by creation time
+      const messagesTable = messages;
+      const messagesData = await db.select().from(messagesTable)
+        .where(eq(messagesTable.rideMatchId, rideMatchId))
+        .orderBy(messagesTable.createdAt);
+      
+      return messagesData;
+    } catch (error) {
+      console.error("Error getting messages:", error);
+      return [];
+    }
   }
 
-  async createMessage(message: InsertMessage): Promise<Message> {
-    throw new Error("Method not implemented");
+  async createMessage(messageData: InsertMessage): Promise<Message> {
+    try {
+      // Insert the message into the database
+      const messagesTable = messages;
+      const result = await db.insert(messagesTable).values({
+        rideMatchId: messageData.rideMatchId,
+        senderId: messageData.senderId,
+        content: messageData.content
+      }).returning();
+      
+      if (!result || result.length === 0) {
+        throw new Error("Failed to create message");
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error creating message:", error);
+      throw error;
+    }
   }
 
   async createRating(rating: InsertUserRating): Promise<UserRating> {
