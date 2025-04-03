@@ -48,7 +48,7 @@ const db = drizzle(pool);
 export interface IStorage {
   // Session store for authentication
   sessionStore: session.Store;
-  
+
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -77,18 +77,18 @@ export interface IStorage {
   // Rating operations
   createRating(rating: InsertUserRating): Promise<UserRating>;
   getUserRatings(userId: number): Promise<UserRating[]>;
-  
+
   // Achievement operations
   getAchievement(id: number): Promise<Achievement | undefined>;
   getAllAchievements(): Promise<Achievement[]>;
   getAchievementsByCategory(category: string): Promise<Achievement[]>;
   createAchievement(achievement: InsertAchievement): Promise<Achievement>;
-  
+
   // User Achievement operations
   getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]>;
   createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement>;
   updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement>;
-  
+
   // Saved Location operations
   getSavedLocation(id: number): Promise<SavedLocation | undefined>;
   getUserSavedLocations(userId: number): Promise<SavedLocation[]>;
@@ -123,7 +123,7 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // Prune expired entries every 24h
     });
-    
+
     this.users = new Map();
     this.rides = new Map();
     this.rideMatches = new Map();
@@ -140,432 +140,29 @@ export class MemStorage implements IStorage {
     this.achievementId = 1;
     this.userAchievementId = 1;
     this.savedLocationId = 1;
-    
+
     // Initialize with mock data
     this.initMockData();
   }
-  
+
   private initMockData() {
-    // Create a test user
-    const testUser = {
-      id: this.userId++,
-      name: "Kanish",
-      email: "test@example.com",
-      passwordHash: "$2a$10$EncryptedPasswordHash", // This would be a real bcrypt hash in production
-      role: "user",
-      avatar: "/images/kanish-selfie.jpg",
-      createdAt: new Date()
-    };
-    this.users.set(testUser.id, testUser);
-    
-    // Create a second user
-    const secondUser = {
-      id: this.userId++,
-      name: "Priya",
-      email: "priya@example.com",
-      passwordHash: "$2a$10$EncryptedPasswordHash",
-      role: "user",
-      avatar: "/images/priya-avatar.jpg",
-      createdAt: new Date()
-    };
-    this.users.set(secondUser.id, secondUser);
-    
-    // Create sample rides with Vadodara locations
-    const alkapuriToMSURoute = {
-      start: { lat: 22.3071, lng: 73.1812 },
-      end: { lat: 22.3149, lng: 73.1873 },
-      waypoints: []
-    };
-    
-    const alkapuriToMSURide = {
-      id: this.rideId++,
-      userId: testUser.id,
-      type: "offer",
-      status: "active",
-      vehicleType: "bike", // Using bike - 3 rupees per km
-      isPooling: false,
-      availableSeats: 1, // Bike can only have 1 passenger
-      price: this.calculatePrice(alkapuriToMSURoute, "bike", false), // Calculate price for bike
-      departureTime: new Date(Date.now() + 3600000), // 1 hour from now
-      routeData: JSON.stringify({
-        start: { name: "Alkapuri", lat: 22.3071, lng: 73.1812 },
-        end: { name: "MS University", lat: 22.3149, lng: 73.1873 }
-      }),
-      route: alkapuriToMSURoute,
-      createdAt: new Date()
-    };
-    this.rides.set(alkapuriToMSURide.id, alkapuriToMSURide);
-    
-    const fatehgunjToAirportRoute = {
-      start: { lat: 22.3218, lng: 73.1794 },
-      end: { lat: 22.3358, lng: 73.2274 },
-      waypoints: []
-    };
-    
-    const fatehgunjToAirportRide = {
-      id: this.rideId++,
-      userId: secondUser.id,
-      type: "offer",
-      status: "active",
-      vehicleType: "car", // Using car - 10 rupees per km
-      isPooling: true, // This is a carpool ride - reduced fare of 8 rupees per km
-      availableSeats: 3,
-      price: this.calculatePrice(fatehgunjToAirportRoute, "car", true), // Calculate price for carpooling
-      departureTime: new Date(Date.now() + 7200000), // 2 hours from now
-      routeData: JSON.stringify({
-        start: { name: "Fatehgunj", lat: 22.3218, lng: 73.1794 },
-        end: { name: "Vadodara Airport", lat: 22.3358, lng: 73.2274 }
-      }),
-      route: fatehgunjToAirportRoute,
-      createdAt: new Date()
-    };
-    this.rides.set(fatehgunjToAirportRide.id, fatehgunjToAirportRide);
-    
-    // Create a request ride
-    const sayajiToRailwayRoute = {
-      start: { lat: 22.3149, lng: 73.1857 },
-      end: { lat: 22.3095, lng: 73.1813 },
-      waypoints: []
-    };
-    
-    const sayajiToRailwayRide = {
-      id: this.rideId++,
-      userId: secondUser.id,
-      type: "request",
-      status: "active",
-      vehicleType: "car", // Requesting a car
-      isPooling: false, // No pooling for request
-      availableSeats: 1,
-      price: this.calculatePrice(sayajiToRailwayRoute, "car", false), // Calculate price for car
-      departureTime: new Date(Date.now() + 2700000), // 45 minutes from now
-      routeData: JSON.stringify({
-        start: { name: "Sayajigunj", lat: 22.3149, lng: 73.1857 },
-        end: { name: "Railway Station", lat: 22.3095, lng: 73.1813 }
-      }),
-      route: sayajiToRailwayRoute,
-      createdAt: new Date()
-    };
-    this.rides.set(sayajiToRailwayRide.id, sayajiToRailwayRide);
-    
-    // Create a ride match between two Vadodara rides
-    const matchVadodaraRides = {
-      id: this.rideMatchId++,
-      requestRideId: sayajiToRailwayRide.id,
-      offerRideId: alkapuriToMSURide.id,
-      status: "accepted",
-      matchScore: 0.85, // High match score
-      createdAt: new Date(Date.now() - 1800000) // 30 minutes ago
-    };
-    this.rideMatches.set(matchVadodaraRides.id, matchVadodaraRides);
-    
-    // Add some messages to the ride match
-    const messages = [
-      {
-        id: this.messageId++,
-        rideMatchId: matchVadodaraRides.id,
-        senderId: testUser.id,
-        content: "Hi! I'm heading to MS University and I can drop you at the Railway Station on the way.",
-        createdAt: new Date(Date.now() - 1700000) // 28 minutes ago
-      },
-      {
-        id: this.messageId++,
-        rideMatchId: matchVadodaraRides.id,
-        senderId: secondUser.id,
-        content: "That would be great! What time are you planning to leave from Alkapuri?",
-        createdAt: new Date(Date.now() - 1600000) // 27 minutes ago
-      },
-      {
-        id: this.messageId++,
-        rideMatchId: matchVadodaraRides.id,
-        senderId: testUser.id,
-        content: "I'll be leaving in about an hour. Is that okay for you?",
-        createdAt: new Date(Date.now() - 1500000) // 25 minutes ago
-      },
-      {
-        id: this.messageId++,
-        rideMatchId: matchVadodaraRides.id,
-        senderId: secondUser.id,
-        content: "Perfect! I'll be ready. Where should I meet you in Sayajigunj?",
-        createdAt: new Date(Date.now() - 1400000) // 23 minutes ago
-      },
-      {
-        id: this.messageId++,
-        rideMatchId: matchVadodaraRides.id,
-        senderId: testUser.id,
-        content: "Let's meet at Sayajigunj bus stop. I'll be in a white Swift with GJ-06 number plate.",
-        createdAt: new Date(Date.now() - 1300000) // 22 minutes ago
-      }
-    ];
-    
-    // Add messages to storage
-    messages.forEach(message => {
-      this.messages.set(message.id, message);
-    });
-    
-    // Create achievements
-    const achievements = [
-      {
-        id: this.achievementId++,
-        name: "First Ride",
-        description: "Complete your first ride",
-        points: 50,
-        icon: "car",
-        criteria: "Complete 1 ride",
-        category: "ride",
-        tier: "bronze",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Road Warrior",
-        description: "Complete 50 rides",
-        points: 200,
-        icon: "gauge",
-        criteria: "Complete 50 rides",
-        category: "ride",
-        tier: "silver",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Social Butterfly",
-        description: "Connect with 10 new riders",
-        points: 100,
-        icon: "users",
-        criteria: "Connect with 10 riders",
-        category: "social",
-        tier: "bronze",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Green Commuter",
-        description: "Save 100kg of CO2",
-        points: 150,
-        icon: "leaf",
-        criteria: "Reduce carbon emissions by sharing rides",
-        category: "eco",
-        tier: "bronze",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Eco Warrior",
-        description: "Save 500kg of CO2",
-        points: 300,
-        icon: "leaf",
-        criteria: "Reduce carbon emissions by sharing rides",
-        category: "eco",
-        tier: "silver",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Perfect Rating",
-        description: "Receive 10 five-star ratings",
-        points: 200,
-        icon: "star",
-        criteria: "Maintain excellent service as a rider",
-        category: "social",
-        tier: "silver",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Long Distance",
-        description: "Complete a ride over 100km",
-        points: 250,
-        icon: "gauge",
-        criteria: "Take on longer journeys",
-        category: "ride",
-        tier: "gold",
-        createdAt: new Date()
-      },
-      {
-        id: this.achievementId++,
-        name: "Top Contributor",
-        description: "Be in the top 1% of all riders",
-        points: 500,
-        icon: "trophy",
-        criteria: "Consistently offer rides and maintain high ratings",
-        category: "milestone",
-        tier: "platinum",
-        createdAt: new Date()
-      }
-    ];
-    
-    // Add achievements to storage
-    achievements.forEach(achievement => {
-      this.achievements.set(achievement.id, achievement);
-    });
-    
-    // Create user achievements for the test user
-    const userAchievements = [
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 1, // First Ride
-        progress: 100,
-        unlocked: true,
-        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), // 15 days ago
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 2, // Road Warrior
-        progress: 68,
-        unlocked: false,
-        unlockedAt: null,
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 3, // Social Butterfly
-        progress: 100,
-        unlocked: true,
-        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 4, // Green Commuter
-        progress: 100,
-        unlocked: true,
-        unlockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 5, // Eco Warrior
-        progress: 27,
-        unlocked: false,
-        unlockedAt: null,
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 6, // Perfect Rating
-        progress: 80,
-        unlocked: false,
-        unlockedAt: null,
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 7, // Long Distance
-        progress: 0,
-        unlocked: false,
-        unlockedAt: null,
-        createdAt: new Date()
-      },
-      {
-        id: this.userAchievementId++,
-        userId: testUser.id,
-        achievementId: 8, // Top Contributor
-        progress: 0,
-        unlocked: false,
-        unlockedAt: null,
-        createdAt: new Date()
-      }
-    ];
-    
-    // Add user achievements to storage
-    userAchievements.forEach(userAchievement => {
-      this.userAchievements.set(userAchievement.id, userAchievement);
-    });
-    
-    // Create saved locations for test users
-    const savedLocations = [
-      {
-        id: this.savedLocationId++,
-        userId: testUser.id,
-        name: "Home",
-        desc: "Alkapuri, Vadodara, Gujarat 390007",
-        icon: "home",
-        location: { lat: 22.3071, lng: 73.1812, name: "Alkapuri", address: "R.C. Dutt Road, Vadodara" },
-        isFavorite: true,
-        category: "home",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        geofenceRadius: 100, // meters
-        tags: ["home", "family"]
-      },
-      {
-        id: this.savedLocationId++,
-        userId: testUser.id,
-        name: "Work",
-        desc: "Race Course Circle, Vadodara, Gujarat 390007",
-        icon: "briefcase",
-        location: { lat: 22.3119, lng: 73.1795, name: "Race Course Circle", address: "Race Course Road, Vadodara" },
-        isFavorite: true,
-        category: "work",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 10), // 10 hours ago
-        geofenceRadius: 150, // meters
-        tags: ["work", "office"]
-      },
-      {
-        id: this.savedLocationId++,
-        userId: testUser.id,
-        name: "MS University",
-        desc: "Pratapgunj, Vadodara, Gujarat 390002",
-        icon: "school",
-        location: { lat: 22.3149, lng: 73.1873, name: "MS University", address: "Pratapgunj, Vadodara" },
-        isFavorite: false,
-        category: "education",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-        geofenceRadius: 200, // meters
-        tags: ["university", "education"]
-      },
-      {
-        id: this.savedLocationId++,
-        userId: testUser.id,
-        name: "Vadodara Airport",
-        desc: "Harni Road, Vadodara, Gujarat 390022",
-        icon: "plane",
-        location: { lat: 22.3358, lng: 73.2274, name: "Vadodara Airport", address: "Harni Road, Vadodara" },
-        isFavorite: false,
-        category: "travel",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), // 15 days ago
-        geofenceRadius: 300, // meters
-        tags: ["airport", "travel"]
-      },
-      {
-        id: this.savedLocationId++,
-        userId: secondUser.id,
-        name: "Home",
-        desc: "Karelibaug, Vadodara, Gujarat 390018",
-        icon: "home",
-        location: { lat: 22.3313, lng: 73.2037, name: "Karelibaug", address: "Karelibaug, Vadodara" },
-        isFavorite: true,
-        category: "home",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        geofenceRadius: 100, // meters
-        tags: ["home", "family"]
-      },
-      {
-        id: this.savedLocationId++,
-        userId: secondUser.id,
-        name: "Shopping Mall",
-        desc: "Inorbit Mall, Vadodara",
-        icon: "shopping-bag",
-        location: { lat: 22.2937, lng: 73.1954, name: "Inorbit Mall", address: "Vadodara" },
-        isFavorite: true,
-        category: "shopping",
-        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-        geofenceRadius: 150, // meters
-        tags: ["shopping", "entertainment"]
-      }
-    ];
-    
-    // Add saved locations to storage
-    savedLocations.forEach(location => {
-      this.savedLocations.set(location.id, location);
-    });
+    // Initialize empty data structures
+    this.users = new Map();
+    this.rides = new Map();
+    this.rideMatches = new Map();
+    this.messages = new Map();
+    this.userRatings = new Map();
+    this.achievements = new Map();
+    this.userAchievements = new Map();
+    this.savedLocations = new Map();
+    this.userId = 1;
+    this.rideId = 1;
+    this.rideMatchId = 1;
+    this.messageId = 1;
+    this.userRatingId = 1;
+    this.achievementId = 1;
+    this.userAchievementId = 1;
+    this.savedLocationId = 1;
   }
 
   // User operations
@@ -584,31 +181,31 @@ export class MemStorage implements IStorage {
       hasPasswordHash: !!insertUser.passwordHash,
       passwordHashLength: insertUser.passwordHash?.length
     });
-    
+
     const id = this.userId++;
     const user: User = { 
       id, 
       ...insertUser, 
       createdAt: new Date() 
     };
-    
+
     // Verify the passwordHash was correctly transferred
     console.log("User created with ID:", id, {
       hasPasswordHash: !!user.passwordHash,
       passwordHashLength: user.passwordHash?.length
     });
-    
+
     this.users.set(id, user);
     return user;
   }
-  
+
   async updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User> {
     const user = await this.getUser(id);
-    
+
     if (!user) {
       throw new Error(`User with id ${id} not found`);
     }
-    
+
     // Handle password update if provided
     if (userData.password) {
       // This would be the actual hash function in auth.ts
@@ -619,39 +216,39 @@ export class MemStorage implements IStorage {
         const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
         return `${hash}.${salt}`;
       };
-      
+
       // Update the passwordHash
       user.passwordHash = await hashPassword(userData.password);
-      
+
       // Remove password from userData to avoid storing it directly
       delete userData.password;
     }
-    
+
     // Update other user properties
     Object.assign(user, userData);
-    
+
     // Update the user in the map
     this.users.set(id, user);
-    
+
     return user;
   }
-  
+
   async getNearbyUsers(location: Location, radius: number): Promise<User[]> {
     // Get all users
     const allUsers = Array.from(this.users.values());
-    
+
     // In a real implementation, we would filter users by their last known location
     // For now, we'll simulate that all users are nearby (within the radius)
     return allUsers;
   }
-  
+
   async updateUserLocation(userId: number, location: Location): Promise<User> {
     const user = await this.getUser(userId);
-    
+
     if (!user) {
       throw new Error(`User with id ${userId} not found`);
     }
-    
+
     // In a real implementation, we would update the user's location in the database
     // For this demo in memory storage, we'll just return the user without updates
     return user;
@@ -672,33 +269,33 @@ export class MemStorage implements IStorage {
   private calculatePrice(route: Route, vehicleType: string = 'car', isPooling: boolean = false): number {
     // Get distance between start and end points
     const distance = this.getDistanceInKm(route.start, route.end);
-    
+
     // Calculate price based on vehicle type
     let pricePerKm = 15; // Default price for car is 15 rupees per km
-    
+
     if (vehicleType === 'bike') {
       pricePerKm = 6; // Price for bike is 6 rupees per km
     } else if (vehicleType === 'car' && isPooling) {
       // For carpooling, the price per km is reduced since costs are shared
       pricePerKm = 12; // Slightly reduced rate for carpooling
     }
-    
+
     const price = Math.ceil(distance * pricePerKm); // Round up to nearest rupee
-    
+
     return price;
   }
 
   async createRide(rideData: InsertRide & { route: Route }): Promise<Ride> {
     const id = this.rideId++;
     const { route, ...insertRide } = rideData;
-    
+
     // Get vehicle type and pooling status from the request (or use defaults)
     const vehicleType = insertRide.vehicleType || 'car';
     const isPooling = insertRide.isPooling || false;
-    
+
     // Calculate price based on vehicle type and pooling status
     const calculatedPrice = this.calculatePrice(route, vehicleType, isPooling);
-    
+
     const ride: Ride = {
       id,
       ...insertRide,
@@ -711,7 +308,7 @@ export class MemStorage implements IStorage {
       route, // Keep the route for frontend convenience
       createdAt: new Date()
     };
-    
+
     this.rides.set(id, ride);
     return ride;
   }
@@ -743,7 +340,7 @@ export class MemStorage implements IStorage {
       .filter(ride => {
         if (ride.type !== type) return false;
         if (ride.status !== 'active') return false;
-        
+
         // For simplicity, just check the starting point
         const distance = getDistanceInKm(location, ride.route.start);
         return distance <= radius;
@@ -754,26 +351,26 @@ export class MemStorage implements IStorage {
   async findRideMatches(route: Route, type: string): Promise<Ride[]> {
     // The opposite type we're looking for
     const oppositeType = type === 'request' ? 'offer' : 'request';
-    
+
     // Calculate route overlap
     const calculateMatchScore = (route1: Route, route2: Route): number => {
       // Simple distance-based matching for the prototype
       const startDistance = this.getDistanceInKm(route1.start, route2.start);
       const endDistance = this.getDistanceInKm(route1.end, route2.end);
-      
+
       // Lower distances mean better matches
       const maxDistance = 100; // km
       const startScore = Math.max(0, 1 - startDistance / maxDistance);
       const endScore = Math.max(0, 1 - endDistance / maxDistance);
-      
+
       return (startScore + endScore) / 2; // Average score between 0 and 1
     };
-    
+
     return Array.from(this.rides.values())
       .filter(ride => {
         if (ride.type !== oppositeType) return false;
         if (ride.status !== 'active') return false;
-        
+
         const matchScore = calculateMatchScore(route, ride.route);
         return matchScore > 0.3; // Only return rides with reasonable match score
       })
@@ -783,7 +380,7 @@ export class MemStorage implements IStorage {
         return scoreB - scoreA; // Sort by match score, highest first
       });
   }
-  
+
   // Helper method for distance calculation
   private getDistanceInKm(loc1: Location, loc2: Location): number {
     const R = 6371; // Earth's radius in km
@@ -861,23 +458,23 @@ export class MemStorage implements IStorage {
       .filter(rating => rating.ratedUserId === userId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
-  
+
   // Achievement operations
   async getAchievement(id: number): Promise<Achievement | undefined> {
     return this.achievements.get(id);
   }
-  
+
   async getAllAchievements(): Promise<Achievement[]> {
     return Array.from(this.achievements.values())
       .sort((a, b) => a.id - b.id);
   }
-  
+
   async getAchievementsByCategory(category: string): Promise<Achievement[]> {
     return Array.from(this.achievements.values())
       .filter(achievement => achievement.category === category)
       .sort((a, b) => a.id - b.id);
   }
-  
+
   async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
     const id = this.achievementId++;
     const newAchievement: Achievement = {
@@ -888,7 +485,7 @@ export class MemStorage implements IStorage {
     this.achievements.set(id, newAchievement);
     return newAchievement;
   }
-  
+
   // User Achievement operations
   async getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]> {
     return Array.from(this.userAchievements.values())
@@ -914,7 +511,7 @@ export class MemStorage implements IStorage {
         return b.progress - a.progress;
       });
   }
-  
+
   async createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement> {
     const id = this.userAchievementId++;
     const newUserAchievement: UserAchievement = {
@@ -928,35 +525,35 @@ export class MemStorage implements IStorage {
     this.userAchievements.set(id, newUserAchievement);
     return newUserAchievement;
   }
-  
+
   async updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement> {
     const userAchievement = this.userAchievements.get(id);
     if (!userAchievement) {
       throw new Error(`User achievement with id ${id} not found`);
     }
-    
+
     const wasUnlocked = userAchievement.unlocked;
     const isNowUnlocked = unlocked ?? (progress >= 100 ? true : wasUnlocked);
-    
+
     const updatedUserAchievement: UserAchievement = {
       ...userAchievement,
       progress: Math.min(100, progress),
       unlocked: isNowUnlocked,
       unlockedAt: isNowUnlocked && !wasUnlocked ? new Date() : userAchievement.unlockedAt
     };
-    
+
     this.userAchievements.set(id, updatedUserAchievement);
     return updatedUserAchievement;
   }
-  
+
   // Saved Location operations
   async getSavedLocation(id: number): Promise<SavedLocation | undefined> {
     const savedLocation = this.savedLocations.get(id);
     if (!savedLocation) return undefined;
-    
+
     return savedLocation;
   }
-  
+
   async getUserSavedLocations(userId: number): Promise<SavedLocation[]> {
     return Array.from(this.savedLocations.values())
       .filter(location => location.userId === userId)
@@ -964,24 +561,24 @@ export class MemStorage implements IStorage {
         // Sort by favorite status first, then by last used date
         if (a.isFavorite && !b.isFavorite) return -1;
         if (!a.isFavorite && b.isFavorite) return 1;
-        
+
         // If both have lastUsed dates, sort by most recent
         if (a.lastUsed && b.lastUsed) {
           return b.lastUsed.getTime() - a.lastUsed.getTime();
         }
-        
+
         // If only one has lastUsed, prioritize the one with lastUsed
         if (a.lastUsed && !b.lastUsed) return -1;
         if (!a.lastUsed && b.lastUsed) return 1;
-        
+
         // Otherwise, sort alphabetically by name
         return a.name.localeCompare(b.name);
       });
   }
-  
+
   async createSavedLocation(location: InsertSavedLocation): Promise<SavedLocation> {
     const id = this.savedLocationId++;
-    
+
     const newLocation: SavedLocation = {
       id,
       userId: location.userId,
@@ -995,33 +592,33 @@ export class MemStorage implements IStorage {
       geofenceRadius: location.geofenceRadius === null ? undefined : location.geofenceRadius,
       tags: location.tags === null ? undefined : location.tags,
     };
-    
+
     this.savedLocations.set(id, newLocation);
     return newLocation;
   }
-  
+
   async updateSavedLocation(id: number, locationUpdate: Partial<SavedLocation>): Promise<SavedLocation> {
     const location = await this.getSavedLocation(id);
     if (!location) throw new Error("Saved location not found");
-    
+
     const updatedLocation: SavedLocation = {
       ...location,
       ...locationUpdate,
       lastUsed: new Date()
     };
-    
+
     this.savedLocations.set(id, updatedLocation);
     return updatedLocation;
   }
-  
+
   async deleteSavedLocation(id: number): Promise<boolean> {
     const exists = this.savedLocations.has(id);
     if (!exists) return false;
-    
+
     this.savedLocations.delete(id);
     return true;
   }
-  
+
   async getUserSavedLocationsByCategory(userId: number, category: string): Promise<SavedLocation[]> {
     const userLocations = await this.getUserSavedLocations(userId);
     return userLocations.filter(location => location.category === category);
@@ -1031,14 +628,14 @@ export class MemStorage implements IStorage {
 // Database storage implementation
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
-  
+
   constructor() {
     // Initialize PostgreSQL session store
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true
     });
-    
+
     // Test database connection
     pool.query('SELECT NOW()', (err, res) => {
       if (err) {
@@ -1048,17 +645,17 @@ export class DatabaseStorage implements IStorage {
       }
     });
   }
-  
+
   async getUser(id: number): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
   }
-  
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     return result[0];
   }
-  
+
   async createUser(userData: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User> {
     const result = await db.insert(users).values({
       name: userData.name,
@@ -1067,10 +664,10 @@ export class DatabaseStorage implements IStorage {
       role: userData.role,
       avatar: userData.avatar
     }).returning();
-    
+
     return result[0];
   }
-  
+
   async updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User> {
     // Handle password update separately
     if (userData.password) {
@@ -1078,37 +675,37 @@ export class DatabaseStorage implements IStorage {
       const salt = randomBytes(16).toString("hex");
       const buf = (await scryptAsync(userData.password, salt, 64)) as Buffer;
       const passwordHash = `${buf.toString("hex")}.${salt}`;
-      
+
       // Remove password from userData
       delete userData.password;
-      
+
       // Update with new password hash
       const result = await db.update(users)
         .set({ ...userData, passwordHash })
         .where(eq(users.id, id))
         .returning();
-        
+
       return result[0];
     }
-    
+
     // Update without changing password
     const result = await db.update(users)
       .set(userData)
       .where(eq(users.id, id))
       .returning();
-      
+
     return result[0];
   }
-  
+
   // Implement the rest of the methods as needed
   // For now, we'll focus on the user-related functionality which is required for auth
-  
+
   // Return empty arrays or placeholder implementations for other methods
   async getNearbyUsers(location: Location, radius: number): Promise<User[]> {
     const allUsers = await db.select().from(users);
     return allUsers;
   }
-  
+
   async updateUserLocation(userId: number, location: Location): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) {
@@ -1116,107 +713,107 @@ export class DatabaseStorage implements IStorage {
     }
     return user;
   }
-  
+
   async getRide(id: number): Promise<Ride | undefined> {
     return undefined;
   }
-  
+
   async getUserRides(userId: number): Promise<Ride[]> {
     return [];
   }
-  
+
   async createRide(ride: InsertRide & { route: Route }): Promise<Ride> {
     throw new Error("Method not implemented");
   }
-  
+
   async updateRideStatus(id: number, status: string): Promise<Ride> {
     throw new Error("Method not implemented");
   }
-  
+
   async getNearbyRides(location: Location, type: string, radius: number): Promise<Ride[]> {
     return [];
   }
-  
+
   async findRideMatches(route: Route, type: string): Promise<Ride[]> {
     return [];
   }
-  
+
   async createRideMatch(match: InsertRideMatch): Promise<RideMatch> {
     throw new Error("Method not implemented");
   }
-  
+
   async getRideMatches(rideId: number): Promise<RideMatch[]> {
     return [];
   }
-  
+
   async updateRideMatchStatus(id: number, status: string): Promise<RideMatch> {
     throw new Error("Method not implemented");
   }
-  
+
   async getMessages(rideMatchId: number): Promise<Message[]> {
     return [];
   }
-  
+
   async createMessage(message: InsertMessage): Promise<Message> {
     throw new Error("Method not implemented");
   }
-  
+
   async createRating(rating: InsertUserRating): Promise<UserRating> {
     throw new Error("Method not implemented");
   }
-  
+
   async getUserRatings(userId: number): Promise<UserRating[]> {
     return [];
   }
-  
+
   async getAchievement(id: number): Promise<Achievement | undefined> {
     return undefined;
   }
-  
+
   async getAllAchievements(): Promise<Achievement[]> {
     return [];
   }
-  
+
   async getAchievementsByCategory(category: string): Promise<Achievement[]> {
     return [];
   }
-  
+
   async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
     throw new Error("Method not implemented");
   }
-  
+
   async getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]> {
     return [];
   }
-  
+
   async createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement> {
     throw new Error("Method not implemented");
   }
-  
+
   async updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement> {
     throw new Error("Method not implemented");
   }
-  
+
   async getSavedLocation(id: number): Promise<SavedLocation | undefined> {
     return undefined;
   }
-  
+
   async getUserSavedLocations(userId: number): Promise<SavedLocation[]> {
     return [];
   }
-  
+
   async createSavedLocation(location: InsertSavedLocation): Promise<SavedLocation> {
     throw new Error("Method not implemented");
   }
-  
+
   async updateSavedLocation(id: number, location: Partial<SavedLocation>): Promise<SavedLocation> {
     throw new Error("Method not implemented");
   }
-  
+
   async deleteSavedLocation(id: number): Promise<boolean> {
     return false;
   }
-  
+
   async getUserSavedLocationsByCategory(userId: number, category: string): Promise<SavedLocation[]> {
     return [];
   }

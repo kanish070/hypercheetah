@@ -21,34 +21,34 @@ export default function Passenger() {
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [isQuickMode, setIsQuickMode] = useState(false);
   const [_, setLocation] = useLocation();
-  
+
   // Parse URL query parameter for quick mode and auto-calculate route
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const quickParam = urlParams.get('quick');
     if (quickParam === 'true') {
       setIsQuickMode(true);
-      
+
       // Set default popular locations for quick route finding in India
       const delhiLocation = { lat: 28.6139, lng: 77.2090 }; // New Delhi
       const gurugramLocation = { lat: 28.4595, lng: 77.0266 }; // Gurugram
-      
+
       setStartLocation(delhiLocation);
       setEndLocation(gurugramLocation);
-      
+
       // Show toast notification for quick mode
       toast({
         title: "Quick Route Finder Activated",
         description: "We've selected popular locations for you. You can change them if needed.",
       });
-      
+
       // Automatically calculate route after a short delay
       setTimeout(async () => {
         try {
           setIsCalculatingRoute(true);
           const calculatedRoute = await calculateRoute(delhiLocation, gurugramLocation);
           setRoute(calculatedRoute);
-          
+
           toast({
             title: "Quick Route Found",
             description: "The fastest route has been automatically calculated for you.",
@@ -102,7 +102,7 @@ export default function Passenger() {
       setIsCalculatingRoute(true);
       const calculatedRoute = await calculateRoute(startLocation, endLocation);
       setRoute(calculatedRoute);
-      
+
       toast({
         title: "Route Calculated",
         description: "We found the fastest route for your journey."
