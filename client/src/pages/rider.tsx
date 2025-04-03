@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { LocationPicker } from "@/components/location-picker";
 import { RouteMap } from "@/components/route-map";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,19 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
-import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Bike, Users, IndianRupee, Bell, X, ThumbsUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Bike, Users, IndianRupee, Bell, X, ThumbsUp, HelpCircle } from "lucide-react";
 import { useLocation } from "wouter";
+import { MapSkeleton } from "@/components/map-skeleton";
+import { LocationCardSkeleton } from "@/components/location-card-skeleton";
+import { TooltipHelper } from "@/components/tooltip-helper";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Rider() {
   const { user } = useAuth(); // Get authenticated user
@@ -228,15 +233,13 @@ export default function Rider() {
             </div>
             
             {loadingActiveRides ? (
-              <Card className="bg-muted">
-                <CardContent className="p-6 text-center">
-                  <svg className="animate-spin mx-auto h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <p className="mt-2 text-muted-foreground">Loading your active rides...</p>
-                </CardContent>
-              </Card>
+              <div className="grid gap-4 md:grid-cols-2">
+                <LocationCardSkeleton />
+                <LocationCardSkeleton />
+                <div className="md:col-span-2 text-center text-sm text-muted-foreground mt-1">
+                  Loading your active rides...
+                </div>
+              </div>
             ) : activeRides.length === 0 ? (
               <Card className="bg-muted">
                 <CardContent className="p-6 text-center text-muted-foreground">
@@ -374,18 +377,38 @@ export default function Rider() {
             >
               {/* Location input */}
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Route Details</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => {
+                      toast({
+                        title: "Quick Tip",
+                        description: "Enter your starting point and destination to create a route. You can then offer rides along this route.",
+                      });
+                    }}
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <LocationPicker
                     placeholder="Enter starting location"
-                    onLocationSelect={setStartLocation}
+                    onLocationSelect={(location) => {
+                      setStartLocation(location);
+                      // Clear route when location changes
+                      if (route) setRoute(undefined);
+                    }}
                     selectedLocation={startLocation}
                   />
                   <LocationPicker
                     placeholder="Enter destination"
-                    onLocationSelect={setEndLocation}
+                    onLocationSelect={(location) => {
+                      setEndLocation(location);
+                      // Clear route when location changes
+                      if (route) setRoute(undefined);
+                    }}
                     selectedLocation={endLocation}
                   />
                   <Button
@@ -404,7 +427,7 @@ export default function Rider() {
                     ) : (
                       <span className="flex items-center">
                         <RouteIcon className="mr-2 h-4 w-4" />
-                        Calculate Route
+                        {route ? "Recalculate Route" : "Calculate Route"}
                       </span>
                     )}
                   </Button>
@@ -444,7 +467,12 @@ export default function Rider() {
 
                       {/* Vehicle Type Selection */}
                       <div className="space-y-3">
-                        <div className="font-medium">Vehicle Type:</div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium">Vehicle Type:</div>
+                          <TooltipHelper 
+                            content="Choose the vehicle you'll be using. Bikes are for single passengers, while cars can accommodate multiple riders and enable carpooling."
+                          />
+                        </div>
                         <RadioGroup 
                           value={vehicleType} 
                           onValueChange={(v: "car" | "bike") => {
@@ -460,20 +488,39 @@ export default function Rider() {
                           }}
                           className="flex space-x-4"
                         >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="car" id="car" />
-                            <Label htmlFor="car" className="flex items-center gap-1 cursor-pointer">
-                              <Car className="h-4 w-4" />
-                              <span>Car</span>
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="bike" id="bike" />
-                            <Label htmlFor="bike" className="flex items-center gap-1 cursor-pointer">
-                              <Bike className="h-4 w-4" />
-                              <span>Bike</span>
-                            </Label>
-                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="car" id="car" />
+                                  <Label htmlFor="car" className="flex items-center gap-1 cursor-pointer">
+                                    <Car className="h-4 w-4" />
+                                    <span>Car</span>
+                                  </Label>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p>₹15/km standard rate. Can enable carpooling for reduced rate.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="bike" id="bike" />
+                                  <Label htmlFor="bike" className="flex items-center gap-1 cursor-pointer">
+                                    <Bike className="h-4 w-4" />
+                                    <span>Bike</span>
+                                  </Label>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p>₹6/km rate. Limited to one passenger only.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </RadioGroup>
                       </div>
                       
@@ -481,13 +528,16 @@ export default function Rider() {
                       {vehicleType === "car" && (
                         <div className="flex items-center space-x-2">
                           <div className="font-medium">Enable Carpooling:</div>
+                          <TooltipHelper 
+                            content="Carpooling allows you to pick up multiple passengers along your route, reducing the per-person cost and environmental impact."
+                          />
                           <Switch
                             checked={isPooling}
                             onCheckedChange={setIsPooling}
                           />
                           {isPooling && (
                             <span className="text-xs text-muted-foreground">
-                              (Reduced price: ₹8 per km)
+                              (Reduced price: ₹12 per km)
                             </span>
                           )}
                         </div>
@@ -497,6 +547,12 @@ export default function Rider() {
                       <div className="flex items-center space-x-2">
                         <Users className="h-4 w-4 text-primary" />
                         <div className="font-medium">Available Seats:</div>
+                        <TooltipHelper 
+                          content={vehicleType === "bike" ? 
+                            "Bikes can only accommodate one passenger." : 
+                            "Select the number of seats available in your vehicle. This helps match you with the right number of passengers."
+                          }
+                        />
                         <div className="flex space-x-2">
                           {/* Show only 1 seat for bike, or up to 4 for car */}
                           {(vehicleType === "bike" ? [1] : [1, 2, 3, 4]).map(num => (
@@ -586,15 +642,13 @@ export default function Rider() {
                   </div>
                   
                   {isLoading ? (
-                    <Card className="bg-muted">
-                      <CardContent className="p-6 text-center">
-                        <svg className="animate-spin mx-auto h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p className="mt-2 text-muted-foreground">Searching for nearby passengers...</p>
-                      </CardContent>
-                    </Card>
+                    <div className="space-y-4">
+                      <LocationCardSkeleton />
+                      <LocationCardSkeleton />
+                      <div className="text-center text-sm text-muted-foreground mt-2">
+                        Searching for nearby passengers...
+                      </div>
+                    </div>
                   ) : nearbyRequests.length === 0 ? (
                     <Card className="bg-muted">
                       <CardContent className="p-6 text-center text-muted-foreground">
@@ -670,11 +724,24 @@ export default function Rider() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
+              className="relative"
             >
+              <AnimatePresence>
+                {isCalculatingRoute && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-10"
+                  >
+                    <MapSkeleton className="h-[600px]" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <RouteMap
                 center={startLocation || { lat: 22.3072, lng: 73.1812 }} /* Vadodara coordinates */
                 route={route}
-                className="h-[600px] shadow-xl rounded-xl overflow-hidden"
+                className={`h-[600px] shadow-xl rounded-xl overflow-hidden ${isCalculatingRoute ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
               />
             </motion.div>
           </div>
