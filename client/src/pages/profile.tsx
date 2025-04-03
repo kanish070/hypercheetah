@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,21 +33,25 @@ import { Gamification } from "@/components/gamification";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("overview");
-  const userId = 1; // Hardcoded for demo
+  const { user: authUser } = useAuth();
+  const userId = authUser?.id;
   
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['/api/users', userId],
-    queryFn: () => fetch(`/api/users/${userId}`).then(res => res.json()),
+  const { data: userDetails, isLoading: userLoading } = useQuery({
+    queryKey: ['/api/user'],
+    queryFn: () => fetch('/api/user').then(res => res.json()),
+    enabled: !!userId,
   });
   
   const { data: achievements, isLoading: achievementsLoading } = useQuery({
     queryKey: ['/api/users', userId, 'achievements'],
     queryFn: () => fetch(`/api/users/${userId}/achievements`).then(res => res.json()),
+    enabled: !!userId,
   });
   
   const { data: ratings, isLoading: ratingsLoading } = useQuery({
     queryKey: ['/api/users', userId, 'ratings'],
     queryFn: () => fetch(`/api/users/${userId}/ratings`).then(res => res.json()),
+    enabled: !!userId,
   });
   
   // Calculate stats based on loaded data
@@ -128,7 +133,7 @@ export default function Profile() {
               </Avatar>
               
               <div className="mt-4 flex flex-col items-center md:items-start">
-                <h1 className="text-2xl font-bold">{userLoading ? "Loading..." : user?.name || "John Doe"}</h1>
+                <h1 className="text-2xl font-bold">{userLoading ? "Loading..." : userDetails?.name || authUser?.name || "John Doe"}</h1>
                 <p className="text-muted-foreground">Joined {stats.memberSince}</p>
                 
                 <div className="flex items-center gap-3 mt-2">

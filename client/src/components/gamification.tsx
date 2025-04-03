@@ -128,7 +128,7 @@ const getCategoryDetails = (category: string) => {
 };
 
 interface GamificationProps {
-  userId: number;
+  userId: number | undefined;
 }
 
 export function Gamification({ userId }: GamificationProps) {
@@ -140,6 +140,7 @@ export function Gamification({ userId }: GamificationProps) {
   const { data: userAchievementsData, isLoading: isAchievementsLoading } = useQuery({
     queryKey: ['/api/users', userId, 'achievements'],
     queryFn: () => fetch(`/api/users/${userId}/achievements`).then(res => res.json()),
+    enabled: !!userId,
   });
   
   // Process the data from the API to match our Achievement interface
@@ -169,6 +170,7 @@ export function Gamification({ userId }: GamificationProps) {
   const { data: ecoImpact, isLoading: isEcoImpactLoading } = useQuery({
     queryKey: ['/api/users', userId, 'eco-impact'],
     queryFn: () => fetch(`/api/users/${userId}/eco-impact`).then(res => res.json()),
+    enabled: !!userId,
   });
   
   const filteredAchievements = userAchievements?.filter((achievement: Achievement) => 
