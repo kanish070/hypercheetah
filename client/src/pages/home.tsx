@@ -269,7 +269,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="chat" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6">
+                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-1 xs:gap-2 mb-6">
                   <TabsTrigger value="chat" className="w-full">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Chat
@@ -292,86 +292,86 @@ export default function Home() {
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="chat" className="p-4">
-                  <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Instant Messaging</h3>
-                    <p className="text-muted-foreground mb-4">Connect with ride partners through our real-time messaging system.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                <TabsContent value="chat" className="p-2">
+                  <div className="p-2 text-center">
+                    <h3 className="text-lg font-semibold mb-1">Instant Messaging</h3>
+                    <p className="text-muted-foreground mb-3 text-sm">Connect with ride partners through our real-time messaging system.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="w-full h-full"
+                        className="w-full max-h-full flex items-center justify-center"
                       >
-                        <img src="/src/assets/images/chat-illustration.svg" alt="Chat Interface" className="w-full h-full object-contain" />
+                        <img src="/src/assets/images/chat-illustration.svg" alt="Chat Interface" className="w-auto h-[250px] object-contain" />
                       </motion.div>
                     </div>
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="map" className="p-4">
-                  <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
-                    <p className="text-muted-foreground mb-4">View and navigate routes with our intelligent mapping system.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                <TabsContent value="map" className="p-2">
+                  <div className="p-2 text-center">
+                    <h3 className="text-lg font-semibold mb-1">Interactive Map</h3>
+                    <p className="text-muted-foreground mb-3 text-sm">View and navigate routes with our intelligent mapping system.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
-                        className="w-full h-full"
+                        className="w-full max-h-full flex items-center justify-center"
                       >
-                        <img src="/src/assets/images/map-illustration.svg" alt="Interactive Map" className="w-full h-full object-contain" />
+                        <img src="/src/assets/images/map-illustration.svg" alt="Interactive Map" className="w-auto h-[250px] object-contain" />
                       </motion.div>
                     </div>
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="location" className="p-4">
-                  <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Location Search</h3>
-                    <p className="text-muted-foreground mb-4">Find and select pickup and dropoff locations easily in Vadodara.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-teal-50 shadow-sm">
+                <TabsContent value="location" className="p-2">
+                  <div className="p-2 text-center">
+                    <h3 className="text-lg font-semibold mb-1">Location Search</h3>
+                    <p className="text-muted-foreground mb-3 text-sm">Find and select pickup and dropoff locations easily in Vadodara.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-teal-50 shadow-sm overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="w-full h-full"
+                        className="w-full max-h-full flex items-center justify-center"
                       >
-                        <img src="/src/assets/images/location-illustration.svg" alt="Location Search" className="w-full h-full object-contain" />
+                        <img src="/src/assets/images/location-illustration.svg" alt="Location Search" className="w-auto h-[250px] object-contain" />
                       </motion.div>
                     </div>
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="rides" className="p-4">
-                  <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Ride Options</h3>
-                    <p className="text-muted-foreground mb-4">Browse available ride matches along your route with detailed information.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                <TabsContent value="rides" className="p-2">
+                  <div className="p-2 text-center">
+                    <h3 className="text-lg font-semibold mb-1">Ride Options</h3>
+                    <p className="text-muted-foreground mb-3 text-sm">Browse available ride matches along your route with detailed information.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="w-full h-full"
+                        className="w-full max-h-full flex items-center justify-center"
                       >
-                        <img src="/src/assets/images/rides-illustration.svg" alt="Ride Options" className="w-full h-full object-contain" />
+                        <img src="/src/assets/images/rides-illustration.svg" alt="Ride Options" className="w-auto h-[250px] object-contain" />
                       </motion.div>
                     </div>
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="tracker" className="p-4">
-                  <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Live Tracking</h3>
-                    <p className="text-muted-foreground mb-4 px-4">See your ride partner's location in real-time with GPS tracking and ETA updates.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-green-50 shadow-sm">
+                <TabsContent value="tracker" className="p-2">
+                  <div className="p-2 text-center">
+                    <h3 className="text-lg font-semibold mb-1">Live Tracking</h3>
+                    <p className="text-muted-foreground mb-3 text-sm">See your ride partner's location in real-time with GPS tracking and ETA updates.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-green-50 shadow-sm overflow-hidden">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
-                        className="w-full h-full"
+                        className="w-full max-h-full flex items-center justify-center"
                       >
-                        <img src="/src/assets/images/tracker-illustration.svg" alt="Live GPS Tracking" className="w-full h-full object-contain" />
+                        <img src="/src/assets/images/tracker-illustration.svg" alt="Live GPS Tracking" className="w-auto h-[250px] object-contain" />
                       </motion.div>
                     </div>
                   </div>
