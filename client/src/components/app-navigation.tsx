@@ -172,7 +172,7 @@ export function AppNavigation() {
       <div className="container flex h-14 justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="mr-4 flex items-center">
-            <AppLogo size="sm" />
+            <AppLogo size="sm" headerLogo={true} />
           </Link>
         </div>
         
