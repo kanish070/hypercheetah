@@ -38,6 +38,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User>;
+  updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User>;
   getNearbyUsers(location: Location, radius: number): Promise<User[]>;
   updateUserLocation(userId: number, location: Location): Promise<User>;
 
@@ -583,6 +584,40 @@ export class MemStorage implements IStorage {
     });
     
     this.users.set(id, user);
+    return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User> {
+    const user = await this.getUser(id);
+    
+    if (!user) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    
+    // Handle password update if provided
+    if (userData.password) {
+      // This would be the actual hash function in auth.ts
+      // Here we're just simulating it for storage implementation
+      const hashPassword = async (password: string) => {
+        const crypto = require('crypto');
+        const salt = crypto.randomBytes(16).toString('hex');
+        const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+        return `${hash}.${salt}`;
+      };
+      
+      // Update the passwordHash
+      user.passwordHash = await hashPassword(userData.password);
+      
+      // Remove password from userData to avoid storing it directly
+      delete userData.password;
+    }
+    
+    // Update other user properties
+    Object.assign(user, userData);
+    
+    // Update the user in the map
+    this.users.set(id, user);
+    
     return user;
   }
   

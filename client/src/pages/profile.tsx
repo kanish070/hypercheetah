@@ -30,9 +30,11 @@ import {
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Gamification } from "@/components/gamification";
+import { ProfileEditForm } from "@/components/profile-edit-form";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const { user: authUser } = useAuth();
   const userId = authUser?.id;
   
@@ -266,7 +268,12 @@ export default function Profile() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => setProfileEditOpen(true)}
+                  >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
@@ -483,6 +490,12 @@ export default function Profile() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Profile Edit Dialog */}
+      <ProfileEditForm 
+        open={profileEditOpen} 
+        onOpenChange={setProfileEditOpen} 
+      />
     </div>
   );
 }

@@ -128,4 +128,30 @@ export function setupAuth(app: Express) {
     const { passwordHash, ...safeUser } = req.user as SelectUser;
     res.json(safeUser);
   });
+  
+  app.patch("/api/user", async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as SelectUser).id;
+      const userData = req.body;
+      
+      // Update the user in storage
+      const updatedUser = await storage.updateUser(userId, userData);
+      
+      // Update the session
+      req.login(updatedUser, (err) => {
+        if (err) return next(err);
+        
+        // Don't expose the password hash to the client
+        const { passwordHash, ...safeUser } = updatedUser;
+        res.json(safeUser);
+      });
+    } catch (error) {
+      console.error("User update error:", error);
+      res.status(500).json({ error: "Failed to update user profile" });
+    }
+  });
 }
