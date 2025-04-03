@@ -713,7 +713,7 @@ export default function EcoTracker() {
                   <CardHeader className="pb-3">
                     <CardTitle>Community Actions</CardTitle>
                     <CardDescription>
-                      Join local environmental initiatives with other HYPERCHEETAH users
+                      Join local environmental initiatives with other HyperCheetah users
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

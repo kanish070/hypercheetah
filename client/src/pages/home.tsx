@@ -88,7 +88,7 @@ export default function Home() {
               <AppLogo size="lg" />
             </div>
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-              HYPERCHEETAH
+              HyperCheetah
             </h1>
           </div>
           <p className="text-xl text-muted-foreground">
