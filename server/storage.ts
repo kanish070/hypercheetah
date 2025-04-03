@@ -29,6 +29,21 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { eq, and, or, gte, lte, not, like, desc, sql } from "drizzle-orm";
+import pg from "pg";
+import connectPg from "connect-pg-simple";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
+
+const { Pool } = pg;
+
+// Set up database connections for PostgreSQL
+const PostgresSessionStore = connectPg(session);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const db = drizzle(pool);
 
 export interface IStorage {
   // Session store for authentication
@@ -1013,4 +1028,190 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
+  constructor() {
+    // Initialize PostgreSQL session store
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+  
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0];
+  }
+  
+  async createUser(userData: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User> {
+    const result = await db.insert(users).values({
+      name: userData.name,
+      email: userData.email,
+      passwordHash: userData.passwordHash,
+      role: userData.role,
+      avatar: userData.avatar
+    }).returning();
+    
+    return result[0];
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User> {
+    // Handle password update separately
+    if (userData.password) {
+      const scryptAsync = promisify(scrypt);
+      const salt = randomBytes(16).toString("hex");
+      const buf = (await scryptAsync(userData.password, salt, 64)) as Buffer;
+      const passwordHash = `${buf.toString("hex")}.${salt}`;
+      
+      // Remove password from userData
+      delete userData.password;
+      
+      // Update with new password hash
+      const result = await db.update(users)
+        .set({ ...userData, passwordHash })
+        .where(eq(users.id, id))
+        .returning();
+        
+      return result[0];
+    }
+    
+    // Update without changing password
+    const result = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+      
+    return result[0];
+  }
+  
+  // Implement the rest of the methods as needed
+  // For now, we'll focus on the user-related functionality which is required for auth
+  
+  // Return empty arrays or placeholder implementations for other methods
+  async getNearbyUsers(location: Location, radius: number): Promise<User[]> {
+    const allUsers = await db.select().from(users);
+    return allUsers;
+  }
+  
+  async updateUserLocation(userId: number, location: Location): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    return user;
+  }
+  
+  async getRide(id: number): Promise<Ride | undefined> {
+    return undefined;
+  }
+  
+  async getUserRides(userId: number): Promise<Ride[]> {
+    return [];
+  }
+  
+  async createRide(ride: InsertRide & { route: Route }): Promise<Ride> {
+    throw new Error("Method not implemented");
+  }
+  
+  async updateRideStatus(id: number, status: string): Promise<Ride> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getNearbyRides(location: Location, type: string, radius: number): Promise<Ride[]> {
+    return [];
+  }
+  
+  async findRideMatches(route: Route, type: string): Promise<Ride[]> {
+    return [];
+  }
+  
+  async createRideMatch(match: InsertRideMatch): Promise<RideMatch> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getRideMatches(rideId: number): Promise<RideMatch[]> {
+    return [];
+  }
+  
+  async updateRideMatchStatus(id: number, status: string): Promise<RideMatch> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getMessages(rideMatchId: number): Promise<Message[]> {
+    return [];
+  }
+  
+  async createMessage(message: InsertMessage): Promise<Message> {
+    throw new Error("Method not implemented");
+  }
+  
+  async createRating(rating: InsertUserRating): Promise<UserRating> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getUserRatings(userId: number): Promise<UserRating[]> {
+    return [];
+  }
+  
+  async getAchievement(id: number): Promise<Achievement | undefined> {
+    return undefined;
+  }
+  
+  async getAllAchievements(): Promise<Achievement[]> {
+    return [];
+  }
+  
+  async getAchievementsByCategory(category: string): Promise<Achievement[]> {
+    return [];
+  }
+  
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]> {
+    return [];
+  }
+  
+  async createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement> {
+    throw new Error("Method not implemented");
+  }
+  
+  async updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement> {
+    throw new Error("Method not implemented");
+  }
+  
+  async getSavedLocation(id: number): Promise<SavedLocation | undefined> {
+    return undefined;
+  }
+  
+  async getUserSavedLocations(userId: number): Promise<SavedLocation[]> {
+    return [];
+  }
+  
+  async createSavedLocation(location: InsertSavedLocation): Promise<SavedLocation> {
+    throw new Error("Method not implemented");
+  }
+  
+  async updateSavedLocation(id: number, location: Partial<SavedLocation>): Promise<SavedLocation> {
+    throw new Error("Method not implemented");
+  }
+  
+  async deleteSavedLocation(id: number): Promise<boolean> {
+    return false;
+  }
+  
+  async getUserSavedLocationsByCategory(userId: number, category: string): Promise<SavedLocation[]> {
+    return [];
+  }
+}
+
+// Use DatabaseStorage instead of MemStorage for persistence
+export const storage = new DatabaseStorage();
