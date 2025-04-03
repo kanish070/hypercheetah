@@ -9,6 +9,7 @@ import Passenger from "@/pages/passenger";
 import Rider from "@/pages/rider";
 import Social from "@/pages/social";
 import Profile from "@/pages/profile";
+import ProfilePage from "@/pages/profile-page";
 import EcoTracker from "@/pages/eco-tracker";
 import { SavedLocationsPage } from "@/pages/saved-locations-page";
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/rider" component={Rider} />
       <Route path="/social" component={Social} />
       <Route path="/profile" component={Profile} />
+      <Route path="/profile-v2" component={ProfilePage} />
       <Route path="/eco-tracker" component={EcoTracker} />
       <Route path="/locations" component={SavedLocationsPage} />
       <Route component={NotFound} />
