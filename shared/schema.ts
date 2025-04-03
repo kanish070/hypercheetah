@@ -2,6 +2,13 @@ import { pgTable, text, serial, doublePrecision, integer, timestamp, jsonb, bool
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session table for connect-pg-simple
+export const sessions = pgTable("session", {
+  sid: text("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire", { mode: "date" }).notNull()
+});
+
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),

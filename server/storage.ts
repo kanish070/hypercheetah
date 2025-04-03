@@ -647,54 +647,74 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    try {
+      const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting user by id:", error);
+      return undefined;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
+    try {
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting user by email:", error);
+      return undefined;
+    }
   }
 
   async createUser(userData: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User> {
-    const result = await db.insert(users).values({
-      name: userData.name,
-      email: userData.email,
-      passwordHash: userData.passwordHash,
-      role: userData.role,
-      avatar: userData.avatar
-    }).returning();
-
-    return result[0];
+    try {
+      const result = await db.insert(users).values({
+        name: userData.name,
+        email: userData.email,
+        passwordHash: userData.passwordHash,
+        role: userData.role || "user",
+        avatar: userData.avatar
+      }).returning();
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw new Error("Failed to create user");
+    }
   }
 
   async updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User> {
-    // Handle password update separately
-    if (userData.password) {
-      const scryptAsync = promisify(scrypt);
-      const salt = randomBytes(16).toString("hex");
-      const buf = (await scryptAsync(userData.password, salt, 64)) as Buffer;
-      const passwordHash = `${buf.toString("hex")}.${salt}`;
+    try {
+      // Handle password update separately
+      if (userData.password) {
+        const scryptAsync = promisify(scrypt);
+        const salt = randomBytes(16).toString("hex");
+        const buf = (await scryptAsync(userData.password, salt, 64)) as Buffer;
+        const passwordHash = `${buf.toString("hex")}.${salt}`;
 
-      // Remove password from userData
-      delete userData.password;
+        // Remove password from userData
+        delete userData.password;
 
-      // Update with new password hash
+        // Update with new password hash
+        const result = await db.update(users)
+          .set({ ...userData, passwordHash })
+          .where(eq(users.id, id))
+          .returning();
+
+        return result[0];
+      }
+
+      // Update without changing password
       const result = await db.update(users)
-        .set({ ...userData, passwordHash })
+        .set(userData)
         .where(eq(users.id, id))
         .returning();
 
       return result[0];
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw new Error("Failed to update user");
     }
-
-    // Update without changing password
-    const result = await db.update(users)
-      .set(userData)
-      .where(eq(users.id, id))
-      .returning();
-
-    return result[0];
   }
 
   // Implement the rest of the methods as needed
@@ -702,16 +722,31 @@ export class DatabaseStorage implements IStorage {
 
   // Return empty arrays or placeholder implementations for other methods
   async getNearbyUsers(location: Location, radius: number): Promise<User[]> {
-    const allUsers = await db.select().from(users);
-    return allUsers;
+    try {
+      // For now, just return all users
+      // In a real implementation, we would filter by location proximity
+      const allUsers = await db.select().from(users);
+      return allUsers;
+    } catch (error) {
+      console.error("Error getting nearby users:", error);
+      return [];
+    }
   }
 
   async updateUserLocation(userId: number, location: Location): Promise<User> {
-    const user = await this.getUser(userId);
-    if (!user) {
-      throw new Error(`User with id ${userId} not found`);
+    try {
+      const user = await this.getUser(userId);
+      if (!user) {
+        throw new Error(`User with id ${userId} not found`);
+      }
+      
+      // In a real implementation, we would update the user's location
+      // For now, just return the user
+      return user;
+    } catch (error) {
+      console.error("Error updating user location:", error);
+      throw new Error("Failed to update user location");
     }
-    return user;
   }
 
   async getRide(id: number): Promise<Ride | undefined> {
