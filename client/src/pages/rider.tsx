@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { calculateRoute, formatDistance, formatTime, getDistanceInKm, getEstimatedTime } from "@/lib/maps";
 import { apiRequest } from "@/lib/queryClient";
 import type { Location, Route, Ride } from "@shared/schema";
@@ -18,6 +19,7 @@ import { ArrowLeft, Clock, MapPin, Route as RouteIcon, Car, Bike, Users, IndianR
 import { useLocation } from "wouter";
 
 export default function Rider() {
+  const { user } = useAuth(); // Get authenticated user
   const [startLocation, setStartLocation] = useState<Location>();
   const [endLocation, setEndLocation] = useState<Location>();
   const [route, setRoute] = useState<Route>();
@@ -28,7 +30,7 @@ export default function Rider() {
   const [availableSeats, setAvailableSeats] = useState(3);
   const [_, setLocation] = useLocation();
 
-  const { data: nearbyRequests = [], isLoading } = useQuery({
+  const { data: nearbyRequests = [], isLoading } = useQuery<Ride[]>({
     queryKey: ["/api/rides/nearby", startLocation],
     enabled: !!startLocation && isActive,
     queryFn: async () => {
@@ -36,17 +38,24 @@ export default function Rider() {
         location: JSON.stringify(startLocation),
         type: "request"
       });
-      return apiRequest<Ride[]>(`/api/rides/nearby?${params}`);
+      const response = await fetch(`/api/rides/nearby?${params}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch nearby ride requests");
+      }
+      return response.json();
     }
   });
 
-  const createRideMutation = useMutation({
+  const createRideMutation = useMutation<Ride>({
     mutationFn: async () => {
-      if (!route) return;
-      return apiRequest<Ride>("/api/rides", {
+      if (!route || !user) throw new Error("Route or user is not available");
+      const response = await fetch("/api/rides", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          userId: 1, // In a real app, this would come from auth
+          userId: user.id, // Use authenticated user ID
           type: "offer",
           route,
           status: "active",
@@ -55,8 +64,14 @@ export default function Rider() {
           availableSeats, // Use state value
           departureTime: new Date().toISOString(),
           routeData: JSON.stringify(route)
-        } as any)
+        })
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to create ride offer");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -91,6 +106,15 @@ export default function Rider() {
   };
 
   const toggleActive = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to start offering rides.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!route) {
       toast({
         title: "Set Route First",
