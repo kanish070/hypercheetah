@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300">
+  <!-- Background -->
+  <rect width="500" height="300" fill="#f8fafc" />
+  <path d="M 0,300 L 500,300 L 500,240 C 450,260 400,230 350,250 C 300,270 250,240 200,260 C 150,280 100,250 50,270 C 25,280 10,275 0,270 Z" fill="#f0fdf4" opacity="0.5" />
+  
+  <!-- Map area -->
+  <rect x="50" y="30" width="400" height="220" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1" />
+  
+  <!-- Map roads -->
+  <path d="M 100,60 L 100,250 M 200,60 L 200,250 M 300,60 L 300,250 M 400,60 L 400,250 M 50,100 L 450,100 M 50,150 L 450,150 M 50,200 L 450,200" stroke="#e2e8f0" stroke-width="2" />
+  
+  <!-- Moving car with pulsing location -->
+  <g transform="translate(300, 150)">
+    <circle cx="0" cy="0" r="25" fill="#22c55e" opacity="0.2">
+      <animate attributeName="r" values="25;35;25" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.2;0.1;0.2" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="0" cy="0" r="15" fill="#22c55e" opacity="0.3">
+      <animate attributeName="r" values="15;20;15" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.3;0.2;0.3" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="0" cy="0" r="8" fill="#22c55e" />
+    
+    <!-- Car icon -->
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#166534" />
+    <rect x="-5" y="-7" width="10" height="3" rx="1" fill="#166534" />
+    <circle cx="-4" cy="4" r="2" fill="#000000" opacity="0.5" />
+    <circle cx="4" cy="4" r="2" fill="#000000" opacity="0.5" />
+  </g>
+  
+  <!-- Destination marker -->
+  <g transform="translate(100, 80)">
+    <path d="M 0,-15 C 8,-15 15,-8 15,0 C 15,8 8,15 0,15 C -8,15 -15,8 -15,0 C -15,-8 -8,-15 0,-15 Z" fill="#ef4444" />
+    <circle cx="0" cy="0" r="5" fill="white" />
+    <text x="0" y="30" font-family="Arial" font-size="10" fill="#ef4444" text-anchor="middle">Destination</text>
+  </g>
+  
+  <!-- Route line -->
+  <path d="M 100,80 C 150,70 200,180 250,170 C 280,165 290,160 300,150" stroke="#22c55e" stroke-width="3" fill="none" stroke-dasharray="5,3" />
+  
+  <!-- Travel info panel -->
+  <rect x="70" y="230" width="140" height="65" rx="5" fill="white" stroke="#e2e8f0" stroke-width="1" />
+  <text x="100" y="250" font-family="Arial" font-size="12" fill="#0f172a" text-anchor="left">ETA: 12 min</text>
+  <text x="100" y="270" font-family="Arial" font-size="12" fill="#0f172a" text-anchor="left">Distance: 3.2 km</text>
+  <text x="100" y="290" font-family="Arial" font-size="12" fill="#0f172a" text-anchor="left">Speed: 32 km/h</text>
+  
+  <!-- Car icon in panel -->
+  <circle cx="85" cy="265" r="12" fill="#f8fafc" />
+  <path d="M 78,265 L 92,265 M 80,262 L 90,262 L 90,268 L 80,268 Z M 81,269 L 83,269 M 87,269 L 89,269" stroke="#0f172a" stroke-width="1.5" fill="none" />
+  
+  <!-- Driver info -->
+  <g transform="translate(300, 240)">
+    <rect x="0" y="0" width="150" height="50" rx="5" fill="white" stroke="#e2e8f0" stroke-width="1" />
+    <circle cx="25" cy="25" r="15" fill="#bae6fd" />
+    <path d="M 25,18 C 28,18 31,21 31,24 C 31,27 28,30 25,30 C 22,30 19,27 19,24 C 19,21 22,18 25,18 Z M 18,35 C 18,32 30,32 32,35" fill="#0ea5e9" />
+    <text x="50" y="20" font-family="Arial" font-size="10" fill="#0f172a">Ravi Kumar</text>
+    <text x="50" y="35" font-family="Arial" font-size="10" fill="#64748b">Driver • 4.9 ★</text>
+    <rect x="105" y="15" width="35" height="20" rx="10" fill="#0ea5e9" />
+    <text x="122" y="28" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Call</text>
+  </g>
+  
+  <!-- Location pulse on current position -->
+  <circle cx="300" cy="150" r="3" fill="#ef4444">
+    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+  </circle>
+</svg>

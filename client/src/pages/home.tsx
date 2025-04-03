@@ -296,9 +296,15 @@ export default function Home() {
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Instant Messaging</h3>
                     <p className="text-muted-foreground mb-4">Connect with ride partners through our real-time messaging system.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
-                      <MessageSquare className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
-                      <span className="text-muted-foreground">In-app messaging between ride partners</span>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full"
+                      >
+                        <img src="/src/assets/images/chat-illustration.svg" alt="Chat Interface" className="w-full h-full object-contain" />
+                      </motion.div>
                     </div>
                   </div>
                 </TabsContent>
@@ -306,10 +312,16 @@ export default function Home() {
                 <TabsContent value="map" className="p-4">
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
-                    <p className="text-muted-foreground mb-4">View and navigate routes with our interactive map system.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
-                      <MapPin className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
-                      <span className="text-muted-foreground">Interactive map with route visualization</span>
+                    <p className="text-muted-foreground mb-4">View and navigate routes with our intelligent mapping system.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full"
+                      >
+                        <img src="/src/assets/images/map-illustration.svg" alt="Interactive Map" className="w-full h-full object-contain" />
+                      </motion.div>
                     </div>
                   </div>
                 </TabsContent>
@@ -317,10 +329,16 @@ export default function Home() {
                 <TabsContent value="location" className="p-4">
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Location Search</h3>
-                    <p className="text-muted-foreground mb-4">Find and select pickup and dropoff locations easily.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex flex-col items-center justify-center bg-muted/20 mt-6">
-                      <Navigation className="h-10 w-10 text-primary opacity-80 mb-4" />
-                      <span className="text-foreground">Search and select locations with suggestions</span>
+                    <p className="text-muted-foreground mb-4">Find and select pickup and dropoff locations easily in Vadodara.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-teal-50 shadow-sm">
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full"
+                      >
+                        <img src="/src/assets/images/location-illustration.svg" alt="Location Search" className="w-full h-full object-contain" />
+                      </motion.div>
                     </div>
                   </div>
                 </TabsContent>
@@ -328,10 +346,16 @@ export default function Home() {
                 <TabsContent value="rides" className="p-4">
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Ride Options</h3>
-                    <p className="text-muted-foreground mb-4">Browse available ride matches along your route.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
-                      <Car className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
-                      <span className="text-muted-foreground">View and select from available ride matches</span>
+                    <p className="text-muted-foreground mb-4">Browse available ride matches along your route with detailed information.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-blue-50 shadow-sm">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full"
+                      >
+                        <img src="/src/assets/images/rides-illustration.svg" alt="Ride Options" className="w-full h-full object-contain" />
+                      </motion.div>
                     </div>
                   </div>
                 </TabsContent>
@@ -339,10 +363,16 @@ export default function Home() {
                 <TabsContent value="tracker" className="p-4">
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold mb-2">Live Tracking</h3>
-                    <p className="text-muted-foreground mb-4 px-4">See your ride partner's location in real-time with GPS tracking.</p>
-                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-muted/20">
-                      <Share className="h-10 w-10 text-muted-foreground opacity-40 mr-2" />
-                      <span className="text-muted-foreground">Real-time location sharing and ride tracking</span>
+                    <p className="text-muted-foreground mb-4 px-4">See your ride partner's location in real-time with GPS tracking and ETA updates.</p>
+                    <div className="border rounded-lg p-4 h-[300px] flex items-center justify-center bg-gradient-to-b from-white to-green-50 shadow-sm">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full"
+                      >
+                        <img src="/src/assets/images/tracker-illustration.svg" alt="Live GPS Tracking" className="w-full h-full object-contain" />
+                      </motion.div>
                     </div>
                   </div>
                 </TabsContent>

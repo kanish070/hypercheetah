@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300">
+  <!-- Background with subtle pattern -->
+  <rect width="500" height="300" fill="#f8fafc" />
+  <path d="M0,300 L500,300 L500,250 C400,280 300,240 200,270 C100,300 50,280 0,250 Z" fill="#f0f4f8" opacity="0.7" />
+  
+  <!-- Stylized chat bubbles -->
+  <g transform="translate(100, 80)">
+    <!-- Left chat bubble -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="120" height="60" rx="12" fill="#e0e7ff" />
+      <text x="15" y="25" font-family="Arial" font-size="12" fill="#4338ca">
+        <tspan x="15" y="25">Hi there! Need a</tspan>
+        <tspan x="15" y="45">ride to the mall?</tspan>
+      </text>
+      <!-- Avatar -->
+      <circle cx="20" cy="-15" r="15" fill="#6366f1" />
+      <text x="20" y="-10" font-family="Arial" font-size="12" fill="white" text-anchor="middle">A</text>
+    </g>
+    
+    <!-- Right chat bubble -->
+    <g transform="translate(200, 80)">
+      <rect x="0" y="0" width="130" height="60" rx="12" fill="#dbeafe" />
+      <text x="15" y="25" font-family="Arial" font-size="12" fill="#1e40af">
+        <tspan x="15" y="25">Yes, I'll be leaving</tspan>
+        <tspan x="15" y="45">in about 20 min!</tspan>
+      </text>
+      <!-- Avatar -->
+      <circle cx="110" cy="-15" r="15" fill="#3b82f6" />
+      <text x="110" y="-10" font-family="Arial" font-size="12" fill="white" text-anchor="middle">B</text>
+    </g>
+    
+    <!-- Typing indicator -->
+    <g transform="translate(30, 180)">
+      <circle cx="0" cy="0" r="4" fill="#6366f1">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="15" cy="0" r="4" fill="#6366f1">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="30" cy="0" r="4" fill="#6366f1">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+      </circle>
+    </g>
+  </g>
+  
+  <!-- Connection lines -->
+  <path d="M180,140 C200,160 220,170 240,150" stroke="#c7d2fe" stroke-width="2" fill="none" stroke-dasharray="5,5" />
+  <path d="M240,150 C260,130 280,170 300,160" stroke="#c7d2fe" stroke-width="2" fill="none" stroke-dasharray="5,5" />
+</svg>

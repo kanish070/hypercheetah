@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300">
+  <!-- Background map -->
+  <rect width="500" height="300" fill="#eef2ff" />
+  
+  <!-- Map grid pattern -->
+  <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#d1d5db" stroke-width="0.5" />
+  </pattern>
+  <rect width="500" height="300" fill="url(#grid)" />
+  
+  <!-- Roads -->
+  <path d="M 50,150 L 450,150" stroke="#94a3b8" stroke-width="12" fill="none" />
+  <path d="M 50,150 L 450,150" stroke="#f8fafc" stroke-width="10" stroke-dasharray="10,10" fill="none" />
+  <path d="M 250,50 L 250,250" stroke="#94a3b8" stroke-width="12" fill="none" />
+  <path d="M 250,50 L 250,250" stroke="#f8fafc" stroke-width="10" stroke-dasharray="10,10" fill="none" />
+  
+  <!-- Curved route path -->
+  <path d="M 100,100 C 140,130 180,80 220,100 C 260,120 300,150 340,130 C 380,110 400,150 420,180" 
+        stroke="#3b82f6" stroke-width="4" fill="none" stroke-linecap="round" />
+  
+  <!-- Start point -->
+  <circle cx="100" cy="100" r="10" fill="#4f46e5" />
+  <circle cx="100" cy="100" r="5" fill="white" />
+  
+  <!-- End point -->
+  <circle cx="420" cy="180" r="10" fill="#ef4444" />
+  <circle cx="420" cy="180" r="5" fill="white" />
+  
+  <!-- Route points -->
+  <circle cx="220" cy="100" r="6" fill="#3b82f6" />
+  <circle cx="340" cy="130" r="6" fill="#3b82f6" />
+  
+  <!-- Car moving along path -->
+  <g transform="translate(260, 120)">
+    <rect x="-12" y="-8" width="24" height="16" rx="4" fill="#fbbf24" />
+    <circle cx="-6" cy="8" r="3" fill="#292524">
+      <animate attributeName="opacity" values="1;0.7;1" dur="1s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="6" cy="8" r="3" fill="#292524">
+      <animate attributeName="opacity" values="1;0.7;1" dur="1s" repeatCount="indefinite" />
+    </circle>
+    <rect x="-8" y="-12" width="16" height="10" rx="2" fill="#fbbf24" />
+    <animateMotion path="M -160,-20 C -120,10 -80,-40 -40,-20 C 0,0 40,30 80,10 C 120,-10 140,30 160,60" 
+                  dur="5s" repeatCount="indefinite" />
+  </g>
+  
+  <!-- Location pins and labels -->
+  <g transform="translate(180, 200)">
+    <path d="M 0,-20 C 10,-20 20,-10 20,0 C 20,10 10,20 0,20 C -10,20 -20,10 -20,0 C -20,-10 -10,-20 0,-20 Z" fill="#7c3aed" />
+    <path d="M 0,0 L 0,20" stroke="#7c3aed" stroke-width="4" />
+    <circle cx="0" cy="0" r="5" fill="white" />
+    <text x="0" y="35" font-family="Arial" font-size="10" fill="#4c1d95" text-anchor="middle">Coffee Shop</text>
+  </g>
+  
+  <g transform="translate(350, 70)">
+    <path d="M 0,-20 C 10,-20 20,-10 20,0 C 20,10 10,20 0,20 C -10,20 -20,10 -20,0 C -20,-10 -10,-20 0,-20 Z" fill="#2563eb" />
+    <path d="M 0,0 L 0,20" stroke="#2563eb" stroke-width="4" />
+    <circle cx="0" cy="0" r="5" fill="white" />
+    <text x="0" y="35" font-family="Arial" font-size="10" fill="#1e40af" text-anchor="middle">Office</text>
+  </g>
+  
+  <!-- Distance & time indicator -->
+  <g transform="translate(250, 40)">
+    <rect x="-70" y="-15" width="140" height="30" rx="5" fill="white" stroke="#d1d5db" stroke-width="1" />
+    <text x="0" y="5" font-family="Arial" font-size="12" fill="#4b5563" text-anchor="middle">12.5 km • 22 min</text>
+  </g>
+</svg>
