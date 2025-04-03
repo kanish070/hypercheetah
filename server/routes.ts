@@ -13,7 +13,8 @@ import {
   insertSavedLocationSchema,
   Location,
   Route,
-  SavedLocation
+  SavedLocation,
+  User
 } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -45,6 +46,42 @@ export async function registerRoutes(app: Express) {
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+  
+  // Get nearby users
+  app.get("/api/users/nearby", async (req, res) => {
+    try {
+      const radiusStr = req.query.radius as string;
+      const radius = radiusStr ? parseInt(radiusStr) : 10; // Default 10km radius
+      
+      // If authenticated, use the current user's location
+      if (req.isAuthenticated()) {
+        const currentUserId = (req.user as any).id;
+        
+        // In a real app, we would get the user's current location from a database or cache
+        // For now, we'll use a simulated location for Vadodara
+        const currentUserLocation = { lat: 22.3072, lng: 73.1812 }; // Alkapuri, Vadodara
+        
+        // Get all users within the radius
+        const users = await storage.getNearbyUsers(currentUserLocation, radius);
+        
+        // Filter out the current user
+        const nearbyUsers = users
+          .filter((user: User) => user.id !== currentUserId)
+          .map((user: User) => {
+            // Don't return password hashes
+            const { passwordHash, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+          });
+        
+        res.json(nearbyUsers);
+      } else {
+        res.status(401).json({ error: "Not authenticated" });
+      }
+    } catch (error) {
+      console.error("Error getting nearby users:", error);
+      res.status(500).json({ error: "Failed to fetch nearby users" });
     }
   });
 

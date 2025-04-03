@@ -38,6 +38,8 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User>;
+  getNearbyUsers(location: Location, radius: number): Promise<User[]>;
+  updateUserLocation(userId: number, location: Location): Promise<User>;
 
   // Ride operations
   getRide(id: number): Promise<Ride | undefined>;
@@ -581,6 +583,27 @@ export class MemStorage implements IStorage {
     });
     
     this.users.set(id, user);
+    return user;
+  }
+  
+  async getNearbyUsers(location: Location, radius: number): Promise<User[]> {
+    // Get all users
+    const allUsers = Array.from(this.users.values());
+    
+    // In a real implementation, we would filter users by their last known location
+    // For now, we'll simulate that all users are nearby (within the radius)
+    return allUsers;
+  }
+  
+  async updateUserLocation(userId: number, location: Location): Promise<User> {
+    const user = await this.getUser(userId);
+    
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    // In a real implementation, we would update the user's location in the database
+    // For this demo in memory storage, we'll just return the user without updates
     return user;
   }
 

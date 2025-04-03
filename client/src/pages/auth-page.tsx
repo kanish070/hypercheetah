@@ -1,319 +1,227 @@
-import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppLogo } from "@/components/app-logo";
 import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-// Login form schema
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-// Registration form schema
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState("login");
   const { user, loginMutation, registerMutation } = useAuth();
-  const { toast } = useToast();
-  const [, setLocation] = useLocation();
-
-  // Debug user state
-  useEffect(() => {
-    console.log("Auth page - user state updated:", user ? `User ${user.id} logged in` : "No user");
-    
-    if (user) {
-      console.log("Redirecting to home page...");
-    }
-  }, [user]);
-
-  const loginForm = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [registerData, setRegisterData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
 
-  const registerForm = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const onLoginSubmit = (values: LoginFormValues) => {
-    console.log("Attempting login with:", values.email);
-    loginMutation.mutate(values, {
-      onSuccess: () => {
-        console.log("Login success, navigating to home");
-        setLocation("/");
-      },
-      onError: (error) => {
-        console.error("Login error:", error);
-      }
-    });
-  };
-
-  const onRegisterSubmit = (values: RegisterFormValues) => {
-    console.log("Attempting registration with:", values.email);
-    const { confirmPassword, ...registerData } = values;
-    registerMutation.mutate(registerData, {
-      onSuccess: () => {
-        console.log("Registration success, navigating to home");
-        setLocation("/");
-      },
-      onError: (error) => {
-        console.error("Registration error:", error);
-      }
-    });
-  };
-  
-  // This needs to be after all the hook calls to avoid React hook errors
+  // Redirect if already logged in
   if (user) {
-    console.log("User is authenticated, redirecting to home");
     return <Redirect to="/" />;
   }
 
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate(loginData);
+  };
+
+  const handleRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (registerData.password !== registerData.confirmPassword) {
+      return; // Add validation error here
+    }
+    
+    const { confirmPassword, ...registrationData } = registerData;
+    registerMutation.mutate(registrationData);
+  };
+
   return (
-    <div className="flex min-h-screen">
-      {/* Left side - Auth forms */}
-      <div className="flex flex-col justify-center items-center w-full md:w-1/2 px-4 py-8">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Form Section */}
+      <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <AppLogo size="lg" />
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold mb-2">Welcome to RideSync</h1>
+            <p className="text-muted-foreground">Sign in to your account or create a new one</p>
           </div>
           
-          <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <Card>
-                <CardHeader>
-                  <CardTitle>Welcome back</CardTitle>
-                  <CardDescription>
-                    Login to your account to continue your journey
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...loginForm}>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                      <FormField
-                        control={loginForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="you@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                <form onSubmit={handleLoginSubmit}>
+                  <CardHeader>
+                    <CardTitle>Login</CardTitle>
+                    <CardDescription>
+                      Enter your email and password to access your account
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email"
+                        type="email" 
+                        placeholder="you@example.com" 
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        required
                       />
-                      <FormField
-                        control={loginForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="••••••••" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <a href="#" className="text-sm text-primary hover:underline">
+                          Forgot password?
+                        </a>
+                      </div>
+                      <Input 
+                        id="password"
+                        type="password" 
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        required
                       />
-                      <Button 
-                        type="submit" 
-                        className="w-full" 
-                        disabled={loginMutation.isPending}
-                      >
-                        {loginMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Logging in...
-                          </>
-                        ) : (
-                          "Login"
-                        )}
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                  <Button 
-                    variant="link" 
-                    onClick={() => setActiveTab("register")}
-                  >
-                    Don't have an account? Register
-                  </Button>
-                </CardFooter>
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                      {loginMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Logging in
+                        </>
+                      ) : (
+                        "Login"
+                      )}
+                    </Button>
+                  </CardFooter>
+                </form>
               </Card>
             </TabsContent>
             
             <TabsContent value="register">
               <Card>
-                <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
-                  <CardDescription>
-                    Join the RideLink community and start your sustainable journey
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...registerForm}>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                      <FormField
-                        control={registerForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="John Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                <form onSubmit={handleRegisterSubmit}>
+                  <CardHeader>
+                    <CardTitle>Create an account</CardTitle>
+                    <CardDescription>
+                      Enter your details to create a new account
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input 
+                        id="name"
+                        placeholder="John Doe" 
+                        value={registerData.name}
+                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        required
                       />
-                      <FormField
-                        control={registerForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="you@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="registerEmail">Email</Label>
+                      <Input 
+                        id="registerEmail"
+                        type="email" 
+                        placeholder="you@example.com" 
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                        required
                       />
-                      <FormField
-                        control={registerForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="••••••••" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="registerPassword">Password</Label>
+                      <Input 
+                        id="registerPassword"
+                        type="password" 
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                        required
                       />
-                      <FormField
-                        control={registerForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="••••••••" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input 
+                        id="confirmPassword"
+                        type="password" 
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                        required
                       />
-                      <Button 
-                        type="submit" 
-                        className="w-full" 
-                        disabled={registerMutation.isPending}
-                      >
-                        {registerMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating account...
-                          </>
-                        ) : (
-                          "Register"
-                        )}
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                  <Button 
-                    variant="link" 
-                    onClick={() => setActiveTab("login")}
-                  >
-                    Already have an account? Login
-                  </Button>
-                </CardFooter>
+                      {registerData.password !== registerData.confirmPassword && registerData.confirmPassword && (
+                        <p className="text-sm text-destructive mt-1">Passwords do not match</p>
+                      )}
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={
+                        registerMutation.isPending || 
+                        registerData.password !== registerData.confirmPassword
+                      }
+                    >
+                      {registerMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account
+                        </>
+                      ) : (
+                        "Register"
+                      )}
+                    </Button>
+                  </CardFooter>
+                </form>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
       </div>
       
-      {/* Right side - Hero section */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary/90 to-primary/50 text-white flex-col justify-center items-center px-8">
-        <div className="max-w-md space-y-6">
-          <h1 className="text-4xl font-bold">Transform Your Daily Commute</h1>
-          <p className="text-lg">
-            Join RideLink, Vadodara's premier ride-sharing platform that connects you with like-minded travelers, 
-            reduces your carbon footprint, and makes transportation more affordable and enjoyable.
+      {/* Hero Section */}
+      <div className="hidden md:flex flex-1 bg-gradient-to-br from-primary to-primary/70 p-12 flex-col justify-center">
+        <div className="max-w-xl space-y-8">
+          <h1 className="text-4xl font-bold text-white">RideSync</h1>
+          <h2 className="text-3xl font-semibold text-white/90">
+            Transform your daily commute experience
+          </h2>
+          <p className="text-xl text-white/80">
+            Join our community of riders and passengers to make urban mobility smarter, more sustainable, and more social. Connect with like-minded travelers and contribute to a greener future.
           </p>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <div className="bg-white text-primary p-2 rounded-full mt-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold">Eco-Friendly Travel</h3>
-                <p className="text-sm opacity-90">Reduce your carbon footprint with every shared ride</p>
-              </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <h3 className="text-xl font-medium text-white mb-2">Eco-Friendly</h3>
+              <p className="text-white/80">Reduce your carbon footprint with every shared ride</p>
             </div>
-            <div className="flex items-start space-x-3">
-              <div className="bg-white text-primary p-2 rounded-full mt-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold">Build Your Network</h3>
-                <p className="text-sm opacity-90">Connect with like-minded travelers in your community</p>
-              </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <h3 className="text-xl font-medium text-white mb-2">Community</h3>
+              <p className="text-white/80">Connect with people and expand your network</p>
             </div>
-            <div className="flex items-start space-x-3">
-              <div className="bg-white text-primary p-2 rounded-full mt-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold">Gamified Experience</h3>
-                <p className="text-sm opacity-90">Earn achievements and rewards as you ride</p>
-              </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <h3 className="text-xl font-medium text-white mb-2">Save Money</h3>
+              <p className="text-white/80">Split costs and save on transportation expenses</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <h3 className="text-xl font-medium text-white mb-2">Gamified</h3>
+              <p className="text-white/80">Earn achievements and rewards as you ride</p>
             </div>
           </div>
         </div>

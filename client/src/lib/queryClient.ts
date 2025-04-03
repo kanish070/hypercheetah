@@ -1,67 +1,69 @@
 import { QueryClient } from "@tanstack/react-query";
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    let errorMessage = `HTTP Error: ${res.status}`;
-    try {
-      const errorDetail = await res.json();
-      if (errorDetail && errorDetail.error) {
-        errorMessage = errorDetail.error;
-      }
-    } catch (e) {
-      // If parsing error details fails, just use the status text
-      errorMessage = `HTTP Error: ${res.status} ${res.statusText}`;
-    }
-    throw new Error(errorMessage);
-  }
-  return res;
-}
-
-export async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-  await throwIfResNotOk(res);
-  return res.json();
-}
-
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn = <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => {
-  return async (url: string): Promise<T> => {
-    try {
-      const response = await fetch(url);
-      
-      if (response.status === 401) {
-        if (options.on401 === "throw") {
-          throw new Error("Unauthorized");
-        }
-        // Handle the null case in a type-safe way
-        return (null as any) as T;
-      }
-      
-      await throwIfResNotOk(response);
-      return response.json();
-    } catch (error) {
-      console.error("Query error:", error);
-      throw error;
-    }
-  };
-};
-
+// Create a client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      retry: false,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60, // 1 minute
     },
   },
 });
+
+interface GetQueryFnOptions {
+  on401?: "returnNull" | "throw";
+}
+
+export function getQueryFn(options: GetQueryFnOptions = {}) {
+  const { on401 = "throw" } = options;
+  
+  return async (url: string) => {
+    const response = await fetch(url);
+    
+    if (response.status === 401) {
+      if (on401 === "returnNull") {
+        return undefined;
+      } else {
+        throw new Error("Unauthorized");
+      }
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || response.statusText || "An error occurred";
+      throw new Error(errorMessage);
+    }
+    
+    if (response.status === 204) {
+      return undefined;
+    }
+    
+    return response.json();
+  };
+}
+
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+export async function apiRequest(method: HttpMethod, url: string, data?: any) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  
+  const config: RequestInit = {
+    method,
+    headers,
+    credentials: "include",
+    body: data ? JSON.stringify(data) : undefined,
+  };
+  
+  const response = await fetch(url, config);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.error || response.statusText || "An error occurred";
+    throw new Error(errorMessage);
+  }
+  
+  return response;
+}
