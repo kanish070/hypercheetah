@@ -6,6 +6,7 @@ import {
   userRatings,
   achievements,
   userAchievements,
+  savedLocations,
   type User, 
   type InsertUser, 
   type Ride, 
@@ -21,7 +22,10 @@ import {
   type Achievement,
   type InsertAchievement,
   type UserAchievement,
-  type InsertUserAchievement
+  type InsertUserAchievement,
+  type SavedLocation,
+  type InsertSavedLocation,
+  type DbSavedLocation
 } from "@shared/schema";
 
 export interface IStorage {
@@ -61,6 +65,14 @@ export interface IStorage {
   getUserAchievements(userId: number): Promise<(UserAchievement & { achievement: Achievement })[]>;
   createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement>;
   updateUserAchievementProgress(id: number, progress: number, unlocked?: boolean): Promise<UserAchievement>;
+  
+  // Saved Location operations
+  getSavedLocation(id: number): Promise<SavedLocation | undefined>;
+  getUserSavedLocations(userId: number): Promise<SavedLocation[]>;
+  createSavedLocation(location: InsertSavedLocation): Promise<SavedLocation>;
+  updateSavedLocation(id: number, location: Partial<SavedLocation>): Promise<SavedLocation>;
+  deleteSavedLocation(id: number): Promise<boolean>;
+  getUserSavedLocationsByCategory(userId: number, category: string): Promise<SavedLocation[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -71,6 +83,7 @@ export class MemStorage implements IStorage {
   private userRatings: Map<number, UserRating>;
   private achievements: Map<number, Achievement>;
   private userAchievements: Map<number, UserAchievement>;
+  private savedLocations: Map<number, SavedLocation>;
   private userId: number;
   private rideId: number;
   private rideMatchId: number;
@@ -78,6 +91,7 @@ export class MemStorage implements IStorage {
   private userRatingId: number;
   private achievementId: number;
   private userAchievementId: number;
+  private savedLocationId: number;
 
   constructor() {
     this.users = new Map();
@@ -87,6 +101,7 @@ export class MemStorage implements IStorage {
     this.userRatings = new Map();
     this.achievements = new Map();
     this.userAchievements = new Map();
+    this.savedLocations = new Map();
     this.userId = 1;
     this.rideId = 1;
     this.rideMatchId = 1;
@@ -94,6 +109,7 @@ export class MemStorage implements IStorage {
     this.userRatingId = 1;
     this.achievementId = 1;
     this.userAchievementId = 1;
+    this.savedLocationId = 1;
     
     // Initialize with mock data
     this.initMockData();
@@ -433,6 +449,93 @@ export class MemStorage implements IStorage {
     userAchievements.forEach(userAchievement => {
       this.userAchievements.set(userAchievement.id, userAchievement);
     });
+    
+    // Create saved locations for test users
+    const savedLocations = [
+      {
+        id: this.savedLocationId++,
+        userId: testUser.id,
+        name: "Home",
+        desc: "Alkapuri, Vadodara, Gujarat 390007",
+        icon: "home",
+        location: { lat: 22.3071, lng: 73.1812, name: "Alkapuri", address: "R.C. Dutt Road, Vadodara" },
+        isFavorite: true,
+        category: "home",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+        geofenceRadius: 100, // meters
+        tags: ["home", "family"]
+      },
+      {
+        id: this.savedLocationId++,
+        userId: testUser.id,
+        name: "Work",
+        desc: "Race Course Circle, Vadodara, Gujarat 390007",
+        icon: "briefcase",
+        location: { lat: 22.3119, lng: 73.1795, name: "Race Course Circle", address: "Race Course Road, Vadodara" },
+        isFavorite: true,
+        category: "work",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 10), // 10 hours ago
+        geofenceRadius: 150, // meters
+        tags: ["work", "office"]
+      },
+      {
+        id: this.savedLocationId++,
+        userId: testUser.id,
+        name: "MS University",
+        desc: "Pratapgunj, Vadodara, Gujarat 390002",
+        icon: "school",
+        location: { lat: 22.3149, lng: 73.1873, name: "MS University", address: "Pratapgunj, Vadodara" },
+        isFavorite: false,
+        category: "education",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+        geofenceRadius: 200, // meters
+        tags: ["university", "education"]
+      },
+      {
+        id: this.savedLocationId++,
+        userId: testUser.id,
+        name: "Vadodara Airport",
+        desc: "Harni Road, Vadodara, Gujarat 390022",
+        icon: "plane",
+        location: { lat: 22.3358, lng: 73.2274, name: "Vadodara Airport", address: "Harni Road, Vadodara" },
+        isFavorite: false,
+        category: "travel",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), // 15 days ago
+        geofenceRadius: 300, // meters
+        tags: ["airport", "travel"]
+      },
+      {
+        id: this.savedLocationId++,
+        userId: secondUser.id,
+        name: "Home",
+        desc: "Karelibaug, Vadodara, Gujarat 390018",
+        icon: "home",
+        location: { lat: 22.3313, lng: 73.2037, name: "Karelibaug", address: "Karelibaug, Vadodara" },
+        isFavorite: true,
+        category: "home",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+        geofenceRadius: 100, // meters
+        tags: ["home", "family"]
+      },
+      {
+        id: this.savedLocationId++,
+        userId: secondUser.id,
+        name: "Shopping Mall",
+        desc: "Inorbit Mall, Vadodara",
+        icon: "shopping-bag",
+        location: { lat: 22.2937, lng: 73.1954, name: "Inorbit Mall", address: "Vadodara" },
+        isFavorite: true,
+        category: "shopping",
+        lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+        geofenceRadius: 150, // meters
+        tags: ["shopping", "entertainment"]
+      }
+    ];
+    
+    // Add saved locations to storage
+    savedLocations.forEach(location => {
+      this.savedLocations.set(location.id, location);
+    });
   }
 
   // User operations
@@ -745,6 +848,84 @@ export class MemStorage implements IStorage {
     
     this.userAchievements.set(id, updatedUserAchievement);
     return updatedUserAchievement;
+  }
+  
+  // Saved Location operations
+  async getSavedLocation(id: number): Promise<SavedLocation | undefined> {
+    const savedLocation = this.savedLocations.get(id);
+    if (!savedLocation) return undefined;
+    
+    return savedLocation;
+  }
+  
+  async getUserSavedLocations(userId: number): Promise<SavedLocation[]> {
+    return Array.from(this.savedLocations.values())
+      .filter(location => location.userId === userId)
+      .sort((a, b) => {
+        // Sort by favorite status first, then by last used date
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        
+        // If both have lastUsed dates, sort by most recent
+        if (a.lastUsed && b.lastUsed) {
+          return b.lastUsed.getTime() - a.lastUsed.getTime();
+        }
+        
+        // If only one has lastUsed, prioritize the one with lastUsed
+        if (a.lastUsed && !b.lastUsed) return -1;
+        if (!a.lastUsed && b.lastUsed) return 1;
+        
+        // Otherwise, sort alphabetically by name
+        return a.name.localeCompare(b.name);
+      });
+  }
+  
+  async createSavedLocation(location: InsertSavedLocation): Promise<SavedLocation> {
+    const id = this.savedLocationId++;
+    
+    const newLocation: SavedLocation = {
+      id,
+      userId: location.userId,
+      name: location.name,
+      desc: location.description,
+      icon: location.icon,
+      location: JSON.parse(location.locationData as string),
+      isFavorite: location.isFavorite || false,
+      category: location.category || "other",
+      lastUsed: new Date(),
+      geofenceRadius: location.geofenceRadius === null ? undefined : location.geofenceRadius,
+      tags: location.tags === null ? undefined : location.tags,
+    };
+    
+    this.savedLocations.set(id, newLocation);
+    return newLocation;
+  }
+  
+  async updateSavedLocation(id: number, locationUpdate: Partial<SavedLocation>): Promise<SavedLocation> {
+    const location = await this.getSavedLocation(id);
+    if (!location) throw new Error("Saved location not found");
+    
+    const updatedLocation: SavedLocation = {
+      ...location,
+      ...locationUpdate,
+      lastUsed: new Date()
+    };
+    
+    this.savedLocations.set(id, updatedLocation);
+    return updatedLocation;
+  }
+  
+  async deleteSavedLocation(id: number): Promise<boolean> {
+    const exists = this.savedLocations.has(id);
+    if (!exists) return false;
+    
+    this.savedLocations.delete(id);
+    return true;
+  }
+  
+  async getUserSavedLocationsByCategory(userId: number, category: string): Promise<SavedLocation[]> {
+    const userLocations = await this.getUserSavedLocations(userId);
+    return userLocations.filter(location => location.category === category);
   }
 }
 

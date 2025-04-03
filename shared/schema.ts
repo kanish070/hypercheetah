@@ -1,4 +1,4 @@
-import { pgTable, text, serial, doublePrecision, integer, timestamp, jsonb, boolean, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, doublePrecision, integer, timestamp, jsonb, boolean, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -82,6 +82,26 @@ export const userAchievements = pgTable("user_achievements", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
+// Saved Locations table
+export const savedLocations = pgTable("saved_locations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  locationData: jsonb("location_data").notNull(), // JSON containing location information
+  isFavorite: boolean("is_favorite").default(false),
+  category: text("category").default("other"), // home, work, favorite, other, etc.
+  lastUsed: timestamp("last_used"),
+  geofenceRadius: integer("geofence_radius"),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").notNull().defaultNow()
+}, (table) => {
+  return {
+    userIdNameIdx: uniqueIndex("saved_loc_user_id_name_idx").on(table.userId, table.name)
+  };
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true,
@@ -122,16 +142,49 @@ export const insertUserAchievementSchema = createInsertSchema(userAchievements).
   createdAt: true
 });
 
+export const insertSavedLocationSchema = createInsertSchema(savedLocations).omit({
+  id: true,
+  lastUsed: true,
+  createdAt: true
+});
+
 // Type definitions for frontend use
 export type Location = {
   lat: number;
   lng: number;
+  name?: string;
+  address?: string;
+  placeId?: string;
+  category?: string;
+};
+
+export type SavedLocation = {
+  id?: number;
+  userId?: number;
+  name: string;
+  desc: string;
+  icon: string;
+  location: Location;
+  isFavorite?: boolean;
+  category?: string; // home, work, favorite, recent, etc.
+  lastUsed?: Date;
+  geofenceRadius?: number; // in meters
+  tags?: string[];
 };
 
 export type Route = {
   start: Location;
   end: Location;
   waypoints: Location[];
+  stops?: Location[];
+  estimatedDuration?: number; // in seconds
+  estimatedDistance?: number; // in meters
+  trafficCondition?: string; // light, moderate, heavy
+  weatherCondition?: string; // clear, rain, snow, etc.
+  avoidTolls?: boolean;
+  avoidHighways?: boolean;
+  routePreference?: string; // fastest, shortest, eco, scenic
+  calculatedAt?: Date;
 };
 
 // Types
@@ -151,3 +204,5 @@ export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
 export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertSavedLocation = z.infer<typeof insertSavedLocationSchema>;
+export type DbSavedLocation = typeof savedLocations.$inferSelect;

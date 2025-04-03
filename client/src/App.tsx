@@ -9,6 +9,7 @@ import Rider from "@/pages/rider";
 import Social from "@/pages/social";
 import Profile from "@/pages/profile";
 import EcoTracker from "@/pages/eco-tracker";
+import { SavedLocationsPage } from "@/pages/saved-locations-page";
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/social" component={Social} />
       <Route path="/profile" component={Profile} />
       <Route path="/eco-tracker" component={EcoTracker} />
+      <Route path="/locations" component={SavedLocationsPage} />
       <Route component={NotFound} />
     </Switch>
   );

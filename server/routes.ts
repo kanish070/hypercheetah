@@ -10,8 +10,10 @@ import {
   insertUserRatingSchema,
   insertAchievementSchema,
   insertUserAchievementSchema,
+  insertSavedLocationSchema,
   Location,
-  Route 
+  Route,
+  SavedLocation
 } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -41,10 +43,12 @@ export async function registerRoutes(app: Express) {
       // Remove password field (not in User type) and add passwordHash
       const { password, ...userWithoutPassword } = data;
       
+      // Make sure avatar is explicitly set to null if not provided
       const user = await storage.createUser({
         ...userWithoutPassword,
         passwordHash,
-        role: data.role || 'user'
+        role: data.role || 'user',
+        avatar: data.avatar !== undefined ? data.avatar : null
       });
       
       res.status(201).json({ 
@@ -649,6 +653,88 @@ export async function registerRoutes(app: Express) {
   // Clean up interval on server close
   wss.on("close", () => {
     clearInterval(interval);
+  });
+  
+  // Saved Location routes
+  app.get("/api/users/:userId/locations", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const category = req.query.category as string;
+      
+      let locations;
+      if (category) {
+        locations = await storage.getUserSavedLocationsByCategory(userId, category);
+      } else {
+        locations = await storage.getUserSavedLocations(userId);
+      }
+      
+      res.json(locations);
+    } catch (error) {
+      console.error("Error getting user saved locations:", error);
+      res.status(500).json({ error: "Failed to fetch saved locations" });
+    }
+  });
+  
+  app.get("/api/locations/:id", async (req, res) => {
+    try {
+      const locationId = parseInt(req.params.id);
+      const location = await storage.getSavedLocation(locationId);
+      
+      if (!location) {
+        return res.status(404).json({ error: "Saved location not found" });
+      }
+      
+      res.json(location);
+    } catch (error) {
+      console.error("Error getting saved location:", error);
+      res.status(500).json({ error: "Failed to fetch saved location" });
+    }
+  });
+  
+  app.post("/api/locations", async (req, res) => {
+    try {
+      const locationData = insertSavedLocationSchema.parse(req.body);
+      
+      // Validate location data
+      if (!locationData.locationData) {
+        return res.status(400).json({ error: "Location data is required" });
+      }
+      
+      const savedLocation = await storage.createSavedLocation(locationData);
+      res.status(201).json(savedLocation);
+    } catch (error) {
+      console.error("Error creating saved location:", error);
+      res.status(400).json({ error: "Invalid location data" });
+    }
+  });
+  
+  app.patch("/api/locations/:id", async (req, res) => {
+    try {
+      const locationId = parseInt(req.params.id);
+      const locationUpdate = req.body as Partial<SavedLocation>;
+      
+      const updatedLocation = await storage.updateSavedLocation(locationId, locationUpdate);
+      res.json(updatedLocation);
+    } catch (error) {
+      console.error("Error updating saved location:", error);
+      res.status(400).json({ error: "Invalid location update data" });
+    }
+  });
+  
+  app.delete("/api/locations/:id", async (req, res) => {
+    try {
+      const locationId = parseInt(req.params.id);
+      const success = await storage.deleteSavedLocation(locationId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Saved location not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting saved location:", error);
+      res.status(500).json({ error: "Failed to delete saved location" });
+    }
   });
   
   return httpServer;
