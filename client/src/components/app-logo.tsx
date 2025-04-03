@@ -116,15 +116,25 @@ export function AppLogo({
                             const parent = target.parentElement;
                             if (parent) {
                               const div = document.createElement('div');
+                              // Make all logos use the same styling - square with consistent padding
                               div.className = "flex items-center justify-center bg-primary/10 rounded-lg shadow-md";
                               div.style.width = `${width}px`;
                               div.style.height = `${height}px`;
-
+                              
+                              // Create a wrapper for perfect centering
+                              const centerWrapper = document.createElement('div');
+                              centerWrapper.className = "flex items-center justify-center w-full h-full";
+                              
                               const textDiv = document.createElement('div');
-                              textDiv.className = "font-mono text-3xl leading-none whitespace-pre text-primary";
+                              // Scale the text based on container size
+                              const fontSize = Math.max(width / 3, 16);
+                              textDiv.className = "font-mono leading-none whitespace-pre text-primary";
+                              textDiv.style.fontSize = `${fontSize}px`;
+                              textDiv.style.lineHeight = "1";
                               textDiv.textContent = "^..^";
-
-                              div.appendChild(textDiv);
+                              
+                              centerWrapper.appendChild(textDiv);
+                              div.appendChild(centerWrapper);
                               parent.replaceChild(div, target);
                             }
                           }}
