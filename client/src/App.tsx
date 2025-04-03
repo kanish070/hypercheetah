@@ -13,6 +13,7 @@ import ProfilePage from "@/pages/profile-page";
 import UserProfile from "@/pages/user-profile";
 import EcoTracker from "@/pages/eco-tracker";
 import { SavedLocationsPage } from "@/pages/saved-locations-page";
+import ComfortPreferencesPage from "@/pages/comfort-preferences-page";
 import AuthPage from "@/pages/auth-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -29,6 +30,7 @@ function Router() {
       <ProtectedRoute path="/profile-v2" component={ProfilePage} />
       <ProtectedRoute path="/eco-tracker" component={EcoTracker} />
       <ProtectedRoute path="/locations" component={SavedLocationsPage} />
+      <ProtectedRoute path="/preferences" component={ComfortPreferencesPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

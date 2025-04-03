@@ -25,8 +25,10 @@ import {
   type InsertUserAchievement,
   type SavedLocation,
   type InsertSavedLocation,
-  type DbSavedLocation
+  type DbSavedLocation,
+  type ComfortPreferences
 } from "@shared/schema";
+import { z } from 'zod';
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -56,12 +58,18 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<Omit<User, "id" | "createdAt" | "passwordHash">> & { password?: string }): Promise<User>;
   getNearbyUsers(location: Location, radius: number): Promise<User[]>;
   updateUserLocation(userId: number, location: Location): Promise<User>;
+  
+  // Comfort Preferences operations
+  getUserComfortPreferences(userId: number): Promise<ComfortPreferences | undefined>;
+  updateUserComfortPreferences(userId: number, preferences: ComfortPreferences): Promise<ComfortPreferences>;
+  getRideComfortPreferences(rideId: number): Promise<ComfortPreferences | undefined>;
+  updateRideComfortPreferences(rideId: number, preferences: ComfortPreferences): Promise<ComfortPreferences>;
 
   // Ride operations
   getRide(id: number): Promise<Ride | undefined>;
   getUserRides(userId: number): Promise<Ride[]>;
   createRide(ride: InsertRide & { route: Route }): Promise<Ride>;
-  updateRideStatus(id: number, status: string): Promise<Ride>;
+  updateRideStatus(id: number, status: string, comfortPreferences?: ComfortPreferences): Promise<Ride>;
   getNearbyRides(location: Location, type: string, radius: number): Promise<Ride[]>;
   findRideMatches(route: Route, type: string): Promise<Ride[]>;
 
@@ -254,6 +262,52 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  // Comfort Preferences operations
+  async getUserComfortPreferences(userId: number): Promise<ComfortPreferences | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    return user.comfortPreferences as ComfortPreferences | undefined;
+  }
+
+  async updateUserComfortPreferences(userId: number, preferences: ComfortPreferences): Promise<ComfortPreferences> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    // Update the user's comfort preferences
+    user.comfortPreferences = preferences;
+    this.users.set(userId, user);
+    
+    return preferences;
+  }
+
+  async getRideComfortPreferences(rideId: number): Promise<ComfortPreferences | undefined> {
+    const ride = await this.getRide(rideId);
+    if (!ride) {
+      throw new Error(`Ride with id ${rideId} not found`);
+    }
+    return ride.comfortPreferences as ComfortPreferences | undefined;
+  }
+
+  async updateRideComfortPreferences(rideId: number, preferences: ComfortPreferences): Promise<ComfortPreferences> {
+    const ride = await this.getRide(rideId);
+    if (!ride) {
+      throw new Error(`Ride with id ${rideId} not found`);
+    }
+    
+    // Update the ride's comfort preferences
+    const updatedRide = { 
+      ...ride, 
+      comfortPreferences: preferences
+    };
+    this.rides.set(rideId, updatedRide);
+    
+    return preferences;
+  }
+
   // Ride operations
   async getRide(id: number): Promise<Ride | undefined> {
     return this.rides.get(id);
@@ -304,6 +358,7 @@ export class MemStorage implements IStorage {
       availableSeats: insertRide.availableSeats ?? 4, // Default to 4 if undefined
       price: calculatedPrice, // Use calculated price based on distance and vehicle type
       departureTime: insertRide.departureTime ?? null,
+      comfortPreferences: insertRide.comfortPreferences ?? null, // Include comfort preferences or null
       routeData: route, // Store the route in routeData
       route, // Keep the route for frontend convenience
       createdAt: new Date()
@@ -313,11 +368,17 @@ export class MemStorage implements IStorage {
     return ride;
   }
 
-  async updateRideStatus(id: number, status: string): Promise<Ride> {
+  async updateRideStatus(id: number, status: string, comfortPreferences?: ComfortPreferences): Promise<Ride> {
     const ride = await this.getRide(id);
     if (!ride) throw new Error("Ride not found");
 
-    const updatedRide = { ...ride, status };
+    const updatedRide = { 
+      ...ride, 
+      status,
+      // Only update comfort preferences if provided
+      ...(comfortPreferences ? { comfortPreferences } : {})
+    };
+    
     this.rides.set(id, updatedRide);
     return updatedRide;
   }
@@ -645,6 +706,111 @@ export class DatabaseStorage implements IStorage {
       }
     });
   }
+  
+  // Helper method to safely parse ComfortPreferences from database
+  private parseComfortPreferences(preferences: unknown): ComfortPreferences | undefined {
+    if (!preferences) return undefined;
+    
+    // Define zod schema for ComfortPreferences
+    const comfortPreferencesSchema = z.object({
+      temperature: z.number().min(16).max(28).optional(),
+      music: z.object({
+        genre: z.string().optional(),
+        volume: z.number().min(0).max(10).optional(),
+        allowDriverChoice: z.boolean().optional(),
+      }).optional(),
+      conversation: z.string().optional(),
+      seatingPreference: z.string().optional(),
+      smoking: z.boolean().optional(),
+      petsAllowed: z.boolean().optional(),
+      airConditioning: z.string().optional(),
+      windowPreference: z.string().optional(),
+      luggageSpace: z.number().optional(),
+      accessibility: z.array(z.string()).optional(),
+      childSeat: z.string().optional(),
+      additionalStops: z.boolean().optional(),
+      maxWaitTime: z.number().optional(),
+      routePreference: z.string().optional(),
+      paymentMethod: z.string().optional(),
+      foodDrink: z.boolean().optional(),
+      phoneCharger: z.array(z.string()).optional(),
+      safetyPreferences: z.array(z.string()).optional(),
+      notes: z.string().optional(),
+    });
+    
+    try {
+      // Try to parse and validate the preferences
+      return comfortPreferencesSchema.parse(preferences);
+    } catch (error) {
+      console.error("Invalid comfort preferences format:", error);
+      return undefined;
+    }
+  }
+
+  // Comfort Preferences operations
+  async getUserComfortPreferences(userId: number): Promise<ComfortPreferences | undefined> {
+    try {
+      const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (result.length === 0) {
+        throw new Error(`User with id ${userId} not found`);
+      }
+      return this.parseComfortPreferences(result[0].comfortPreferences);
+    } catch (error) {
+      console.error("Error getting user comfort preferences:", error);
+      throw new Error("Failed to get user comfort preferences");
+    }
+  }
+
+  async updateUserComfortPreferences(userId: number, preferences: ComfortPreferences): Promise<ComfortPreferences> {
+    try {
+      const result = await db
+        .update(users)
+        .set({ comfortPreferences: preferences })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (result.length === 0) {
+        throw new Error(`User with id ${userId} not found`);
+      }
+      
+      return preferences;
+    } catch (error) {
+      console.error("Error updating user comfort preferences:", error);
+      throw new Error("Failed to update user comfort preferences");
+    }
+  }
+
+  async getRideComfortPreferences(rideId: number): Promise<ComfortPreferences | undefined> {
+    try {
+      const result = await db.select().from(rides).where(eq(rides.id, rideId)).limit(1);
+      if (result.length === 0) {
+        throw new Error(`Ride with id ${rideId} not found`);
+      }
+      return this.parseComfortPreferences(result[0].comfortPreferences);
+    } catch (error) {
+      console.error("Error getting ride comfort preferences:", error);
+      throw new Error("Failed to get ride comfort preferences");
+    }
+  }
+
+  async updateRideComfortPreferences(rideId: number, preferences: ComfortPreferences): Promise<ComfortPreferences> {
+    try {
+      const result = await db
+        .update(rides)
+        .set({ comfortPreferences: preferences })
+        .where(eq(rides.id, rideId))
+        .returning();
+      
+      if (result.length === 0) {
+        throw new Error(`Ride with id ${rideId} not found`);
+      }
+      
+      return preferences;
+    } catch (error) {
+      console.error("Error updating ride comfort preferences:", error);
+      throw new Error("Failed to update ride comfort preferences");
+    }
+  }
 
   async getUser(id: number): Promise<User | undefined> {
     try {
@@ -761,7 +927,7 @@ export class DatabaseStorage implements IStorage {
     throw new Error("Method not implemented");
   }
 
-  async updateRideStatus(id: number, status: string): Promise<Ride> {
+  async updateRideStatus(id: number, status: string, comfortPreferences?: ComfortPreferences): Promise<Ride> {
     throw new Error("Method not implemented");
   }
 

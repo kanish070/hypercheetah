@@ -17,7 +17,9 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("user"), // "admin" or "user"
   avatar: text("avatar"),
-  createdAt: timestamp("created_at").notNull().defaultNow()
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  // Default comfort preferences (can be overridden by ride-specific preferences)
+  comfortPreferences: jsonb("comfort_preferences"),
 });
 
 // Rides table
@@ -32,6 +34,7 @@ export const rides = pgTable("rides", {
   availableSeats: integer("available_seats").default(4),
   price: doublePrecision("price"),
   departureTime: timestamp("departure_time"),
+  comfortPreferences: jsonb("comfort_preferences"), // Ride-specific comfort preferences 
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
@@ -192,6 +195,33 @@ export type Route = {
   avoidHighways?: boolean;
   routePreference?: string; // fastest, shortest, eco, scenic
   calculatedAt?: Date;
+};
+
+// Comfort Preferences Type
+export type ComfortPreferences = {
+  temperature?: number; // Temperature setting (16-28 Celsius)
+  music?: {
+    genre?: string; // Pop, Rock, Classical, Jazz, etc.
+    volume?: number; // 0-10 scale
+    allowDriverChoice?: boolean;
+  };
+  conversation?: string; // 'chatty', 'quiet', 'professional', 'minimal', 'driver_choice'
+  seatingPreference?: string; // 'front', 'back_left', 'back_right', 'back_middle', 'no_preference'
+  smoking?: boolean; // Whether smoking is allowed
+  petsAllowed?: boolean; // Whether pets are allowed
+  airConditioning?: string; // 'off', 'low', 'medium', 'high', 'auto'
+  windowPreference?: string; // 'closed', 'cracked', 'half_open', 'fully_open', 'driver_choice'
+  luggageSpace?: number; // Required luggage space in liters
+  accessibility?: string[]; // Array of accessibility requirements ['wheelchair', 'step_free', 'service_animal', etc.]
+  childSeat?: string; // 'none', 'infant', 'toddler', 'booster'
+  additionalStops?: boolean; // Whether additional stops are acceptable
+  maxWaitTime?: number; // Maximum wait time in minutes
+  routePreference?: string; // 'fastest', 'scenic', 'least_traffic', 'highway', 'no_highway'
+  paymentMethod?: string; // 'cash', 'card', 'app', 'upi'
+  foodDrink?: boolean; // Whether eating/drinking is allowed in the vehicle
+  phoneCharger?: string[]; // Array of needed charger types ['usb_c', 'lightning', 'micro_usb', etc.]
+  safetyPreferences?: string[]; // Array of safety preferences ['female_driver', 'verified_driver', 'dash_cam', etc.]
+  notes?: string; // Any additional notes or preferences
 };
 
 // Types

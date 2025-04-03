@@ -14,7 +14,8 @@ import {
   Location,
   Route,
   SavedLocation,
-  User
+  User,
+  ComfortPreferences
 } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -130,12 +131,13 @@ export async function registerRoutes(app: Express) {
 
   app.patch("/api/rides/:id/status", async (req, res) => {
     try {
-      const { status } = z.object({
-        status: z.string()
+      const { status, comfortPreferences } = z.object({
+        status: z.string(),
+        comfortPreferences: z.record(z.any()).optional()
       }).parse(req.body);
 
       const rideId = parseInt(req.params.id);
-      const updatedRide = await storage.updateRideStatus(rideId, status);
+      const updatedRide = await storage.updateRideStatus(rideId, status, comfortPreferences);
       res.json(updatedRide);
     } catch (error) {
       res.status(400).json({ error: "Invalid status update" });
@@ -696,6 +698,108 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error updating saved location:", error);
       res.status(400).json({ error: "Invalid location update data" });
+    }
+  });
+  
+  // Comfort preferences routes
+  app.get("/api/user/comfort-preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as User).id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Return comfort preferences or an empty object if none exist
+      res.json(user.comfortPreferences || {});
+    } catch (error) {
+      console.error("Error fetching comfort preferences:", error);
+      res.status(500).json({ error: "Failed to retrieve comfort preferences" });
+    }
+  });
+  
+  app.put("/api/user/comfort-preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as User).id;
+      const comfortPreferences = req.body as ComfortPreferences;
+      
+      // Update user comfort preferences
+      const updatedUser = await storage.updateUser(userId, { comfortPreferences });
+      
+      // Return the updated comfort preferences
+      res.json(updatedUser.comfortPreferences || {});
+    } catch (error) {
+      console.error("Error updating comfort preferences:", error);
+      res.status(500).json({ error: "Failed to update comfort preferences" });
+    }
+  });
+  
+  app.get("/api/rides/:rideId/comfort-preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const rideId = parseInt(req.params.rideId);
+      const ride = await storage.getRide(rideId);
+      
+      if (!ride) {
+        return res.status(404).json({ error: "Ride not found" });
+      }
+      
+      // Check if the user has permission to access this ride
+      const userId = (req.user as User).id;
+      if (ride.userId !== userId) {
+        return res.status(403).json({ error: "You don't have permission to access this ride" });
+      }
+      
+      // Return ride-specific comfort preferences or user's default preferences or an empty object
+      res.json(ride.comfortPreferences || {});
+    } catch (error) {
+      console.error("Error fetching ride comfort preferences:", error);
+      res.status(500).json({ error: "Failed to retrieve ride comfort preferences" });
+    }
+  });
+  
+  app.put("/api/rides/:rideId/comfort-preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const rideId = parseInt(req.params.rideId);
+      const ride = await storage.getRide(rideId);
+      
+      if (!ride) {
+        return res.status(404).json({ error: "Ride not found" });
+      }
+      
+      // Check if the user has permission to modify this ride
+      const userId = (req.user as User).id;
+      if (ride.userId !== userId) {
+        return res.status(403).json({ error: "You don't have permission to modify this ride" });
+      }
+      
+      const comfortPreferences = req.body as ComfortPreferences;
+      
+      // Update ride with the new comfort preferences
+      const status = ride.status;
+      const updatedRide = await storage.updateRideStatus(rideId, status, comfortPreferences);
+      
+      // Return the updated comfort preferences
+      res.json(updatedRide.comfortPreferences || {});
+    } catch (error) {
+      console.error("Error updating ride comfort preferences:", error);
+      res.status(500).json({ error: "Failed to update ride comfort preferences" });
     }
   });
   
