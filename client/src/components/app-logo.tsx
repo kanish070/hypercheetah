@@ -7,15 +7,18 @@ interface AppLogoProps {
 
 export function AppLogo({ size = "md", className }: AppLogoProps) {
   const sizeClasses = {
-    sm: "text-xl",
-    md: "text-2xl",
-    lg: "text-3xl",
+    sm: "h-8",
+    md: "h-10",
+    lg: "h-14",
   };
 
   return (
-    <div className={cn("flex items-center font-bold", sizeClasses[size], className)}>
-      <span className="text-primary">Ride</span>
-      <span className="text-foreground">Link</span>
+    <div className={cn("flex items-center", className)}>
+      <img 
+        src="/images/logo.jpeg" 
+        alt="RideLink Logo" 
+        className={cn("object-contain", sizeClasses[size])}
+      />
     </div>
   );
 }
