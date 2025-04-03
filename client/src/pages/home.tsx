@@ -84,16 +84,8 @@ export default function Home() {
           className="text-center space-y-6"
         >
           <div className="flex flex-col items-center justify-center gap-3 mb-4">
-            <div className="mb-2">
-              <AppLogo size="lg" />
-            </div>
-            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-              HyperCheetah
-            </h1>
+            <AppLogo size="lg" showTagline={true} />
           </div>
-          <p className="text-xl text-muted-foreground">
-            Lightning-fast rides with social connections
-          </p>
           
           <div className="flex justify-center gap-2 flex-wrap">
             <Badge variant="outline" className="bg-primary/5 px-3 py-1">
