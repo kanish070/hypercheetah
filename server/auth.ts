@@ -66,20 +66,33 @@ export function setupAuth(app: Express) {
       },
       async (email, password, done) => {
         try {
+          console.log("Looking up user by email:", email);
           const user = await storage.getUserByEmail(email);
           
           if (!user) {
+            console.log("User not found for email:", email);
             return done(null, false, { message: "User not found" });
+          }
+          
+          console.log("User found, verifying password for user ID:", user.id);
+          
+          // Debug the hashed password
+          if (!user.passwordHash) {
+            console.error("No password hash stored for user:", user.id);
+            return done(null, false, { message: "Invalid user data" });
           }
           
           const isValidPassword = await comparePasswords(password, user.passwordHash);
           
           if (!isValidPassword) {
+            console.log("Password validation failed for user ID:", user.id);
             return done(null, false, { message: "Invalid password" });
           }
           
+          console.log("Authentication successful for user ID:", user.id);
           return done(null, user);
         } catch (error) {
+          console.error("Authentication error:", error);
           return done(error);
         }
       }
@@ -105,27 +118,52 @@ export function setupAuth(app: Express) {
     try {
       const { email, password, name, role = "user", avatar = null } = req.body;
       
+      console.log("Registration attempt:", { email, name, role, hasPassword: !!password });
+      
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
+        console.log("Registration failed: Email already exists", email);
         return res.status(400).json({ message: "Email already registered" });
       }
 
       // Hash password
+      console.log("Hashing password...");
       const passwordHash = await hashPassword(password);
+      console.log("Password hashed, length:", passwordHash.length);
       
       // Create new user
-      const user = await storage.createUser({
+      const userData = {
         name,
         email,
-        passwordHash,
+        passwordHash, // This needs to match the parameter expected by createUser
         role,
         avatar,
+      };
+      
+      console.log("Creating user with data:", { 
+        name, 
+        email, 
+        passwordHashLength: passwordHash.length,
+        role
+      });
+      
+      const user = await storage.createUser(userData);
+
+      console.log("User registered successfully:", { 
+        id: user.id, 
+        name: user.name, 
+        email: user.email,
+        hasPasswordHash: !!user.passwordHash
       });
 
       // Log user in
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login after registration failed:", err);
+          return next(err);
+        }
+        console.log("User logged in after registration");
         return res.status(201).json(user);
       });
     } catch (error) {
@@ -136,15 +174,26 @@ export function setupAuth(app: Express) {
 
   // Login route
   app.post("/api/login", (req, res, next) => {
+    console.log("Login attempt:", { email: req.body.email });
+    
     passport.authenticate("local", (err: any, user: Express.User | false, info: { message: string } | undefined) => {
-      if (err) return next(err);
+      if (err) {
+        console.error("Login error:", err);
+        return next(err);
+      }
       
       if (!user) {
+        console.log("Login failed:", info?.message || "Authentication failed");
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       
+      console.log("Login successful:", { id: user.id, name: user.name, email: user.email });
+      
       req.login(user, (loginErr) => {
-        if (loginErr) return next(loginErr);
+        if (loginErr) {
+          console.error("Session error:", loginErr);
+          return next(loginErr);
+        }
         return res.status(200).json(user);
       });
     })(req, res, next);

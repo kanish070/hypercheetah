@@ -560,12 +560,26 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: Omit<User, "id" | "createdAt"> & { passwordHash: string }): Promise<User> {
+    console.log("Creating user with data:", {
+      name: insertUser.name,
+      email: insertUser.email,
+      hasPasswordHash: !!insertUser.passwordHash,
+      passwordHashLength: insertUser.passwordHash?.length
+    });
+    
     const id = this.userId++;
     const user: User = { 
       id, 
       ...insertUser, 
       createdAt: new Date() 
     };
+    
+    // Verify the passwordHash was correctly transferred
+    console.log("User created with ID:", id, {
+      hasPasswordHash: !!user.passwordHash,
+      passwordHashLength: user.passwordHash?.length
+    });
+    
     this.users.set(id, user);
     return user;
   }

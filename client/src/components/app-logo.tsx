@@ -15,7 +15,7 @@ export function AppLogo({ size = "md", className }: AppLogoProps) {
   return (
     <div className={cn("flex items-center", className)}>
       <img 
-        src="/images/logo.jpeg" 
+        src="/images/app-logo.jpeg" 
         alt="RideLink Logo" 
         className={cn("object-contain", sizeClasses[size])}
       />

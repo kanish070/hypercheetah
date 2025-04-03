@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLogo } from "@/components/app-logo";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // Login form schema
 const loginSchema = z.object({
@@ -35,6 +36,17 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const { user, loginMutation, registerMutation } = useAuth();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  // Debug user state
+  useEffect(() => {
+    console.log("Auth page - user state updated:", user ? `User ${user.id} logged in` : "No user");
+    
+    if (user) {
+      console.log("Redirecting to home page...");
+    }
+  }, [user]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,16 +67,35 @@ export default function AuthPage() {
   });
 
   const onLoginSubmit = (values: LoginFormValues) => {
-    loginMutation.mutate(values);
+    console.log("Attempting login with:", values.email);
+    loginMutation.mutate(values, {
+      onSuccess: () => {
+        console.log("Login success, navigating to home");
+        setLocation("/");
+      },
+      onError: (error) => {
+        console.error("Login error:", error);
+      }
+    });
   };
 
   const onRegisterSubmit = (values: RegisterFormValues) => {
+    console.log("Attempting registration with:", values.email);
     const { confirmPassword, ...registerData } = values;
-    registerMutation.mutate(registerData);
+    registerMutation.mutate(registerData, {
+      onSuccess: () => {
+        console.log("Registration success, navigating to home");
+        setLocation("/");
+      },
+      onError: (error) => {
+        console.error("Registration error:", error);
+      }
+    });
   };
   
   // This needs to be after all the hook calls to avoid React hook errors
   if (user) {
+    console.log("User is authenticated, redirecting to home");
     return <Redirect to="/" />;
   }
 
