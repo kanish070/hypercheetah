@@ -7,15 +7,29 @@ import {
   Leaf,
   MapPin,
   Menu,
+  LogIn,
+  LogOut,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AppLogo } from "@/components/app-logo";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AppNavigation() {
   const [location] = useLocation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { user, isLoading, logoutMutation } = useAuth();
 
   const navLinks = [
     {
@@ -82,6 +96,50 @@ export function AppNavigation() {
                 </Button>
               </Link>
             ))}
+            
+            <div className="pt-2 border-t border-border">
+              {user ? (
+                <>
+                  <div className="flex items-center space-x-2 py-2 px-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start mt-2"
+                    onClick={() => {
+                      logoutMutation.mutate();
+                      setShowMobileMenu(false);
+                    }}
+                    disabled={logoutMutation.isPending}
+                  >
+                    {logoutMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LogOut className="mr-2 h-4 w-4" />
+                    )}
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <Link href="/auth">
+                  <Button
+                    variant="default"
+                    className="w-full justify-start mt-2"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login / Register
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -114,13 +172,63 @@ export function AppNavigation() {
       <div className="container flex h-14 justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="mr-4 flex items-center space-x-2">
-            <AppLogo size="sm" interactive={true} />
+            <AppLogo size="sm" />
           </Link>
         </div>
         
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <DesktopNav />
           <MobileNav />
+          
+          {isLoading ? (
+            <Button size="sm" variant="ghost" disabled>
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </Button>
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Link href="/profile">
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuItem
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                >
+                  {logoutMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="mr-2 h-4 w-4" />
+                  )}
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/auth">
+              <Button size="sm" variant="ghost">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>

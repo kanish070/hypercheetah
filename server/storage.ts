@@ -27,8 +27,13 @@ import {
   type InsertSavedLocation,
   type DbSavedLocation
 } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
 
 export interface IStorage {
+  // Session store for authentication
+  sessionStore: session.Store;
+  
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -76,6 +81,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  sessionStore: session.Store;
   private users: Map<number, User>;
   private rides: Map<number, Ride>;
   private rideMatches: Map<number, RideMatch>;
@@ -94,6 +100,12 @@ export class MemStorage implements IStorage {
   private savedLocationId: number;
 
   constructor() {
+    // Initialize memory store for sessions
+    const MemoryStore = createMemoryStore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // Prune expired entries every 24h
+    });
+    
     this.users = new Map();
     this.rides = new Map();
     this.rideMatches = new Map();

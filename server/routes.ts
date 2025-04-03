@@ -17,6 +17,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { setupAuth } from "./auth";
 
 // WebSocket clients and connection management
 interface WebSocketClient extends WebSocket {
@@ -25,70 +26,10 @@ interface WebSocketClient extends WebSocket {
 }
 
 export async function registerRoutes(app: Express) {
-  // User routes
-  app.post("/api/users/register", async (req, res) => {
-    try {
-      const data = insertUserSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(data.email);
-      if (existingUser) {
-        return res.status(409).json({ error: "User with this email already exists" });
-      }
-      
-      // Hash password and create user
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(data.password, salt);
-      
-      // Remove password field (not in User type) and add passwordHash
-      const { password, ...userWithoutPassword } = data;
-      
-      // Make sure avatar is explicitly set to null if not provided
-      const user = await storage.createUser({
-        ...userWithoutPassword,
-        passwordHash,
-        role: data.role || 'user',
-        avatar: data.avatar !== undefined ? data.avatar : null
-      });
-      
-      res.status(201).json({ 
-        id: user.id, 
-        name: user.name, 
-        email: user.email, 
-        role: user.role 
-      });
-    } catch (error) {
-      res.status(400).json({ error: "Invalid user data" });
-    }
-  });
-
-  app.post("/api/users/login", async (req, res) => {
-    try {
-      const { email, password } = z.object({
-        email: z.string().email(),
-        password: z.string()
-      }).parse(req.body);
-
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
-
-      res.json({ 
-        id: user.id, 
-        name: user.name, 
-        email: user.email, 
-        role: user.role 
-      });
-    } catch (error) {
-      res.status(400).json({ error: "Invalid login data" });
-    }
-  });
+  // Setup auth routes with Passport
+  setupAuth(app);
+  
+  // User routes - auth routes are now handled by setupAuth in auth.ts
 
   app.get("/api/users/:id", async (req, res) => {
     try {
