@@ -107,7 +107,7 @@ export function AppLogo({
                         <source srcSet="/images/app-logo.jpeg" type="image/jpeg" />
                         <img 
                           src="/images/app-logo.jpeg" 
-                          alt="HyperCheetah Logo" 
+                          alt="HYPERCHEETAH Logo" 
                           width={width} 
                           height={height}
                           onError={(e) => {

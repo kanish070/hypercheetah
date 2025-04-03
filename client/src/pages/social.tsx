@@ -442,7 +442,7 @@ export default function Social() {
           </Button>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent flex items-center">
             <Users className="mr-3 h-6 w-6 text-primary" />
-            HyperCheetah Social
+            HYPERCHEETAH Social
           </h1>
         </motion.div>
         
