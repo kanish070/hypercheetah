@@ -104,7 +104,7 @@ export function SavedLocations({ userId, onSelectLocation }: SavedLocationsProps
         category: location.category,
         isFavorite: location.isFavorite,
         geofenceRadius: location.geofenceRadius,
-        tags: Array.isArray(location.tags) ? location.tags.join(',') : location.tags
+        tags: Array.isArray(location.tags) ? location.tags.join(',') : ''
       })
     }),
     onSuccess: () => {
@@ -289,21 +289,13 @@ export function SavedLocations({ userId, onSelectLocation }: SavedLocationsProps
                     </CardHeader>
                     <CardContent className="pb-2">
                       <p className="text-sm">{location.desc}</p>
-                      {location.tags && location.tags.length > 0 && (
+                      {location.tags && Array.isArray(location.tags) && location.tags.length > 0 && (
                         <div className="flex flex-wrap mt-2 gap-1">
-                          {Array.isArray(location.tags) 
-                            ? location.tags.map((tag, index) => (
-                                <span key={index} className="text-xs bg-muted px-2 py-1 rounded-full">
-                                  {tag}
-                                </span>
-                              ))
-                            : typeof location.tags === 'string' && location.tags ? 
-                              location.tags.split(',').map((tag: string, index: number) => (
-                                <span key={index} className="text-xs bg-muted px-2 py-1 rounded-full">
-                                  {tag.trim()}
-                                </span>
-                              )) : null
-                          }
+                          {location.tags.map((tag, index) => (
+                            <span key={index} className="text-xs bg-muted px-2 py-1 rounded-full">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
                       )}
                     </CardContent>
@@ -407,7 +399,7 @@ export function SavedLocations({ userId, onSelectLocation }: SavedLocationsProps
                 value={Array.isArray(newLocation.tags) ? newLocation.tags.join(', ') : ''}
                 onChange={(e) => setNewLocation({ 
                   ...newLocation, 
-                  tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                  tags: e.target.value ? e.target.value.split(',').map(tag => tag.trim()).filter(Boolean) : []
                 })}
                 placeholder="office, central, mall"
               />
@@ -515,7 +507,7 @@ export function SavedLocations({ userId, onSelectLocation }: SavedLocationsProps
                       : ''}
                   onChange={(e) => setSelectedLocation({ 
                     ...selectedLocation, 
-                    tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean) 
+                    tags: e.target.value ? e.target.value.split(',').map(tag => tag.trim()).filter(Boolean) : [] 
                   })}
                 />
               </div>
