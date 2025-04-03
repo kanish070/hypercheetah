@@ -56,8 +56,11 @@ export async function apiRequest(method: HttpMethod, url: string, data?: any) {
     credentials: "include",
     body: data ? JSON.stringify(data) : undefined,
   };
+
+  const baseUrl = import.meta.env.PROD ? 'https://hypercheetah.onrender.com' : '';
+  const fullUrl = `${baseUrl}${url}`;
   
-  const response = await fetch(url, config);
+  const response = await fetch(fullUrl, config);
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
