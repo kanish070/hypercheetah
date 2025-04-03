@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { AppLogo } from "@/components/app-logo";
 
 export function AppNavigation() {
   const [location] = useLocation();
@@ -113,7 +114,7 @@ export function AppNavigation() {
       <div className="container flex h-14 justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="mr-4 flex items-center space-x-2">
-            <span className="font-bold text-xl">HyperCheetah</span>
+            <AppLogo size="sm" interactive={true} />
           </Link>
         </div>
         
