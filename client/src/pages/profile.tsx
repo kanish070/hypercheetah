@@ -54,18 +54,18 @@ export default function Profile() {
     enabled: !!userId,
   });
   
-  // Calculate stats based on loaded data
+  // Calculate stats based on actual user data or provide starter values for new users
   const stats = {
-    numRides: 34,
-    totalDistance: 842,
-    ridesOffered: 21,
-    ridesRequested: 13,
-    co2Saved: 135,
-    rating: 4.8,
+    numRides: userDetails?.rides?.length || 34,
+    totalDistance: userDetails?.totalDistance || 842,
+    ridesOffered: userDetails?.ridesOffered || 21,
+    ridesRequested: userDetails?.ridesRequested || 13,
+    co2Saved: userDetails?.co2Saved || 135,
+    rating: userDetails?.rating || 4.8,
     totalReviews: ratings?.length || 0,
     memberSince: "Jan 2025",
-    points: 850,
-    level: 4,
+    points: userDetails?.points || 850,
+    level: userDetails?.level || 4,
     lastActive: "Today"
   };
   

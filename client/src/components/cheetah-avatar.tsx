@@ -1,0 +1,33 @@
+import React from 'react';
+
+export function CheetahAvatar() {
+  return (
+    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#F59E0B" />
+      <circle cx="100" cy="100" r="85" fill="#FBBF24" />
+      {/* Spots */}
+      <circle cx="60" cy="70" r="12" fill="#78350F" />
+      <circle cx="130" cy="60" r="10" fill="#78350F" />
+      <circle cx="90" cy="110" r="9" fill="#78350F" />
+      <circle cx="140" cy="90" r="8" fill="#78350F" />
+      <circle cx="110" cy="140" r="11" fill="#78350F" />
+      <circle cx="65" cy="120" r="7" fill="#78350F" />
+      <circle cx="40" cy="95" r="9" fill="#78350F" />
+      <circle cx="160" cy="120" r="8" fill="#78350F" />
+      {/* Eyes */}
+      <circle cx="70" cy="75" r="10" fill="white" />
+      <circle cx="130" cy="75" r="10" fill="white" />
+      <circle cx="70" cy="75" r="5" fill="black" />
+      <circle cx="130" cy="75" r="5" fill="black" />
+      {/* Nose */}
+      <path d="M100 95 L90 105 H110 L100 95Z" fill="black" />
+      {/* Mouth */}
+      <path d="M100 120 C90 130 110 130 100 120" stroke="black" strokeWidth="2" />
+      {/* Ears */}
+      <path d="M50 40 L70 60 L55 65 Z" fill="#FBBF24" stroke="#F59E0B" strokeWidth="2" />
+      <path d="M150 40 L130 60 L145 65 Z" fill="#FBBF24" stroke="#F59E0B" strokeWidth="2" />
+    </svg>
+  );
+}
+
+export default CheetahAvatar;

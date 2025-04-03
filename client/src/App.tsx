@@ -10,6 +10,7 @@ import Rider from "@/pages/rider";
 import Social from "@/pages/social";
 import Profile from "@/pages/profile";
 import ProfilePage from "@/pages/profile-page";
+import UserProfile from "@/pages/user-profile";
 import EcoTracker from "@/pages/eco-tracker";
 import { SavedLocationsPage } from "@/pages/saved-locations-page";
 import AuthPage from "@/pages/auth-page";
@@ -23,7 +24,8 @@ function Router() {
       <ProtectedRoute path="/passenger" component={Passenger} />
       <ProtectedRoute path="/rider" component={Rider} />
       <ProtectedRoute path="/social" component={Social} />
-      <ProtectedRoute path="/profile" component={Profile} />
+      <ProtectedRoute path="/profile" component={UserProfile} />
+      <ProtectedRoute path="/profile-old" component={Profile} />
       <ProtectedRoute path="/profile-v2" component={ProfilePage} />
       <ProtectedRoute path="/eco-tracker" component={EcoTracker} />
       <ProtectedRoute path="/locations" component={SavedLocationsPage} />
