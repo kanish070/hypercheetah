@@ -109,10 +109,14 @@ export function AppLogo({
           )}
           initial={{ scale: 1 }}
           animate={isActive ? { 
-            scale: [1, 1.2, 0.9, 1.1, 1],
-            rotate: [0, 5, -5, 3, 0],
-            boxShadow: ["0 0 0 rgba(74, 222, 128, 0)", "0 0 20px rgba(74, 222, 128, 0.5)", "0 0 10px rgba(74, 222, 128, 0.3)"] 
-          } : { scale: 1 }}
+            scale: 1.1, 
+            rotate: 5,
+            boxShadow: "0 0 15px rgba(74, 222, 128, 0.5)"
+          } : { 
+            scale: 1,
+            rotate: 0,
+            boxShadow: "0 0 0 rgba(74, 222, 128, 0)"
+          }}
           whileHover={actionButton ? { scale: 1.08, boxShadow: "0 0 10px rgba(74, 222, 128, 0.3)" } : { scale: 1.05 }}
           transition={{ 
             type: "spring", 

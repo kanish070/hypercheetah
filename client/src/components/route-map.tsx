@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Location, Route } from '@shared/schema';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
@@ -51,17 +51,15 @@ const destinationIcon = L.icon({
 // Default icon for general usage
 L.Marker.prototype.options.icon = startIcon;
 
-// Custom color for route line
-const routeOptions = { color: '#1e88e5', weight: 5, opacity: 0.8 };
-
 // Map controller component that sets view and draws route
-function MapController({ center, route }: { center: Location, route?: Route }) {
+function MapController({ route }: { route?: Route }) {
   const map = useMap();
   const [routingControl, setRoutingControl] = useState<any>(null);
   
   useEffect(() => {
-    // Center the map on the provided location
-    map.setView([center.lat, center.lng], 13);
+    // Default center if no route is provided
+    const defaultCenter = { lat: 22.3072, lng: 73.1812 }; // Vadodara center
+    map.setView([defaultCenter.lat, defaultCenter.lng], 13);
     
     // If a route is provided, setup routing
     if (route) {
@@ -117,20 +115,23 @@ function MapController({ center, route }: { center: Location, route?: Route }) {
         map.removeControl(routingControl);
       }
     };
-  }, [map, center, route]);
+  }, [map, route]);
   
   return null;
 }
 
 interface RouteMapProps {
-  center: Location;
   route?: Route;
   className?: string;
 }
 
-export function RouteMap({ center, route, className = "" }: RouteMapProps) {
+export function RouteMap({ route, className = "" }: RouteMapProps) {
+  // Default center on Vadodara
+  const defaultCenter = { lat: 22.3072, lng: 73.1812 };
+  const center = route ? route.start : defaultCenter;
+
   return (
-    <div className={`rounded-md overflow-hidden ${className}`} style={{ height: '400px' }}>
+    <div className={`rounded-md overflow-hidden ${className}`} style={{ height: '100%', width: '100%' }}>
       <MapContainer 
         center={[center.lat, center.lng]} 
         zoom={13} 
@@ -142,7 +143,7 @@ export function RouteMap({ center, route, className = "" }: RouteMapProps) {
         />
         
         {/* Map controller to handle view changes and routing */}
-        <MapController center={center} route={route} />
+        <MapController route={route} />
         
         {/* Start marker */}
         {route && (
