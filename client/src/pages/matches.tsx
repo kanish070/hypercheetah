@@ -7,9 +7,11 @@ import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { RouteMap } from "@/components/route-map";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Matches() {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
   
   // Sample match data - in a real app this would come from API/database
   const rideMatches = [
@@ -240,12 +242,32 @@ export default function Matches() {
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Book ride logic
+                          setSelectedMatch(match.id);
+                          // Scroll to the map on mobile
+                          if (window.innerWidth < 1024) {
+                            document.querySelector('.route-preview-card')?.scrollIntoView({
+                              behavior: 'smooth'
+                            });
+                          }
                         }}
                       >
                         <CreditCard className="mr-2 h-4 w-4" /> Book Ride
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMatch(match.id);
+                          // Open modal or show details
+                          // For now, we'll just select the ride and scroll to details
+                          if (window.innerWidth < 1024) {
+                            document.querySelector('.ride-summary')?.scrollIntoView({
+                              behavior: 'smooth'
+                            });
+                          }
+                        }}
+                      >
                         <Info className="mr-2 h-4 w-4" /> Details
                       </Button>
                     </div>
@@ -256,7 +278,7 @@ export default function Matches() {
           </div>
 
           <div className="lg:col-span-2">
-            <Card className="sticky top-6">
+            <Card className="sticky top-6 route-preview-card">
               <CardHeader>
                 <CardTitle className="text-lg">Route Preview</CardTitle>
               </CardHeader>
@@ -276,7 +298,7 @@ export default function Matches() {
                 <div className="mt-4 space-y-4">
                   {selectedMatch && (
                     <>
-                      <div className="bg-primary/5 rounded-md p-3">
+                      <div className="bg-primary/5 rounded-md p-3 ride-summary">
                         <h3 className="font-medium text-sm mb-2">Ride Summary</h3>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div className="text-muted-foreground">Distance</div>
@@ -290,7 +312,29 @@ export default function Matches() {
                         </div>
                       </div>
 
-                      <Button className="w-full">
+                      <Button 
+                        className="w-full"
+                        onClick={() => {
+                          // In a real app, this would submit to a booking API
+                          // For now, navigate to a success page with details
+                          const selectedRide = rideMatches.find(m => m.id === selectedMatch);
+                          if (selectedRide) {
+                            // Show a toast notification
+                            toast({
+                              title: "Ride Booked Successfully!",
+                              description: `Your ride with ${selectedRide.driver.name} has been booked. A confirmation will be sent to your registered phone.`,
+                              variant: "default",
+                            });
+                            
+                            // In a real app, would create a booking and redirect to details
+                            // Simulating redirect after a short delay
+                            setTimeout(() => {
+                              // setLocation(`/bookings/${bookingId}`);
+                              setLocation("/");
+                            }, 2000);
+                          }
+                        }}
+                      >
                         <CreditCard className="mr-2 h-4 w-4" /> Confirm Booking
                       </Button>
                     </>
