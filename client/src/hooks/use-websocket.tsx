@@ -37,6 +37,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
     
+    console.log('Connecting to WebSocket at:', wsUrl);
     const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
     
@@ -97,6 +98,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
           
+          console.log('Reconnecting to WebSocket at:', wsUrl);
           const socket = new WebSocket(wsUrl);
           socketRef.current = socket;
           

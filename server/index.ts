@@ -71,7 +71,7 @@ app.use((req, res, next) => {
     next();
   });
 
-  server.listen(Number(port), () => {
+  server.listen(Number(port), host, () => {
     log(`Server running at http://${host}:${port}`);
   });
 })();
