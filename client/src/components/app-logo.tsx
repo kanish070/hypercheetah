@@ -1,18 +1,31 @@
 import { cn } from "@/lib/utils";
 import { MapPin, Zap } from "lucide-react";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
+import { Badge } from "@/components/ui/badge";
 
 interface AppLogoProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   showTagline?: boolean;
   headerLogo?: boolean;
+  actionButton?: boolean;
+  actionTarget?: string;
 }
 
-export function AppLogo({ size = "md", className, showTagline = false, headerLogo = false }: AppLogoProps) {
+export function AppLogo({ 
+  size = "md", 
+  className, 
+  showTagline = false, 
+  headerLogo = false,
+  actionButton = false,
+  actionTarget = "/matches"
+}: AppLogoProps) {
+  const [_, navigate] = useLocation();
   const [mapPinHovered, setMapPinHovered] = useState(false);
   const [zapHovered, setZapHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   
   const sizeClasses = {
     sm: "text-lg",
@@ -30,6 +43,16 @@ export function AppLogo({ size = "md", className, showTagline = false, headerLog
     sm: "text-sm",
     md: "text-xl",
     lg: "text-2xl",
+  };
+  
+  const handleLogoClick = () => {
+    if (actionButton) {
+      setIsActive(true);
+      setTimeout(() => {
+        setIsActive(false);
+        navigate(actionTarget);
+      }, 600);
+    }
   };
 
   if (headerLogo) {
@@ -79,10 +102,24 @@ export function AppLogo({ size = "md", className, showTagline = false, headerLog
     <div className={cn("flex flex-col items-center", className)}>
       <div className="relative">
         <motion.div 
-          className={cn("bg-green-100/80 rounded-lg p-3 mb-2 flex items-center justify-center relative", containerClasses[size])}
+          className={cn(
+            "bg-green-100/80 rounded-lg p-3 mb-2 flex items-center justify-center relative", 
+            containerClasses[size],
+            actionButton && "cursor-pointer"
+          )}
           initial={{ scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          animate={isActive ? { 
+            scale: [1, 1.2, 0.9, 1.1, 1],
+            rotate: [0, 5, -5, 3, 0],
+            boxShadow: ["0 0 0 rgba(74, 222, 128, 0)", "0 0 20px rgba(74, 222, 128, 0.5)", "0 0 10px rgba(74, 222, 128, 0.3)"] 
+          } : { scale: 1 }}
+          whileHover={actionButton ? { scale: 1.08, boxShadow: "0 0 10px rgba(74, 222, 128, 0.3)" } : { scale: 1.05 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 400, 
+            damping: 10
+          }}
+          onClick={handleLogoClick}
         >
           <div className={cn("text-green-600 font-bold", textClasses[size])}>^ · · ^</div>
           
@@ -94,17 +131,22 @@ export function AppLogo({ size = "md", className, showTagline = false, headerLog
             whileTap={{ scale: 0.9 }}
           >
             <Zap 
-              className="text-green-500 mt-1 mr-1" 
+              className={cn(
+                "mt-1 mr-1", 
+                isActive ? "text-green-600" : "text-green-500"
+              )} 
               size={size === "sm" ? 16 : size === "md" ? 20 : 24} 
             />
-            {zapHovered && (
-              <motion.div 
-                className="absolute inset-0 rounded-full border-2 border-red-500"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-              />
-            )}
+            <AnimatePresence>
+              {zapHovered && (
+                <motion.div 
+                  className="absolute inset-0 rounded-full border-2 border-red-500"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                />
+              )}
+            </AnimatePresence>
           </motion.div>
           
           <motion.div 
@@ -115,19 +157,50 @@ export function AppLogo({ size = "md", className, showTagline = false, headerLog
             whileTap={{ scale: 0.9 }}
           >
             <MapPin 
-              className="text-green-600 mb-1" 
+              className={cn(
+                "mb-1",
+                isActive ? "text-green-700" : "text-green-600"
+              )} 
               size={size === "sm" ? 16 : size === "md" ? 20 : 24} 
             />
-            {mapPinHovered && (
-              <motion.div 
-                className="absolute inset-0 rounded-full border-2 border-red-500"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-              />
-            )}
+            <AnimatePresence>
+              {mapPinHovered && (
+                <motion.div 
+                  className="absolute inset-0 rounded-full border-2 border-red-500"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                />
+              )}
+            </AnimatePresence>
           </motion.div>
+          
+          {actionButton && (
+            <AnimatePresence>
+              {isActive && (
+                <motion.div 
+                  className="absolute inset-0 bg-green-400/20 rounded-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+              )}
+            </AnimatePresence>
+          )}
         </motion.div>
+        
+        {actionButton && (
+          <motion.div 
+            className="absolute -bottom-2 left-1/2 transform -translate-x-1/2"
+            initial={{ opacity: 0, y: -5 }}
+            animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: -5 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Badge className="bg-green-500 text-white text-xs px-2 py-0.5 shadow-md">
+              Activating...
+            </Badge>
+          </motion.div>
+        )}
       </div>
       
       <h1 className={cn("font-bold tracking-tight leading-none mt-2", sizeClasses[size])}>
@@ -136,9 +209,12 @@ export function AppLogo({ size = "md", className, showTagline = false, headerLog
       </h1>
       
       {showTagline && (
-        <p className="text-muted-foreground text-sm mt-1">
-          Lightning-fast rides with social connections
-        </p>
+        <motion.p 
+          className="text-muted-foreground text-sm mt-1"
+          animate={isActive ? { color: "#22c55e" } : {}}
+        >
+          {isActive ? "Finding matches nearby..." : "Lightning-fast rides with social connections"}
+        </motion.p>
       )}
     </div>
   );

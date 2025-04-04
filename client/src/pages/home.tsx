@@ -84,7 +84,20 @@ export default function Home() {
           className="text-center space-y-6"
         >
           <div className="flex flex-col items-center justify-center gap-3 mb-4">
-            <AppLogo size="lg" showTagline={true} />
+            <AppLogo 
+              size="lg" 
+              showTagline={true} 
+              actionButton={true} 
+              actionTarget="/matches" 
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-xs text-muted-foreground mt-2"
+            >
+              Click the logo to find ride matches!
+            </motion.div>
           </div>
           
           <div className="flex justify-center gap-2 flex-wrap">
