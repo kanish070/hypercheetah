@@ -34,9 +34,18 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     }
     
     // Create WebSocket connection
+    // Determine the protocol based on the current window location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use a direct relative path to avoid DNS resolution issues
-    const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+    
+    // Build the WebSocket URL
+    // For deployed apps, use the same host; for local development, use the same port
+    let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+    
+    // If we're on a deployed replit.app domain, ensure we're using that fully
+    if (window.location.hostname.includes('.replit.app')) {
+      wsUrl = `${protocol}//${window.location.hostname}/ws-chat`;
+    }
+    
     console.log('Connecting to WebSocket at:', wsUrl);
     
     const socket = new WebSocket(wsUrl);
@@ -97,7 +106,16 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           
           // Create new WebSocket connection
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+          
+          // Build the WebSocket URL
+          // For deployed apps, use the same host; for local development, use the same port
+          let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+          
+          // If we're on a deployed replit.app domain, ensure we're using that fully
+          if (window.location.hostname.includes('.replit.app')) {
+            wsUrl = `${protocol}//${window.location.hostname}/ws-chat`;
+          }
+          
           console.log('Reconnecting to WebSocket at:', wsUrl);
           
           const socket = new WebSocket(wsUrl);

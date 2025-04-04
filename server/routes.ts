@@ -404,18 +404,59 @@ export async function registerRoutes(app: Express) {
   // WebSocket connection handling
   console.log(`WebSocket server initialized on path: /ws-chat`);
   
+  // Keep track of connected clients
+  let connectedClients = 0;
+  
+  // Set up interval to check connection status and log stats
+  const pingInterval = setInterval(() => {
+    let activeUsers = 0;
+    wss.clients.forEach((client: WebSocketClient) => {
+      if (client.userId) activeUsers++;
+    });
+    
+    if (wss.clients.size > 0) {
+      console.log(`WebSocket Stats - Connected clients: ${wss.clients.size}, Active users: ${activeUsers}`);
+    }
+    
+    wss.clients.forEach((client: WebSocketClient) => {
+      if (client.isAlive === false) {
+        console.log(`Terminating inactive WebSocket connection${client.userId ? ` for user ${client.userId}` : ''}`);
+        return client.terminate();
+      }
+      
+      client.isAlive = false;
+      client.ping(() => {});
+    });
+  }, 30000);
+  
+  // Clean up interval on server close
+  wss.on('close', () => {
+    clearInterval(pingInterval);
+    console.log('WebSocket server closed');
+  });
+  
   wss.on("connection", (ws: WebSocketClient, req) => {
-    console.log(`WebSocket connection received from: ${req.socket.remoteAddress}`);
+    connectedClients++;
+    console.log(`WebSocket connection received from: ${req.socket.remoteAddress}. Total connections: ${connectedClients}`);
     ws.isAlive = true;
     
     // Handle WebSocket messages
     ws.on("message", async (message: string) => {
       try {
         const data = JSON.parse(message);
+        console.log(`WebSocket message received: ${data.type}`);
         
         // Initialize connection with user ID
         if (data.type === "init") {
           ws.userId = data.userId;
+          console.log(`User ${data.userId} initialized WebSocket connection`);
+          
+          // Confirm initialization to client
+          ws.send(JSON.stringify({
+            type: 'init_confirmed',
+            userId: data.userId,
+            timestamp: new Date().toISOString()
+          }));
         }
         
         // Handle chat messages
@@ -430,18 +471,97 @@ export async function registerRoutes(app: Express) {
           });
           
           // Broadcast the message to all connected clients
+          let broadcastCount = 0;
           wss.clients.forEach((client) => {
             const wsClient = client as WebSocketClient;
             if (wsClient.readyState === WebSocket.OPEN) {
               wsClient.send(JSON.stringify({
                 type: "chat",
-                message: newMessage
+                message: newMessage,
+                timestamp: new Date().toISOString()
               }));
+              broadcastCount++;
             }
           });
+          
+          console.log(`Broadcast chat message to ${broadcastCount} clients`);
+        }
+        
+        // Handle location updates and nearby user requests
+        if (data.type === "location_update" && ws.userId) {
+          try {
+            await storage.updateUserLocation(ws.userId, data.latitude, data.longitude);
+            console.log(`Updated location for user ${ws.userId}: ${data.latitude}, ${data.longitude}`);
+            
+            // Broadcast to other users
+            let broadcastCount = 0;
+            wss.clients.forEach((client: WebSocketClient) => {
+              if (client !== ws && client.readyState === WebSocket.OPEN && client.userId) {
+                client.send(JSON.stringify({
+                  type: 'user_location_updated',
+                  userId: ws.userId,
+                  latitude: data.latitude,
+                  longitude: data.longitude,
+                  timestamp: new Date().toISOString()
+                }));
+                broadcastCount++;
+              }
+            });
+            
+            console.log(`Broadcast location update to ${broadcastCount} clients`);
+          } catch (error) {
+            console.error(`Error updating location for user ${ws.userId}:`, error);
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Failed to update location',
+              timestamp: new Date().toISOString()
+            }));
+          }
+        }
+        
+        if (data.type === "get_nearby_users" && ws.userId) {
+          try {
+            const users = await storage.getAllUsers();
+            console.log(`Retrieved ${users.length} users for nearby users request`);
+            
+            const otherUsers = users
+              .filter((user: User) => user.id !== ws.userId)
+              .map((user: User) => ({
+                id: user.id,
+                username: user.username,
+                latitude: user.latitude,
+                longitude: user.longitude,
+                type: user.type, 
+                avatarUrl: user.avatarUrl
+              }));
+            
+            ws.send(JSON.stringify({
+              type: 'nearby_users',
+              users: otherUsers,
+              timestamp: new Date().toISOString()
+            }));
+            
+            console.log(`Sent ${otherUsers.length} nearby users to user ${ws.userId}`);
+          } catch (error) {
+            console.error(`Error getting nearby users for user ${ws.userId}:`, error);
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Failed to get nearby users',
+              timestamp: new Date().toISOString()
+            }));
+          }
         }
       } catch (err) {
         console.error("WebSocket message error:", err);
+        try {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Failed to process message',
+            timestamp: new Date().toISOString()
+          }));
+        } catch (e) {
+          console.error('Failed to send error response:', e);
+        }
       }
     });
     
@@ -452,7 +572,8 @@ export async function registerRoutes(app: Express) {
     
     // Handle WebSocket close
     ws.on("close", () => {
-      console.log(`WebSocket connection closed for user: ${ws.userId || 'unknown'}`);
+      connectedClients--;
+      console.log(`WebSocket connection closed for user: ${ws.userId || 'unknown'}. Remaining connections: ${connectedClients}`);
       // Clean up any resources if needed
     });
     
