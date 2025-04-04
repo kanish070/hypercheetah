@@ -60,7 +60,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
-      <div className="flex justify-end max-w-5xl mx-auto mb-4 gap-2">
+      <div className="hidden md:flex justify-end max-w-5xl mx-auto mb-4 gap-2">
         <Link href="/ride-matching">
           <Button variant="outline" className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-purple-500" />
@@ -80,6 +80,28 @@ export default function Home() {
             <User className="h-4 w-4" />
             <span>Profile</span>
             <Badge variant="secondary" className="ml-1">New</Badge>
+          </Button>
+        </Link>
+      </div>
+      
+      {/* Mobile feature buttons */}
+      <div className="flex md:hidden flex-wrap justify-center max-w-5xl mx-auto mb-4 gap-2">
+        <Link href="/ride-matching">
+          <Button variant="outline" size="sm" className="flex items-center">
+            <Zap className="h-3.5 w-3.5 text-purple-500 mr-1" />
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700">New</Badge>
+          </Button>
+        </Link>
+        <Link href="/eco-tracker">
+          <Button variant="outline" size="sm" className="flex items-center">
+            <Leaf className="h-3.5 w-3.5 text-green-500 mr-1" />
+            <Badge variant="secondary" className="bg-green-100 text-green-700">New</Badge>
+          </Button>
+        </Link>
+        <Link href="/profile">
+          <Button variant="outline" size="sm" className="flex items-center">
+            <User className="h-3.5 w-3.5 mr-1" />
+            <Badge variant="secondary">New</Badge>
           </Button>
         </Link>
       </div>

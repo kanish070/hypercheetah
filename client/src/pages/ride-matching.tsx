@@ -232,7 +232,7 @@ export default function RideMatching() {
                   riders={sampleRiders}
                   passengers={samplePassengers}
                   onMatchComplete={(results: MatchResult[]) => setMatches(results)}
-                  className="min-h-[600px]"
+                  className="min-h-[400px] md:min-h-[600px]"
                 />
               </CardContent>
             </Card>
@@ -364,10 +364,10 @@ export default function RideMatching() {
           className="mt-10 flex justify-center"
         >
           <Tabs defaultValue="basic" className="w-full max-w-3xl">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">Basic Matching</TabsTrigger>
-              <TabsTrigger value="advanced">Advanced Options</TabsTrigger>
-              <TabsTrigger value="enterprise">Enterprise Features</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 overflow-x-auto text-xs md:text-sm">
+              <TabsTrigger value="basic">Basic</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+              <TabsTrigger value="enterprise">Enterprise</TabsTrigger>
             </TabsList>
             <TabsContent value="basic" className="mt-6">
               <Card>
@@ -378,7 +378,7 @@ export default function RideMatching() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">Matching Factors:</h4>
                       <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
@@ -413,7 +413,7 @@ export default function RideMatching() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">Advanced Matching Factors:</h4>
                       <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
@@ -449,7 +449,7 @@ export default function RideMatching() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">Enterprise Features:</h4>
                       <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
