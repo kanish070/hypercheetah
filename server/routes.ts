@@ -377,13 +377,35 @@ export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
   
   // Use WebSocketServer with a specific path to avoid conflicts with Vite
+  // and ensure compatibility with Replit's webview
   const wss = new WebSocketServer({ 
     server: httpServer,
-    path: '/ws-chat'
+    path: '/ws-chat',
+    perMessageDeflate: {
+      zlibDeflateOptions: {
+        // See zlib defaults.
+        chunkSize: 1024,
+        memLevel: 7,
+        level: 3
+      },
+      zlibInflateOptions: {
+        chunkSize: 10 * 1024
+      },
+      // Other options settable:
+      clientNoContextTakeover: true, // Defaults to negotiated value.
+      serverNoContextTakeover: true, // Defaults to negotiated value.
+      serverMaxWindowBits: 10, // Defaults to negotiated value.
+      // Below options specified as default values.
+      concurrencyLimit: 10, // Limits zlib concurrency for perf.
+      threshold: 1024 // Size (in bytes) below which messages should not be compressed.
+    }
   });
   
   // WebSocket connection handling
-  wss.on("connection", (ws: WebSocketClient) => {
+  console.log(`WebSocket server initialized on path: /ws-chat`);
+  
+  wss.on("connection", (ws: WebSocketClient, req) => {
+    console.log(`WebSocket connection received from: ${req.socket.remoteAddress}`);
     ws.isAlive = true;
     
     // Handle WebSocket messages
@@ -430,7 +452,13 @@ export async function registerRoutes(app: Express) {
     
     // Handle WebSocket close
     ws.on("close", () => {
+      console.log(`WebSocket connection closed for user: ${ws.userId || 'unknown'}`);
       // Clean up any resources if needed
+    });
+    
+    // Handle WebSocket errors
+    ws.on("error", (error) => {
+      console.error(`WebSocket error for user ${ws.userId || 'unknown'}:`, error);
     });
   });
   
