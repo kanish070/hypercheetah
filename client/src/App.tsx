@@ -18,7 +18,6 @@ import Matches from "@/pages/matches";
 import RideMatching from "@/pages/ride-matching";
 import AuthPage from "@/pages/auth-page";
 import { AuthProvider } from "@/hooks/use-auth";
-import { WebSocketProvider } from "@/hooks/use-websocket";
 import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
@@ -46,15 +45,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <WebSocketProvider>
-          <div className="min-h-screen flex flex-col">
-            <AppNavigation />
-            <main className="flex-1">
-              <Router />
-            </main>
-          </div>
-          <Toaster />
-        </WebSocketProvider>
+        <div className="min-h-screen flex flex-col">
+          <AppNavigation />
+          <main className="flex-1">
+            <Router />
+          </main>
+        </div>
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );

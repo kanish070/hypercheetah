@@ -58,30 +58,18 @@ app.use((req, res, next) => {
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
+  // It is the only port that is not firewalled.
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
   
-  // Configure CORS for Replit hosted environment
   app.use((req, res, next) => {
-    // Allow requests from any origin for development
-    const origin = req.headers.origin;
-    
-    // Set needed CORS headers for all responses
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
     next();
   });
 
-  server.listen(Number(port), host, () => {
+  server.listen(Number(port), () => {
     log(`Server running at http://${host}:${port}`);
-    log(`App should be available at https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
   });
 })();
