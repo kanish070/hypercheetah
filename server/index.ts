@@ -58,21 +58,14 @@ app.use((req, res, next) => {
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
-  // Configure port and host for Replit environment
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
   
-  // Enable CORS with proper configuration
+  // Enable CORS
   app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    const allowedOrigins = [process.env.NODE_ENV === 'production' ? 'https://' + process.env.REPL_SLUG + '.repl.co' : '*'];
-    
-    if (origin && allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin || '*');
-      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-      res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-      res.header('Access-Control-Allow-Credentials', 'true');
-    }
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
     next();
   });
 
