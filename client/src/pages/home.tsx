@@ -85,24 +85,41 @@ export default function Home() {
       </div>
       
       {/* Mobile feature buttons */}
-      <div className="flex md:hidden flex-wrap justify-center max-w-5xl mx-auto mb-4 gap-2">
+      <div className="flex md:hidden flex-wrap justify-center max-w-5xl mx-auto mb-4 gap-3">
         <Link href="/ride-matching">
-          <Button variant="outline" size="sm" className="flex items-center">
-            <Zap className="h-3.5 w-3.5 text-purple-500 mr-1" />
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700">New</Badge>
-          </Button>
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-full blur-sm group-hover:blur transform group-hover:scale-110 transition-all duration-300"></div>
+            <Button variant="outline" size="sm" className="bg-black/80 border-purple-500/50 hover:border-purple-400 flex items-center gap-1.5 pl-2 pr-3 py-1 rounded-full relative overflow-hidden">
+              <div className="bg-gradient-to-br from-purple-400 to-indigo-600 rounded-full p-1 flex items-center justify-center">
+                <Zap className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-purple-300 text-xs font-medium">Match</span>
+            </Button>
+          </div>
         </Link>
+        
         <Link href="/eco-tracker">
-          <Button variant="outline" size="sm" className="flex items-center">
-            <Leaf className="h-3.5 w-3.5 text-green-500 mr-1" />
-            <Badge variant="secondary" className="bg-green-100 text-green-700">New</Badge>
-          </Button>
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full blur-sm group-hover:blur transform group-hover:scale-110 transition-all duration-300"></div>
+            <Button variant="outline" size="sm" className="bg-black/80 border-green-500/50 hover:border-green-400 flex items-center gap-1.5 pl-2 pr-3 py-1 rounded-full relative overflow-hidden">
+              <div className="bg-gradient-to-br from-green-400 to-emerald-600 rounded-full p-1 flex items-center justify-center">
+                <Leaf className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-green-300 text-xs font-medium">Eco</span>
+            </Button>
+          </div>
         </Link>
+        
         <Link href="/profile">
-          <Button variant="outline" size="sm" className="flex items-center">
-            <User className="h-3.5 w-3.5 mr-1" />
-            <Badge variant="secondary">New</Badge>
-          </Button>
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-sky-500/20 rounded-full blur-sm group-hover:blur transform group-hover:scale-110 transition-all duration-300"></div>
+            <Button variant="outline" size="sm" className="bg-black/80 border-blue-500/50 hover:border-blue-400 flex items-center gap-1.5 pl-2 pr-3 py-1 rounded-full relative overflow-hidden">
+              <div className="bg-gradient-to-br from-blue-400 to-sky-600 rounded-full p-1 flex items-center justify-center">
+                <User className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-blue-300 text-xs font-medium">Profile</span>
+            </Button>
+          </div>
         </Link>
       </div>
       <div className="max-w-5xl mx-auto space-y-12">
