@@ -61,6 +61,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6">
       <div className="flex justify-end max-w-5xl mx-auto mb-4 gap-2">
+        <Link href="/ride-matching">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-purple-500" />
+            <span>Ride Matching</span>
+            <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">New</Badge>
+          </Button>
+        </Link>
         <Link href="/eco-tracker">
           <Button variant="outline" className="flex items-center gap-2">
             <Leaf className="h-4 w-4 text-green-500" />
