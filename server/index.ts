@@ -61,15 +61,27 @@ app.use((req, res, next) => {
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
   
-  // Enable CORS
+  // Configure CORS for Replit hosted environment
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    // Allow requests from any origin for development
+    const origin = req.headers.origin;
+    
+    // Set needed CORS headers for all responses
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    
     next();
   });
 
   server.listen(Number(port), host, () => {
     log(`Server running at http://${host}:${port}`);
+    log(`App should be available at https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
   });
 })();

@@ -35,9 +35,15 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     
     // Create WebSocket connection
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
     
-    console.log('Connecting to WebSocket at:', wsUrl);
+    // Ensure we use the correct host (handles both local dev and Replit hosted)
+    let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+    
+    // Check if we're on Replit domain
+    const isReplit = window.location.host.includes('.replit.dev') || 
+                     window.location.host.includes('.repl.co');
+    
+    console.log('Connecting to WebSocket at:', wsUrl, 'isReplit:', isReplit);
     const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
     
@@ -96,9 +102,15 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           
           // Create new WebSocket connection
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const wsUrl = `${protocol}//${window.location.host}/ws-chat`;
           
-          console.log('Reconnecting to WebSocket at:', wsUrl);
+          // Ensure we use the correct host (handles both local dev and Replit hosted)
+          let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
+          
+          // Check if we're on Replit domain
+          const isReplit = window.location.host.includes('.replit.dev') || 
+                          window.location.host.includes('.repl.co');
+          
+          console.log('Reconnecting to WebSocket at:', wsUrl, 'isReplit:', isReplit);
           const socket = new WebSocket(wsUrl);
           socketRef.current = socket;
           
