@@ -119,7 +119,7 @@
       <p id="port-info">Current port: <span id="port-display">Loading...</span></p>
     </div>
     
-    <a href="http://0.0.0.0:3000" class="btn" id="localIpLink">Try Local IP Access</a>
+    <a href="http://0.0.0.0:5000" class="btn" id="localIpLink">Try Local IP Access</a>
     <a href="/" class="btn btn-primary">Try Regular Access</a>
     <a href="/fallback" class="btn">Go to Emergency Fallback Page</a>
     
@@ -135,7 +135,7 @@
     fetch('/api/connection-info')
       .then(response => response.json())
       .then(data => {
-        const port = window.location.port || '3000';
+        const port = window.location.port || '5000';
         portDisplay.textContent = port;
         
         // Update the link to use the detected port
@@ -144,7 +144,7 @@
       })
       .catch(error => {
         console.error('Error fetching connection info:', error);
-        portDisplay.textContent = '3000 (default)';
+        portDisplay.textContent = '5000 (default)';
       });
     
     // Connection information

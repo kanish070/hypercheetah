@@ -476,7 +476,8 @@ export async function registerRoutes(app: Express) {
   // Set up interval to check connection status and log stats
   const pingInterval = setInterval(() => {
     let activeUsers = 0;
-    wss.clients.forEach((client: WebSocketClient) => {
+    wss.clients.forEach((websocket) => {
+      const client = websocket as WebSocketClient;
       if (client.userId) activeUsers++;
     });
     
@@ -484,7 +485,8 @@ export async function registerRoutes(app: Express) {
       console.log(`WebSocket Stats - Connected clients: ${wss.clients.size}, Active users: ${activeUsers}`);
     }
     
-    wss.clients.forEach((client: WebSocketClient) => {
+    wss.clients.forEach((websocket) => {
+      const client = websocket as WebSocketClient;
       if (client.isAlive === false) {
         console.log(`Terminating inactive WebSocket connection${client.userId ? ` for user ${client.userId}` : ''}`);
         return client.terminate();
@@ -556,12 +558,14 @@ export async function registerRoutes(app: Express) {
         // Handle location updates and nearby user requests
         if (data.type === "location_update" && ws.userId) {
           try {
-            await storage.updateUserLocation(ws.userId, data.latitude, data.longitude);
+            const location = { lat: data.latitude, lng: data.longitude };
+            await storage.updateUserLocation(ws.userId, location);
             console.log(`Updated location for user ${ws.userId}: ${data.latitude}, ${data.longitude}`);
             
             // Broadcast to other users
             let broadcastCount = 0;
-            wss.clients.forEach((client: WebSocketClient) => {
+            wss.clients.forEach((websocket) => {
+              const client = websocket as WebSocketClient;
               if (client !== ws && client.readyState === WebSocket.OPEN && client.userId) {
                 client.send(JSON.stringify({
                   type: 'user_location_updated',
@@ -597,18 +601,18 @@ export async function registerRoutes(app: Express) {
         
         if (data.type === "get_nearby_users" && ws.userId) {
           try {
-            const users = await storage.getAllUsers();
+            // Use getNearbyUsers instead of getAllUsers
+            const location = { lat: 22.3072, lng: 73.1812 }; // Default location (Alkapuri, Vadodara)
+            const users = await storage.getNearbyUsers(location, 10);
             console.log(`Retrieved ${users.length} users for nearby users request`);
             
             const otherUsers = users
               .filter((user: User) => user.id !== ws.userId)
               .map((user: User) => ({
                 id: user.id,
-                username: user.username,
-                latitude: user.latitude,
-                longitude: user.longitude,
-                type: user.type, 
-                avatarUrl: user.avatarUrl
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar
               }));
             
             ws.send(JSON.stringify({
