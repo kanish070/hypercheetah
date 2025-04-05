@@ -28,6 +28,15 @@ interface WebSocketClient extends WebSocket {
 }
 
 export async function registerRoutes(app: Express) {
+  // Add a public health check endpoint that's easy to access from mobile
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      message: "Server is running and accessible"
+    });
+  });
+  
   // Setup auth routes with Passport
   setupAuth(app);
   
