@@ -61,22 +61,17 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
-  
-  // Set up CORS early in the request cycle with maximum permissiveness
+
+  // Enable CORS for development
   app.use((req, res, next) => {
-    // Always allow access regardless of origin for mobile compatibility
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    
-    // Allow credentials explicitly for better mobile support
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
     res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle preflight requests - important for mobile browsers
+
     if (req.method === 'OPTIONS') {
       return res.status(200).end();
     }
-    
     next();
   });
 
