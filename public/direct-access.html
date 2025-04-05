@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner - Direct Access</title>
+  <style>
+    :root {
+      --primary: #3a7bd5;
+      --primary-dark: #2a5db5;
+      --primary-light: #5a9bf5;
+      --accent: #00d2ff;
+      --text: #333;
+      --text-light: #777;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: var(--white);
+      min-height: 100vh;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .container {
+      width: 100%;
+      padding: 2rem;
+      flex: 1;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    p {
+      margin: 0.5rem 0;
+      text-align: center;
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn {
+      display: block;
+      background: #fff;
+      color: #3a7bd5;
+      font-weight: bold;
+      padding: 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      margin: 1rem auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      text-align: center;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #ff5722;
+      color: white;
+    }
+    
+    .status {
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    
+    .status-info {
+      background: rgba(33, 150, 243, 0.3);
+    }
+    
+    .status-success {
+      background: rgba(76, 175, 80, 0.3);
+    }
+    
+    .status-error {
+      background: rgba(244, 67, 54, 0.3);
+    }
+    
+    .input-group {
+      margin: 1rem 0;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      box-sizing: border-box;
+    }
+    
+    #ip-address {
+      font-weight: bold;
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 0.5rem 0;
+    }
+    
+    #connectionDetails {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ride Partner - Direct IP Access</h1>
+    <p>Bypass DNS resolution issues with direct IP connection</p>
+    
+    <div class="card">
+      <div id="status" class="status status-info">Checking connection...</div>
+      
+      <h2>How to connect:</h2>
+      <ol>
+        <li>Use your device's browser and connect directly to the Replit server IP</li>
+        <li>Add this page to your home screen for easy access</li>
+        <li>All app features work without DNS resolution</li>
+      </ol>
+      
+      <div id="ip-connection" class="card">
+        <h3>Direct Connection Options</h3>
+        <div id="generated-links">Loading connection options...</div>
+      </div>
+      
+      <a href="/" id="webapp-btn" class="btn btn-primary">Launch Web App</a>
+      <a href="/app" id="app-btn" class="btn">Open App Interface</a>
+    </div>
+    
+    <div class="card">
+      <h2>Connection Details</h2>
+      <div id="connectionDetails">Checking connection details...</div>
+    </div>
+    
+    <div class="card">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li>If you can see this page but the web app doesn't load, try using the "Open App Interface" button</li>
+        <li>Try switching between WiFi and mobile data</li>
+        <li>Clear your browser cache and cookies</li>
+        <li>Try using a different browser (Chrome or Firefox recommended)</li>
+      </ul>
+    </div>
+  </div>
+  
+  <footer>
+    &copy; 2025 Ride Partner - Direct Access Page
+  </footer>
+
+  <script>
+    // Get connection info
+    fetch('/api/connection-info')
+      .then(response => response.json())
+      .then(data => {
+        // Display connection details
+        document.getElementById('connectionDetails').textContent = JSON.stringify(data, null, 2);
+        
+        // Set status
+        const statusEl = document.getElementById('status');
+        statusEl.innerHTML = '✅ Direct connection successful';
+        statusEl.className = 'status status-success';
+        
+        // Generate links
+        const linksContainer = document.getElementById('generated-links');
+        const serverHost = window.location.hostname;
+        const serverPort = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+        const protocol = window.location.protocol;
+        
+        let linksHtml = `
+          <p>Current connection: <span id="ip-address">${serverHost}${serverPort !== '80' && serverPort !== '443' ? ':' + serverPort : ''}</span></p>
+          <p>To bypass DNS resolution issues, bookmark this page or add it to your home screen.</p>
+          <div class="input-group">
+            <label for="direct-url">Direct URL:</label>
+            <input type="text" id="direct-url" value="${protocol}//${serverHost}${serverPort !== '80' && serverPort !== '443' ? ':' + serverPort : ''}/direct-access.html" readonly />
+          </div>
+        `;
+        
+        linksContainer.innerHTML = linksHtml;
+      })
+      .catch(error => {
+        console.error('Error fetching connection info:', error);
+        const statusEl = document.getElementById('status');
+        statusEl.innerHTML = '❌ Connection error';
+        statusEl.className = 'status status-error';
+        
+        document.getElementById('connectionDetails').textContent = 'Unable to fetch connection details: ' + error.message;
+      });
+    
+    // Check server health
+    fetch('/api/health')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          console.log('Server health check passed');
+        } else {
+          console.error('Server health check failed:', data);
+        }
+      })
+      .catch(error => {
+        console.error('Error checking server health:', error);
+      });
+    
+    // Enable copying the direct URL
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'direct-url') {
+        e.target.select();
+        document.execCommand('copy');
+        alert('Direct URL copied to clipboard');
+      }
+    });
+  </script>
+</body>
+</html>

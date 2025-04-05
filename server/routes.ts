@@ -54,6 +54,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("test-websocket.html", { root: "./public" });
   });
   
+  // Direct access route for mobile users to bypass DNS resolution issues
+  app.get("/direct-access", (req, res) => {
+    res.sendFile("direct-access.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");
