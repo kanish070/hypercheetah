@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Partner - Direct Access</title>
+  <title>Ride Partner - Emergency Access</title>
   <style>
     :root {
       --primary: #3a7bd5;
@@ -104,48 +104,36 @@
 </head>
 <body>
   <div class="container">
-    <h1>Direct Access Page</h1>
+    <h1>Emergency Access Page</h1>
     
     <div class="info-box">
-      <h3>⚠️ DNS Resolution Notice</h3>
-      <p>This direct access page helps you connect to Ride Partner when DNS resolution issues occur on mobile networks.</p>
+      <h3>⚠️ DNS Resolution Error</h3>
+      <p>You're seeing this page because we've detected DNS resolution issues with the main application.</p>
     </div>
     
-    <p>If you're experiencing connection problems with the Ride Partner app, you can use one of these direct access methods:</p>
+    <p>Follow these steps to access the application:</p>
+    
+    <ol class="steps">
+      <li>Try using a direct IP connection instead of the domain name</li>
+      <li>If you're on mobile, try switching between Wi-Fi and mobile data</li>
+      <li>Clear your browser cache and cookies</li>
+      <li>Try using a different browser</li>
+    </ol>
     
     <div class="info-box">
-      <h3>Access Options</h3>
-      <p>Try accessing the application using different methods:</p>
-      <p id="port-info">Current port: <span id="port-display">Loading...</span></p>
+      <h3>Alternative Access Methods</h3>
+      <p>Connect with one of these options:</p>
+      <p><strong>IP Address:</strong> <span id="ip-display">Checking...</span></p>
     </div>
     
-    <a href="http://0.0.0.0:3000" class="btn" id="localIpLink">Try Local IP Access</a>
     <a href="/" class="btn btn-primary">Try Regular Access</a>
-    <a href="/fallback" class="btn">Go to Emergency Fallback Page</a>
     
     <div id="connection-info"></div>
   </div>
   
   <script>
-    // Display the current URL and port information
-    const portDisplay = document.getElementById('port-display');
-    const localIpLink = document.getElementById('localIpLink');
-    
-    // Detect best port
-    fetch('/api/connection-info')
-      .then(response => response.json())
-      .then(data => {
-        const port = window.location.port || '3000';
-        portDisplay.textContent = port;
-        
-        // Update the link to use the detected port
-        const host = window.location.hostname;
-        localIpLink.href = `http://${host}:${port}`;
-      })
-      .catch(error => {
-        console.error('Error fetching connection info:', error);
-        portDisplay.textContent = '3000 (default)';
-      });
+    // Display the current URL and IP information
+    document.getElementById('ip-display').textContent = window.location.host;
     
     // Connection information
     const connectionInfo = document.getElementById('connection-info');
@@ -159,7 +147,7 @@
             <div class="info-box" style="background: rgba(0, 255, 0, 0.1);">
               <h3>✅ Server Connection Successful</h3>
               <p>The application server is online and responding correctly.</p>
-              <p>Try accessing the main application using one of the buttons above.</p>
+              <p>Try accessing the main application using the button above.</p>
             </div>
           `;
         } else {

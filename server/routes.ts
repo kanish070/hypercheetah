@@ -59,6 +59,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-access.html", { root: "./public" });
   });
   
+  // Emergency fallback for DNS resolution issues
+  app.get("/fallback", (req, res) => {
+    res.sendFile("fallback.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");
@@ -70,10 +75,22 @@ export async function registerRoutes(app: Express) {
       clientIp: req.ip || req.connection.remoteAddress,
       headers: req.headers,
       serverTime: new Date().toISOString(),
+      serverPort: process.env.PORT || 3000,
       connection: {
         encrypted: req.secure,
         protocol: req.protocol
       }
+    });
+  });
+  
+  // Health check endpoint for monitoring server status
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      time: new Date().toISOString(),
+      port: process.env.PORT || 3000,
+      webSocketStatus: "active",
+      serverMemory: process.memoryUsage()
     });
   });
   

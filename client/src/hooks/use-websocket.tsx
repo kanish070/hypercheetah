@@ -49,7 +49,9 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     // For mobile direct access through Replit's proxy
     if (window.location.hostname === '0.0.0.0' || window.location.hostname === 'localhost') {
       // Use the window's location with explicit port for Replit's development environment
-      wsUrl = `${protocol}//${window.location.hostname}:${window.location.port}/ws-chat`;
+      // Fall back to port 3000 if no port is present in the URL
+      const port = window.location.port || '3000';
+      wsUrl = `${protocol}//${window.location.hostname}:${port}/ws-chat`;
     }
     
     // Fallback direct access - useful for mobile devices
@@ -131,7 +133,9 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           // For mobile direct access through Replit's proxy
           if (window.location.hostname === '0.0.0.0' || window.location.hostname === 'localhost') {
             // Use the window's location with explicit port for Replit's development environment
-            wsUrl = `${protocol}//${window.location.hostname}:${window.location.port}/ws-chat`;
+            // Fall back to port 3000 if no port is present in the URL
+            const port = window.location.port || '3000';
+            wsUrl = `${protocol}//${window.location.hostname}:${port}/ws-chat`;
           }
           
           // Fallback direct access - useful for mobile devices
