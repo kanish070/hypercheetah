@@ -59,6 +59,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-access.html", { root: "./public" });
   });
   
+  // Mobile-optimized direct access page with QR code
+  app.get("/direct-mobile", (req, res) => {
+    res.sendFile("direct-mobile.html", { root: "./public" });
+  });
+  
   // Emergency fallback for DNS resolution issues
   app.get("/fallback", (req, res) => {
     res.sendFile("fallback.html", { root: "./public" });

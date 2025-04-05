@@ -60,9 +60,15 @@
       border-radius: 50px;
       text-decoration: none;
       text-align: center;
-      margin: 20px auto;
+      margin: 15px auto;
       max-width: 300px;
       transition: transform 0.3s;
+    }
+    
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      margin: 10px auto;
     }
     
     .btn:hover {
@@ -71,6 +77,16 @@
     
     .btn-primary {
       background: var(--primary-dark);
+      color: var(--white);
+    }
+    
+    .btn-warning {
+      background: #ff5722;
+      color: var(--white);
+    }
+    
+    .btn-danger {
+      background: #e91e63;
       color: var(--white);
     }
     
@@ -100,6 +116,54 @@
     .steps li {
       margin-bottom: 10px;
     }
+    
+    .access-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    @media (max-width: 500px) {
+      .access-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .copy-btn {
+      background: rgba(0, 0, 0, 0.2);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 5px;
+      font-size: 0.8rem;
+    }
+    
+    .copy-btn:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    #ip-info {
+      margin: 15px 0;
+      word-break: break-all;
+    }
+    
+    .ip-container {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    
+    .ip-value {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      flex: 1;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -108,47 +172,143 @@
     
     <div class="info-box">
       <h3>⚠️ DNS Resolution Notice</h3>
-      <p>This direct access page helps you connect to Ride Partner when DNS resolution issues occur on mobile networks.</p>
+      <p>This page provides multiple ways to access Ride Partner when DNS resolution issues occur on mobile networks.</p>
     </div>
-    
-    <p>If you're experiencing connection problems with the Ride Partner app, you can use one of these direct access methods:</p>
     
     <div class="info-box">
-      <h3>Access Options</h3>
-      <p>Try accessing the application using different methods:</p>
-      <p id="port-info">Current port: <span id="port-display">Loading...</span></p>
+      <h3>Direct IP Access</h3>
+      <p>Copy and paste one of these URLs into your browser to bypass DNS:</p>
+      <div id="ip-info">Loading IP options...</div>
     </div>
     
-    <a href="http://0.0.0.0:5000" class="btn" id="localIpLink">Try Local IP Access</a>
-    <a href="/" class="btn btn-primary">Try Regular Access</a>
-    <a href="/fallback" class="btn">Go to Emergency Fallback Page</a>
+    <div class="info-box">
+      <h3>Alternative Connection Methods</h3>
+      <p>Try one of these connection methods:</p>
+    </div>
+    
+    <div class="access-grid">
+      <a href="#" class="btn btn-small" id="ip-link">IP Only Access</a>
+      <a href="#" class="btn btn-small" id="local-link">Local Network</a>
+      <a href="#" class="btn btn-small btn-warning" id="numericIp">Numeric IP</a>
+      <a href="#" class="btn btn-small" id="ipv4-link">IPv4 Address</a>
+    </div>
+    
+    <a href="/" class="btn btn-primary">Standard Access</a>
+    <a href="/fallback" class="btn btn-danger">Emergency Access Page</a>
+    
+    <div class="info-box">
+      <h3>Troubleshooting Steps</h3>
+      <ol class="steps">
+        <li>Try using the direct IP links above</li>
+        <li>Switch between Wi-Fi and mobile data</li>
+        <li>Clear your browser cache and cookies</li>
+        <li>Try an incognito/private browsing window</li>
+        <li>Use a different browser application</li>
+      </ol>
+    </div>
     
     <div id="connection-info"></div>
+    
+    <a href="/" class="btn">Return to Home Page</a>
   </div>
   
   <script>
-    // Display the current URL and port information
-    const portDisplay = document.getElementById('port-display');
-    const localIpLink = document.getElementById('localIpLink');
+    // Elements
+    const ipInfoContainer = document.getElementById('ip-info');
+    const ipLink = document.getElementById('ip-link');
+    const localLink = document.getElementById('local-link');
+    const numericIpLink = document.getElementById('numericIp');
+    const ipv4Link = document.getElementById('ipv4-link');
+    const connectionInfo = document.getElementById('connection-info');
     
-    // Detect best port
+    // Port configuration
+    const port = '5000';  // Hard-coded to our known working port
+    
+    // Function to copy text to clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard: ' + text);
+      }).catch(err => {
+        console.error('Could not copy text: ', err);
+      });
+    }
+    
+    // Create IP option element with copy button
+    function createIpOption(label, value) {
+      const container = document.createElement('div');
+      container.className = 'ip-container';
+      
+      const labelElement = document.createElement('strong');
+      labelElement.textContent = label + ': ';
+      
+      const valueElement = document.createElement('span');
+      valueElement.className = 'ip-value';
+      valueElement.textContent = value;
+      
+      const copyButton = document.createElement('button');
+      copyButton.className = 'copy-btn';
+      copyButton.textContent = 'Copy';
+      copyButton.onclick = function() {
+        copyToClipboard(value);
+      };
+      
+      container.appendChild(labelElement);
+      container.appendChild(valueElement);
+      container.appendChild(copyButton);
+      
+      return container;
+    }
+    
+    // Fetch connection info and populate access options
     fetch('/api/connection-info')
       .then(response => response.json())
       .then(data => {
-        const port = window.location.port || '5000';
-        portDisplay.textContent = port;
+        // Clear loading message
+        ipInfoContainer.innerHTML = '';
         
-        // Update the link to use the detected port
-        const host = window.location.hostname;
-        localIpLink.href = `http://${host}:${port}`;
+        // Get the hostname from current URL
+        const hostname = window.location.hostname;
+        
+        // Get client IP from data
+        const clientIp = data.clientIp || '127.0.0.1';
+        
+        // Build options with our port
+        const domainUrl = `http://${hostname}:${port}`;
+        const ipUrl = `http://${hostname.replace('.replit.dev', '')}:${port}`;
+        const localUrl = `http://localhost:${port}`;
+        const numericUrl = `http://5.5.5.5:${port}`; // Example numeric IP
+        
+        // Add URLs to the info container
+        ipInfoContainer.appendChild(createIpOption('Domain URL', domainUrl));
+        ipInfoContainer.appendChild(createIpOption('IP Access URL', ipUrl));
+        ipInfoContainer.appendChild(createIpOption('Local Access', localUrl));
+        
+        // Set button URLs
+        ipLink.href = ipUrl;
+        localLink.href = localUrl;
+        numericIpLink.href = numericUrl;
+        ipv4Link.href = `http://${clientIp}:${port}`;
       })
       .catch(error => {
         console.error('Error fetching connection info:', error);
-        portDisplay.textContent = '5000 (default)';
+        ipInfoContainer.innerHTML = `
+          <p>Failed to get connection information. Try one of these options:</p>
+          <div class="ip-container">
+            <strong>Default IP: </strong>
+            <span class="ip-value">http://0.0.0.0:5000</span>
+          </div>
+          <div class="ip-container">
+            <strong>Localhost: </strong>
+            <span class="ip-value">http://localhost:5000</span>
+          </div>
+        `;
+        
+        // Set fallback URLs
+        ipLink.href = `http://0.0.0.0:${port}`;
+        localLink.href = `http://localhost:${port}`;
+        numericIpLink.href = `http://5.5.5.5:${port}`;
+        ipv4Link.href = `http://127.0.0.1:${port}`;
       });
-    
-    // Connection information
-    const connectionInfo = document.getElementById('connection-info');
     
     // Test connection to API endpoint
     fetch('/api/health')
@@ -159,7 +319,7 @@
             <div class="info-box" style="background: rgba(0, 255, 0, 0.1);">
               <h3>✅ Server Connection Successful</h3>
               <p>The application server is online and responding correctly.</p>
-              <p>Try accessing the main application using one of the buttons above.</p>
+              <p>Try accessing the main application using one of the methods above.</p>
             </div>
           `;
         } else {
