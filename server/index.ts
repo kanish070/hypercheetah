@@ -63,26 +63,9 @@ app.use((req, res, next) => {
   const host = '0.0.0.0';
   
   app.use((req, res, next) => {
-    // Allow requests from deployed domains and localhost
-    const allowedOrigins = ['https://*.replit.app', 'http://localhost:*'];
-    const origin = req.headers.origin;
-    if (origin) {
-      // Check if the origin matches any of the allowed patterns
-      const isAllowed = allowedOrigins.some(pattern => {
-        const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-        return new RegExp(`^${regexPattern}$`).test(origin);
-      });
-      
-      if (isAllowed) {
-        res.header('Access-Control-Allow-Origin', origin);
-      } else {
-        // Fallback to allow all origins for development
-        res.header('Access-Control-Allow-Origin', '*');
-      }
-    } else {
-      // No origin header, allow all
-      res.header('Access-Control-Allow-Origin', '*');
-    }
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
