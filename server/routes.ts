@@ -37,6 +37,39 @@ export async function registerRoutes(app: Express) {
     });
   });
   
+  // Add a root path for the homepage
+  app.get("/", (req, res) => {
+    res.sendFile("index.html", { root: "./public" });
+  });
+  
+  // Add a mobile-specific route for direct access
+  app.get("/mobile", (req, res) => {
+    // Serve the mobile.html file directly for improved mobile access
+    res.sendFile("mobile.html", { root: "./public" });
+  });
+  
+  // Add testing and connection routes
+  app.get("/connect", (req, res) => {
+    res.sendFile("connect.html", { root: "./public" });
+  });
+  
+  app.get("/test-websocket", (req, res) => {
+    res.sendFile("test-websocket.html", { root: "./public" });
+  });
+  
+  // Add an IP address info endpoint to help diagnose connection issues
+  app.get("/api/connection-info", (req, res) => {
+    res.json({
+      clientIp: req.ip || req.connection.remoteAddress,
+      headers: req.headers,
+      serverTime: new Date().toISOString(),
+      connection: {
+        encrypted: req.secure,
+        protocol: req.protocol
+      }
+    });
+  });
+  
   // Setup auth routes with Passport
   setupAuth(app);
   
@@ -526,6 +559,16 @@ export async function registerRoutes(app: Express) {
               timestamp: new Date().toISOString()
             }));
           }
+        }
+        
+        // Handle ping requests from the mobile test page
+        if (data.type === "ping") {
+          console.log("Received ping message, responding with pong");
+          ws.send(JSON.stringify({
+            type: 'pong',
+            message: 'Connection successful!',
+            timestamp: new Date().toISOString()
+          }));
         }
         
         if (data.type === "get_nearby_users" && ws.userId) {

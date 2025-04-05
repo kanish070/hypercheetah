@@ -3,106 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Partner - Vadodara's Premier Ride Sharing App</title>
+  <title>Ride Partner | Vadodara's Premier Ride Sharing App</title>
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
-      color: white;
+    :root {
+      --primary: #3a7bd5;
+      --primary-dark: #2a5db5;
+      --primary-light: #5a9bf5;
+      --accent: #00d2ff;
+      --text: #333;
+      --text-light: #777;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: var(--white);
+      min-height: 100vh;
+      line-height: 1.6;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-      text-align: center;
     }
+    
     .container {
-      max-width: 800px;
+      width: 100%;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
       flex: 1;
     }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
     }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--white);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-icon {
+      margin-right: 0.5rem;
+      font-size: 1.8rem;
+    }
+    
+    nav a {
+      color: var(--white);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    nav a:hover {
+      opacity: 1;
+    }
+    
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+    
+    .hero-content {
+      width: 50%;
+      padding-right: 2rem;
+    }
+    
+    .hero-image {
+      width: 45%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    
     .subtitle {
       font-size: 1.2rem;
       margin-bottom: 2rem;
       opacity: 0.9;
     }
+    
+    .btn {
+      display: inline-block;
+      background: var(--white);
+      color: var(--primary);
+      font-weight: bold;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s, box-shadow 0.3s;
+      margin-right: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .btn-primary {
+      background: var(--primary-dark);
+      color: var(--white);
+    }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
     .card {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
-      border-radius: 12px;
+      border-radius: var(--radius);
       padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
+      transition: transform 0.3s;
     }
-    .btn {
-      display: inline-block;
-      background: #fff;
-      color: #3a7bd5;
-      font-weight: bold;
-      padding: 0.8rem 1.5rem;
-      border-radius: 50px;
-      text-decoration: none;
-      margin: 0.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+    
+    .card:hover {
+      transform: translateY(-5px);
     }
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
     }
-    .btn-primary {
-      background: #4CAF50;
-      color: white;
+    
+    .card h3 {
+      margin-bottom: 1rem;
     }
+    
     .status {
-      font-size: 1rem;
-      margin-top: 1rem;
-    }
-    .status-good {
-      color: #4CAF50;
-    }
-    .status-bad {
-      color: #f44336;
-    }
-    .links {
-      margin-top: 2rem;
-    }
-    footer {
       padding: 1rem;
+      border-radius: var(--radius-sm);
+      margin: 1rem 0 2rem;
+      text-align: center;
       background: rgba(0, 0, 0, 0.1);
-      margin-top: auto;
+    }
+    
+    .status-good {
+      background: rgba(0, 255, 0, 0.2);
+    }
+    
+    .status-bad {
+      background: rgba(255, 0, 0, 0.2);
+    }
+    
+    .links {
+      margin: 1.5rem 0;
+    }
+    
+    footer {
+      background: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column;
+      }
+      
+      .hero-content, .hero-image {
+        width: 100%;
+        padding-right: 0;
+      }
+      
+      .hero-content {
+        margin-bottom: 2rem;
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
+      
+      nav {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Ride Partner</h1>
-    <p class="subtitle">Vadodara's Premier Ride Sharing App</p>
+    <header>
+      <a href="/" class="logo">
+        <span class="logo-icon">🚗</span>
+        Ride Partner
+      </a>
+      <nav>
+        <a href="/app">Login</a>
+        <a href="/mobile">Mobile Access</a>
+        <a href="/connect">Quick Connect</a>
+      </nav>
+    </header>
     
-    <div class="card">
-      <h2>Welcome to Ride Partner</h2>
-      <p>Connect with riders and passengers in Vadodara for comfortable, eco-friendly transportation.</p>
-      <div class="links">
-        <a href="/app" class="btn btn-primary">Launch App</a>
-        <a href="/api/health" class="btn">Check API Status</a>
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Smart Rides for Vadodara</h1>
+        <p class="subtitle">Connect with riders and passengers in your area. Save time, money, and the environment with our intelligent ride-sharing platform.</p>
+        <div class="links">
+          <a href="/app" class="btn btn-primary">Launch Web App</a>
+          <a href="/mobile" class="btn">Mobile Access</a>
+        </div>
+        <div id="status" class="status">Checking server status...</div>
       </div>
-      <div id="status" class="status">Checking server status...</div>
+      <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXBncmFkZXxlbnwwfHwwfHx8MA%3D%3D" alt="Ride sharing illustration">
+      </div>
+    </div>
+    
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>Find Ideal Matches</h3>
+        <p>Our intelligent algorithm matches you with riders or passengers going your way, optimizing for time, cost, and compatibility.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>Save Money</h3>
+        <p>Share travel costs with others. Pay less than traditional ride services as a passenger, or earn as a driver.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>Eco-Friendly</h3>
+        <p>Reduce your carbon footprint by sharing rides. Track your environmental impact and earn green achievements.</p>
+      </div>
     </div>
     
     <div class="card">
-      <h2>Trouble Accessing the App?</h2>
-      <p>If you're experiencing issues accessing the app on mobile, try these solutions:</p>
-      <ul style="text-align: left;">
-        <li>Use the deployed version through the "Launch App" button</li>
-        <li>Make sure you're connected to the internet</li>
-        <li>Try clearing your browser cache</li>
-        <li>Contact support if issues persist</li>
-      </ul>
+      <h2>Access Options</h2>
+      <p>Choose the best way to access Ride Partner:</p>
+      <div class="links">
+        <a href="/app" class="btn btn-primary">Web Application</a>
+        <a href="/mobile" class="btn">Mobile Page</a>
+        <a href="/connect" class="btn">QR Code Connect</a>
+        <a href="/test-websocket" class="btn">Test Connection</a>
+      </div>
     </div>
   </div>
   

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect to Ride Partner</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      text-align: center;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      text-align: center;
+    }
+    .qr-container {
+      margin: 2rem auto;
+      width: 250px;
+      height: 250px;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-code {
+      width: 100%;
+      height: 100%;
+    }
+    .url-display {
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      margin: 1rem 0;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .btn {
+      display: inline-block;
+      background: #fff;
+      color: #3a7bd5;
+      font-weight: bold;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      margin: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    footer {
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ride Partner</h1>
+    <p class="subtitle">Scan to connect on your mobile device</p>
+    
+    <div class="card">
+      <h2>Quick Connect</h2>
+      <p>Scan this QR code with your mobile device to instantly access Ride Partner:</p>
+      
+      <div class="qr-container">
+        <div id="qrcode" class="qr-code"></div>
+      </div>
+      
+      <div class="url-display" id="appUrl"></div>
+      
+      <div class="link-row">
+        <a href="/app" class="btn btn-primary">Launch App</a>
+        <a href="/mobile" class="btn">Mobile Troubleshooter</a>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    &copy; 2025 Ride Partner. All rights reserved.
+  </footer>
+
+  <!-- QR Code library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script>
+    // Get the current page URL
+    const currentProtocol = window.location.protocol;
+    const currentHost = window.location.host;
+    const appUrl = `${currentProtocol}//${currentHost}/mobile`;
+    
+    // Display the URL
+    document.getElementById('appUrl').textContent = appUrl;
+    
+    // Generate QR code
+    const qr = qrcode(0, 'M');
+    qr.addData(appUrl);
+    qr.make();
+    
+    // Display QR code
+    document.getElementById('qrcode').innerHTML = qr.createImgTag(5);
+  </script>
+</body>
+</html>

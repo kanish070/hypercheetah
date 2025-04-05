@@ -37,13 +37,25 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     // Determine the protocol based on the current window location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     
-    // Build the WebSocket URL
-    // For deployed apps, use the same host; for local development, use the same port
+    // Build the WebSocket URL with improved compatibility for mobile access
     let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
     
-    // If we're on a deployed replit.app domain, ensure we're using that fully
+    // For mobile compatibility: try to use the fully qualified hostname
+    // This helps when accessing from different networks/devices
     if (window.location.hostname.includes('.replit.app')) {
       wsUrl = `${protocol}//${window.location.hostname}/ws-chat`;
+    } 
+    
+    // For mobile direct access through Replit's proxy
+    if (window.location.hostname === '0.0.0.0' || window.location.hostname === 'localhost') {
+      // Use the window's location with explicit port for Replit's development environment
+      wsUrl = `${protocol}//${window.location.hostname}:${window.location.port}/ws-chat`;
+    }
+    
+    // Fallback direct access - useful for mobile devices
+    if (!navigator.onLine || !window.WebSocket) {
+      console.error('WebSocket not supported or offline');
+      // We'll attempt to reconnect when online
     }
     
     console.log('Connecting to WebSocket at:', wsUrl);
@@ -107,13 +119,26 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           // Create new WebSocket connection
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           
-          // Build the WebSocket URL
-          // For deployed apps, use the same host; for local development, use the same port
+          // Build the WebSocket URL with improved compatibility for mobile access
           let wsUrl = `${protocol}//${window.location.host}/ws-chat`;
           
-          // If we're on a deployed replit.app domain, ensure we're using that fully
+          // For mobile compatibility: try to use the fully qualified hostname
+          // This helps when accessing from different networks/devices
           if (window.location.hostname.includes('.replit.app')) {
             wsUrl = `${protocol}//${window.location.hostname}/ws-chat`;
+          } 
+          
+          // For mobile direct access through Replit's proxy
+          if (window.location.hostname === '0.0.0.0' || window.location.hostname === 'localhost') {
+            // Use the window's location with explicit port for Replit's development environment
+            wsUrl = `${protocol}//${window.location.hostname}:${window.location.port}/ws-chat`;
+          }
+          
+          // Fallback direct access - useful for mobile devices
+          if (!navigator.onLine || !window.WebSocket) {
+            console.error('WebSocket not supported or offline');
+            // We'll attempt to reconnect when online
+            return;
           }
           
           console.log('Reconnecting to WebSocket at:', wsUrl);
