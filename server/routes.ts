@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express) {
       clientIp: req.ip || req.connection.remoteAddress,
       headers: req.headers,
       serverTime: new Date().toISOString(),
-      serverPort: process.env.PORT || 3000,
+      serverPort: process.env.PORT || 5000,
       connection: {
         encrypted: req.secure,
         protocol: req.protocol
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express) {
     res.json({
       status: "ok",
       time: new Date().toISOString(),
-      port: process.env.PORT || 3000,
+      port: process.env.PORT || 5000,
       webSocketStatus: "active",
       serverMemory: process.memoryUsage()
     });
