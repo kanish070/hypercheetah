@@ -37,24 +37,26 @@ export async function registerRoutes(app: Express) {
     });
   });
   
-  // Add a root path for the homepage
-  app.get("/", (req, res) => {
+  // Add diagnostic pages under the /diagnostics path
+  app.get("/diagnostics", (req, res) => {
     res.sendFile("index.html", { root: "./public" });
   });
   
-  // Add a mobile-specific route for direct access
-  app.get("/mobile", (req, res) => {
-    // Serve the mobile.html file directly for improved mobile access
+  app.get("/diagnostics/mobile", (req, res) => {
     res.sendFile("mobile.html", { root: "./public" });
   });
   
-  // Add testing and connection routes
-  app.get("/connect", (req, res) => {
+  app.get("/diagnostics/connect", (req, res) => {
     res.sendFile("connect.html", { root: "./public" });
   });
   
-  app.get("/test-websocket", (req, res) => {
+  app.get("/diagnostics/test-websocket", (req, res) => {
     res.sendFile("test-websocket.html", { root: "./public" });
+  });
+  
+  // Set up app entry point to redirect to the SPA
+  app.get("/app", (req, res) => {
+    res.redirect("/");
   });
   
   // Add an IP address info endpoint to help diagnose connection issues
