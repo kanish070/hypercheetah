@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Direct Access</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+    
+    p {
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+    
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 30px 0;
+    }
+    
+    .link-btn {
+      background: white;
+      color: #3a7bd5;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    
+    .link-btn:hover, .link-btn:focus {
+      transform: translateY(-3px);
+    }
+    
+    .primary-link {
+      background: #3a7bd5;
+      color: white;
+    }
+    
+    code {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      display: block;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ride Partner Mobile Access</h1>
+    
+    <p>Try these direct links to access the application:</p>
+    
+    <div class="links">
+      <a href="http://localhost:5000" class="link-btn">Local Access</a>
+      <a href="http://0.0.0.0:5000" class="link-btn primary-link">Direct IP Access</a>
+      <a href="http://127.0.0.1:5000" class="link-btn">Loopback IP</a>
+    </div>
+    
+    <p>You can also try these custom URLs in your browser:</p>
+    
+    <code>http://localhost:5000</code>
+    <code>http://0.0.0.0:5000</code>
+    <code>http://127.0.0.1:5000</code>
+    
+    <p>If you're on a mobile device, try connecting to the same WiFi network as your computer and use the local network IP address.</p>
+  </div>
+</body>
+</html>
