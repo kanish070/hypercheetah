@@ -59,14 +59,29 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-access.html", { root: "./public" });
   });
   
+  // Central access page that explains all access options
+  app.get("/access", (req, res) => {
+    res.sendFile("access.html", { root: "./public" });
+  });
+  
   // Direct access with IP instead of domain name for mobile
   app.get("/direct", (req, res) => {
     res.sendFile("direct.html", { root: "./public" });
   });
   
+  // Direct IP access with simplified UI
+  app.get("/direct-ip", (req, res) => {
+    res.sendFile("direct-ip.html", { root: "./public" });
+  });
+  
   // QR code for mobile access using direct IP
   app.get("/mobile-qr", (req, res) => {
     res.sendFile("mobile-qr.html", { root: "./public" });
+  });
+  
+  // Super lightweight version with no framework dependencies
+  app.get("/lite", (req, res) => {
+    res.sendFile("lite.html", { root: "./public" });
   });
   
   // Set up app entry point to redirect to the SPA

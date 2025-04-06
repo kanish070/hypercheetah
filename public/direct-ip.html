@@ -6,133 +6,258 @@
   <title>Ride Partner - Direct IP Access</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
-      color: white;
+      padding: 0;
+      background: #f5f7fa;
+      color: #333;
     }
     
-    .container {
-      max-width: 600px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+    header {
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
       padding: 20px;
-      border-radius: 12px;
       text-align: center;
     }
     
     h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
       margin-bottom: 20px;
     }
     
-    .content {
-      margin: 20px 0;
-    }
-    
-    .url-box {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 10px 15px;
-      border-radius: 5px;
-      margin: 10px 0;
-      word-break: break-all;
-      text-align: left;
-      color: white;
-      font-family: monospace;
-      cursor: pointer;
-    }
-    
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 20px 0;
-    }
-    
-    .button {
-      background: white;
+    .card h2 {
+      margin-top: 0;
       color: #3a7bd5;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-block;
     }
     
-    .button-primary {
+    .direction-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .destination {
+      flex: 1;
+    }
+    
+    .destination h3 {
+      margin: 0 0 5px;
+      font-size: 1rem;
+    }
+    
+    .destination p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #666;
+    }
+    
+    .fare {
+      font-weight: bold;
+      color: #3a7bd5;
+    }
+    
+    .vehicle-type {
+      display: inline-block;
+      background: #edf2f7;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+    
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .nav-button {
+      flex: 1;
+      padding: 15px 0;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 0.8rem;
+    }
+    
+    .nav-button.active {
+      color: #3a7bd5;
+      border-top: 2px solid #3a7bd5;
+    }
+    
+    .banner {
+      background: #e6f2ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3a7bd5;
+    }
+    
+    .banner h3 {
+      margin-top: 0;
+      color: #3a7bd5;
+    }
+    
+    .primary-button {
       background: #3a7bd5;
       color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 10px 0;
+      width: 100%;
+      cursor: pointer;
     }
     
-    .status {
-      margin-top: 20px;
+    .secondary-button {
+      background: #edf2f7;
+      color: #3a7bd5;
+      border: 1px solid #3a7bd5;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 10px 0;
+      width: 100%;
+      cursor: pointer;
+    }
+    
+    .ip-display {
+      text-align: center;
+      background: #edf2f7;
       padding: 10px;
-      border-radius: 5px;
-    }
-    
-    .status-ok {
-      background: rgba(0, 255, 0, 0.2);
-    }
-    
-    .status-error {
-      background: rgba(255, 0, 0, 0.2);
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Ride Partner</h1>
+    <p>Direct IP Access</p>
+  </header>
+  
   <div class="container">
-    <h1>Direct IP Access</h1>
+    <div class="banner">
+      <h3>Welcome to Ride Partner Direct Access</h3>
+      <p>This is a simplified version of the Ride Partner app that works even when your device has trouble connecting to the full app.</p>
+    </div>
     
-    <div class="content">
-      <p>Due to DNS resolution issues, we're providing direct IP access to the application.</p>
-      <p>Try using one of these URLs:</p>
+    <div class="ip-display" id="connection-info">
+      Checking connection...
+    </div>
+    
+    <div class="card">
+      <h2>Available Rides</h2>
       
-      <div class="url-box" onclick="copyToClipboard('http://0.0.0.0:5000')">http://0.0.0.0:5000</div>
-      <div class="url-box" onclick="copyToClipboard('http://localhost:5000')">http://localhost:5000</div>
+      <div class="direction-card">
+        <div class="destination">
+          <h3>Alkapuri to Railway Station</h3>
+          <p>15 km • 25 min</p>
+          <span class="vehicle-type">Car</span>
+        </div>
+        <div class="fare">₹225</div>
+      </div>
+      
+      <div class="direction-card">
+        <div class="destination">
+          <h3>Sayajigunj to Nizampura</h3>
+          <p>8 km • 18 min</p>
+          <span class="vehicle-type">Bike</span>
+        </div>
+        <div class="fare">₹48</div>
+      </div>
+      
+      <div class="direction-card">
+        <div class="destination">
+          <h3>Fatehgunj to Manjalpur</h3>
+          <p>12 km • 22 min</p>
+          <span class="vehicle-type">Carpool</span>
+        </div>
+        <div class="fare">₹144</div>
+      </div>
+      
+      <button class="primary-button" id="access-app">Access Full Application</button>
+      <button class="secondary-button" id="try-qr">Try QR Code Access</button>
     </div>
-    
-    <div class="buttons">
-      <a href="http://0.0.0.0:5000" class="button button-primary">Access via Direct IP</a>
-      <a href="http://localhost:5000" class="button">Access via Localhost</a>
-    </div>
-    
-    <div id="status"></div>
   </div>
   
+  <nav class="bottom-nav">
+    <button class="nav-button active">Home</button>
+    <button class="nav-button">Rides</button>
+    <button class="nav-button">Messages</button>
+    <button class="nav-button">Profile</button>
+  </nav>
+  
   <script>
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard: ' + text);
-      }).catch(err => {
-        console.error('Could not copy text: ', err);
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Get connection info
+      try {
+        const response = await fetch('/api/connection-info');
+        const data = await response.json();
+        
+        // Display connection info
+        const connectionInfo = document.getElementById('connection-info');
+        connectionInfo.innerHTML = `
+          <strong>Connection Details</strong><br>
+          IP: ${data.clientIp || 'Unknown'}<br>
+          Port: ${data.serverPort || '5000'}<br>
+          Protocol: ${data.connection.protocol || 'http'}
+        `;
+        
+        // Set up access buttons
+        const accessAppButton = document.getElementById('access-app');
+        accessAppButton.addEventListener('click', function() {
+          window.location.href = '/';
+        });
+        
+        const tryQrButton = document.getElementById('try-qr');
+        tryQrButton.addEventListener('click', function() {
+          window.location.href = '/mobile-qr';
+        });
+        
+      } catch (error) {
+        console.error('Error fetching connection info:', error);
+        document.getElementById('connection-info').textContent = 'Error checking connection';
+      }
+      
+      // Set up basic navigation
+      const navButtons = document.querySelectorAll('.nav-button');
+      navButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          navButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+        });
       });
-    }
-    
-    // Check server status
-    fetch('/api/health')
-      .then(response => response.json())
-      .then(data => {
-        const statusElement = document.getElementById('status');
-        if (data.status === 'ok') {
-          statusElement.className = 'status status-ok';
-          statusElement.textContent = '✅ Server is running and healthy';
-        } else {
-          statusElement.className = 'status status-error';
-          statusElement.textContent = '⚠️ Server is online but reporting issues';
-        }
-      })
-      .catch(error => {
-        const statusElement = document.getElementById('status');
-        statusElement.className = 'status status-error';
-        statusElement.textContent = '❌ Cannot connect to server: ' + error.message;
-      });
+    });
   </script>
 </body>
 </html>
