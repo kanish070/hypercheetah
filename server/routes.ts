@@ -37,6 +37,25 @@ export async function registerRoutes(app: Express) {
     });
   });
   
+  // Add connection info endpoint to help mobile devices connect
+  app.get("/api/connection-info", (req, res) => {
+    res.json({
+      status: "ok",
+      serverTime: new Date().toISOString(),
+      serverPort: process.env.PORT || 5000,
+      connection: {
+        encrypted: req.secure,
+        ip: req.ip,
+        protocol: req.protocol,
+        host: req.get('host'),
+        originalUrl: req.originalUrl
+      },
+      serverAddress: `${req.protocol}://${req.get('host')}`,
+      wsEndpoint: `/ws-chat`,
+      info: "Use this information to establish WebSocket connections"
+    });
+  });
+  
   // Add diagnostic pages under the /diagnostics path
   app.get("/diagnostics", (req, res) => {
     res.sendFile("index.html", { root: "./public" });
@@ -123,19 +142,7 @@ export async function registerRoutes(app: Express) {
     }
   });
   
-  // Add an IP address info endpoint to help diagnose connection issues
-  app.get("/api/connection-info", (req, res) => {
-    res.json({
-      clientIp: req.ip || req.connection.remoteAddress,
-      headers: req.headers,
-      serverTime: new Date().toISOString(),
-      serverPort: process.env.PORT || 5000,
-      connection: {
-        encrypted: req.secure,
-        protocol: req.protocol
-      }
-    });
-  });
+  // This is a duplicate endpoint removed to avoid confusion
   
   // Health check endpoint for monitoring server status
   app.get("/api/health", (req, res) => {
@@ -767,11 +774,27 @@ export async function registerRoutes(app: Express) {
         // Handle ping requests from the mobile test page
         if (data.type === "ping") {
           console.log("Received ping message, responding with pong");
+          
+          // Send immediate response to the sender
           ws.send(JSON.stringify({
             type: 'pong',
             message: 'Connection successful!',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            connectedClients: wss.clients.size
           }));
+          
+          // Broadcast connection status to all clients (helps with cross-device awareness)
+          wss.clients.forEach((client) => {
+            const wsClient = client as WebSocketClient;
+            if (wsClient.readyState === WebSocket.OPEN && wsClient !== ws) {
+              wsClient.send(JSON.stringify({
+                type: 'connection_update',
+                message: 'New client connected',
+                timestamp: new Date().toISOString(),
+                connectedClients: wss.clients.size
+              }));
+            }
+          });
         }
         
         if (data.type === "get_nearby_users" && ws.userId) {

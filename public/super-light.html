@@ -38,55 +38,217 @@
       text-decoration: none;
       margin: 10px 0;
     }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+    .status-green {
+      background-color: #4CAF50;
+    }
+    .status-red {
+      background-color: #F44336;
+    }
+    .status-yellow {
+      background-color: #FFC107;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 15px 0;
+    }
+    .user-role {
+      display: flex;
+      justify-content: space-between;
+    }
+    .role-btn {
+      flex: 1;
+      margin: 0 5px;
+      padding: 15px;
+      text-align: center;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .passenger-btn {
+      background: #3a7bd5;
+      color: white;
+    }
+    .driver-btn {
+      background: #FF5722;
+      color: white;
+    }
+    .copy-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .websocket-status {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>Ride Partner</h1>
   
   <div class="box">
-    <h2>Connection Test</h2>
-    <p>If you can see this page, your connection to the app server is working.</p>
+    <h2>Connection Status</h2>
+    <p>
+      <span class="status-indicator status-green" id="server-status"></span>
+      Server: <span id="server-status-text">Checking...</span>
+    </p>
+    <p>
+      <span class="status-indicator status-yellow" id="ws-status"></span>
+      WebSocket: <span id="ws-status-text" class="websocket-status">Connecting...</span>
+    </p>
     <p>Current time: <span id="time">checking...</span></p>
     <p id="connection-info">Checking connection details...</p>
   </div>
   
   <div class="box">
-    <h2>Direct IP Connection</h2>
-    <p>Use this direct IP link to access the app:</p>
-    <p id="direct-ip-link" style="background:#e0e0e0;padding:10px;border-radius:3px;word-break:break-all;"></p>
+    <h2>Choose Your Role</h2>
+    <p>Select how you want to use the app:</p>
+    <div class="user-role">
+      <a href="/mobile?role=passenger" class="role-btn passenger-btn">Passenger</a>
+      <a href="/mobile?role=driver" class="role-btn driver-btn">Driver</a>
+    </div>
+  </div>
+  
+  <div class="box">
+    <h2>Direct Connect Link</h2>
+    <p>Share this link with friends to use together on different phones:</p>
+    <div style="display:flex;align-items:center;margin-top:10px;">
+      <input type="text" id="share-link" readonly style="flex:1;padding:8px;border:1px solid #ccc;border-radius:3px;">
+      <button onclick="copyLink()" class="copy-btn">Copy</button>
+    </div>
+    <p style="font-size:12px;margin-top:10px;"><b>Note:</b> Using the direct IP ensures app works across devices even with poor connections</p>
+  </div>
+  
+  <div class="box">
+    <h2>WebSocket Test</h2>
+    <p>Send a test message to confirm real-time communication:</p>
+    <button onclick="testWebsocket()" class="btn" style="background:#4CAF50;">Test Connection</button>
+    <p id="websocket-test-result"></p>
   </div>
   
   <div class="box">
     <h2>Access Options</h2>
     <a href="/mobile" class="btn">Mobile-Friendly Version</a>
     <a href="/lite" class="btn">Lite Version</a>
-    <a href="/" class="btn">Full App (if working)</a>
+    <a href="/" class="btn">Full App</a>
   </div>
 
   <script>
     // Show current time
     document.getElementById('time').textContent = new Date().toLocaleTimeString();
     
+    // Function to copy link to clipboard
+    function copyLink() {
+      const shareLink = document.getElementById('share-link');
+      shareLink.select();
+      shareLink.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(shareLink.value);
+      alert('Link copied to clipboard!');
+    }
+    
+    let ws = null;
+    
     // Basic connectivity check and get IP
     fetch('/api/connection-info')
       .then(response => response.json())
       .then(data => {
+        // Update server status
+        document.getElementById('server-status').className = 'status-indicator status-green';
+        document.getElementById('server-status-text').textContent = 'Connected';
+        
         document.getElementById('connection-info').textContent = 
-          'Server connection: OK (Port: ' + (data.port || '5000') + ')';
+          'Server connection: OK (Port: ' + (data.serverPort || '5000') + ')';
         
         // Create direct IP link
         const host = window.location.hostname;
         const port = data.serverPort || window.location.port || '5000';
         const ipLink = `http://${host}:${port}/mobile`;
         
-        const linkElement = document.getElementById('direct-ip-link');
-        linkElement.innerHTML = `<a href="${ipLink}" style="color:#3a7bd5;text-decoration:underline;">${ipLink}</a>`;
-        linkElement.innerHTML += `<br><br><b>Save this link</b> - it bypasses domain name resolution and should work even on poor connections.`;
+        // Set the share link input field
+        document.getElementById('share-link').value = ipLink;
+        
+        // Create WebSocket connection
+        connectWebSocket(host, port);
       })
       .catch(error => {
+        document.getElementById('server-status').className = 'status-indicator status-red';
+        document.getElementById('server-status-text').textContent = 'Error';
+        
         document.getElementById('connection-info').textContent = 
           'Connection error: ' + error.message;
       });
+    
+    function connectWebSocket(host, port) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${host}:${port}/ws-chat`;
+      
+      try {
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = function() {
+          document.getElementById('ws-status').className = 'status-indicator status-green';
+          document.getElementById('ws-status-text').textContent = 'Connected';
+          
+          // Initialize with a fake user ID for testing
+          ws.send(JSON.stringify({
+            type: 'ping',
+            message: 'Connection test from mobile light interface'
+          }));
+        };
+        
+        ws.onmessage = function(event) {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message received:', data);
+            
+            if (data.type === 'pong' || data.type === 'ping') {
+              document.getElementById('websocket-test-result').textContent = 
+                'Success! WebSocket is working correctly. Last message: ' + new Date().toLocaleTimeString();
+            }
+          } catch (e) {
+            console.error('Error parsing WebSocket message:', e);
+          }
+        };
+        
+        ws.onclose = function() {
+          document.getElementById('ws-status').className = 'status-indicator status-red';
+          document.getElementById('ws-status-text').textContent = 'Disconnected';
+        };
+        
+        ws.onerror = function(error) {
+          document.getElementById('ws-status').className = 'status-indicator status-red';
+          document.getElementById('ws-status-text').textContent = 'Error';
+          console.error('WebSocket error:', error);
+        };
+      } catch (error) {
+        document.getElementById('ws-status').className = 'status-indicator status-red';
+        document.getElementById('ws-status-text').textContent = 'Error: ' + error.message;
+        console.error('Error creating WebSocket:', error);
+      }
+    }
+    
+    function testWebsocket() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'ping',
+          message: 'Manual test ping at ' + new Date().toISOString()
+        }));
+        document.getElementById('websocket-test-result').textContent = 'Test message sent...';
+      } else {
+        document.getElementById('websocket-test-result').textContent = 
+          'WebSocket not connected. Please wait or refresh the page.';
+      }
+    }
   </script>
 </body>
 </html>
