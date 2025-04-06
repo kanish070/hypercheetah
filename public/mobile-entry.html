@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner Mobile Access</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      background-color: #f7f9fc;
+    }
+    header {
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #3a7bd5;
+      font-size: 20px;
+    }
+    .card p {
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #3a7bd5;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .btn-alt {
+      background-color: #ff5722;
+    }
+    .btn:hover {
+      background-color: #2d63b1;
+    }
+    .btn-alt:hover {
+      background-color: #e64a19;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f3f4f6;
+    }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .status-connecting {
+      background-color: #f59e0b;
+    }
+    .status-connected {
+      background-color: #10b981;
+    }
+    .status-error {
+      background-color: #ef4444;
+    }
+    .status-text {
+      font-weight: 500;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+    }
+    .divider-line {
+      flex-grow: 1;
+      height: 1px;
+      background-color: #e5e7eb;
+    }
+    .divider-text {
+      padding: 0 10px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    #errorMessage {
+      color: #ef4444;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    #connectionLog {
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 100px;
+      overflow-y: auto;
+      display: none;
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+      .card {
+        padding: 15px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ride Partner</h1>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Mobile Access</h2>
+      <p>Welcome to the Ride Partner app! Choose one of the connection options below to get started:</p>
+      
+      <div class="status">
+        <div class="status-indicator status-connecting" id="statusIndicator"></div>
+        <div class="status-text" id="statusText">Checking connection status...</div>
+      </div>
+
+      <a href="/direct-connect" class="btn">Direct Connect (Recommended)</a>
+      <a href="/super-light" class="btn">Super Light Version</a>
+      <a href="/mobile" class="btn btn-alt">Mobile Experience</a>
+      
+      <div id="errorMessage"></div>
+      <div id="connectionLog"></div>
+    </div>
+
+    <div class="card">
+      <h2>Having Connection Issues?</h2>
+      <p>Try these troubleshooting steps:</p>
+      <ol>
+        <li>Make sure you have a stable internet connection</li>
+        <li>Clear your browser cache and cookies</li>
+        <li>Try using the "Direct Connect" option which works best on mobile</li>
+        <li>If all else fails, try the "Super Light Version" which uses minimal resources</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    // Check connection status
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+    const errorMessage = document.getElementById('errorMessage');
+    const connectionLog = document.getElementById('connectionLog');
+
+    function updateStatus(status, message) {
+      statusIndicator.className = `status-indicator status-${status}`;
+      statusText.textContent = message;
+    }
+
+    function logConnection(message) {
+      connectionLog.style.display = 'block';
+      const timestamp = new Date().toLocaleTimeString();
+      connectionLog.innerHTML += `[${timestamp}] ${message}<br>`;
+      connectionLog.scrollTop = connectionLog.scrollHeight;
+    }
+
+    // Test connection to the server
+    updateStatus('connecting', 'Checking connection...');
+    logConnection('Starting connection test...');
+
+    fetch('/api/health')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        updateStatus('connected', 'Connected to server');
+        logConnection('Successfully connected to server');
+        
+        // Try to get connection info
+        return fetch('/api/connection-info');
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Could not get connection info! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        logConnection(`Server info: ${data.hostname}, WS: ${data.webSocketUrl}`);
+      })
+      .catch(error => {
+        updateStatus('error', 'Connection issue detected');
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = `Error: ${error.message}. Try the Super Light Version.`;
+        logConnection(`Error: ${error.message}`);
+      });
+  </script>
+</body>
+</html>

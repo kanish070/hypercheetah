@@ -111,6 +111,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("mobile.html", { root: "./public" });
   });
   
+  // New mobile entry point - simpler with multiple connection options
+  app.get("/m", (req, res) => {
+    res.sendFile("mobile-entry.html", { root: "./public" });
+  });
+  
   // Root path with DNS issue detection for mobile devices
   app.get("/", (req, res, next) => {
     // Check if it's a mobile device via user agent
@@ -122,8 +127,8 @@ export async function registerRoutes(app: Express) {
     
     // If it's mobile and not from Replit webview, redirect to mobile page
     if (isMobile && !isReplit) {
-      // Redirect to the more reliable mobile access page
-      res.redirect("/mobile");
+      // Redirect to the more reliable mobile entry page which has multiple connection options
+      res.redirect("/m");
     } else {
       // Not mobile or from Replit webview, continue to the app
       next();
