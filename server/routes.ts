@@ -111,9 +111,10 @@ export async function registerRoutes(app: Express) {
     res.redirect("/");
   });
   
-  // Mobile route - redirects to full app with bypass parameter
+  // Mobile route - immediately redirects to direct mobile app page
   app.get("/mobile", (req, res) => {
-    res.redirect('/?bypass=true&mobile=true');
+    // Redirect directly to the direct-mobile-app.html which handles instant app loading
+    res.sendFile("direct-mobile-app.html", { root: "./public" });
   });
   
   // New mobile entry point - simpler with multiple connection options
