@@ -1,10 +1,41 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Replit webview detection middleware
+app.use((req, res, next) => {
+  // Skip for API and asset requests
+  if (req.path.startsWith('/api') || 
+      req.path.startsWith('/assets') || 
+      req.path.includes('.') || 
+      req.path.startsWith('/m-direct') ||
+      req.path.startsWith('/direct-mobile') ||
+      req.path.startsWith('/direct-ip') ||
+      req.path !== '/') {
+    return next();
+  }
+  
+  // Skip if this is a mobile direct access request
+  if (req.query.bypass === 'true' || req.query.mobile === 'true' || req.query.direct === 'true') {
+    return next();
+  }
+  
+  // Check if this is the Replit webview
+  const userAgent = req.headers['user-agent'] || '';
+  const referer = req.headers['referer'] || '';
+  const isReplitWebview = userAgent.includes('replit') || referer.includes('replit.com');
+  
+  if (isReplitWebview) {
+    return res.sendFile(path.resolve(__dirname, '../public/replit-view.html'));
+  }
+  
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -62,7 +93,7 @@ app.use((req, res, next) => {
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
 
-  // Enable CORS for development and production
+  // Enable CORS for development and production - needs to be before route setup
   app.use((req, res, next) => {
     // Allow requests from Replit webview and any origin
     const origin = req.headers.origin || '*';

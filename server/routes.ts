@@ -28,6 +28,11 @@ interface WebSocketClient extends WebSocket {
 }
 
 export async function registerRoutes(app: Express) {
+  // Special route for Replit webview to display mobile access options
+  app.get("/replit-view", (req, res) => {
+    res.sendFile("replit-view.html", { root: "./public" });
+  });
+
   // Add a public health check endpoint that's easy to access from mobile
   app.get("/api/health", (req, res) => {
     res.json({
