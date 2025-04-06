@@ -106,9 +106,9 @@ export async function registerRoutes(app: Express) {
     res.redirect("/");
   });
   
-  // Mobile route now serves the same React app as root
+  // Mobile route - redirects to full app with bypass parameter
   app.get("/mobile", (req, res) => {
-    res.sendFile("index.html", { root: "./public" });
+    res.redirect('/?bypass=true');
   });
   
   // New mobile entry point - simpler with multiple connection options

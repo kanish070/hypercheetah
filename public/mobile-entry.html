@@ -160,11 +160,10 @@
         <div class="status-text" id="statusText">Checking connection status...</div>
       </div>
 
-      <a href="/full-app" class="btn" style="background-color: #4CAF50; font-weight: bold;">LOAD FULL APP (RECOMMENDED)</a>
-      <a href="/direct-connect" class="btn">Direct Connect Option</a>
+      <a href="/full-app" class="btn" style="background-color: #4CAF50; font-weight: bold; font-size: 1.2em; padding: 15px 25px;">LOAD FULL APP</a>
+      <div style="margin: 15px 0; font-size: 0.9em;">If you have connection issues, try these options:</div>
+      <a href="/direct-connect" class="btn">Connection Tester</a>
       <a href="/direct-ip" class="btn" style="background-color: #FF9800;">Direct IP Connection</a>
-      <a href="/super-light" class="btn">Super Light Version</a>
-      <a href="/mobile" class="btn btn-alt">Mobile Experience</a>
       
       <div id="errorMessage"></div>
       <div id="connectionLog"></div>
@@ -176,8 +175,8 @@
       <ol>
         <li>Make sure you have a stable internet connection</li>
         <li>Clear your browser cache and cookies</li>
-        <li>Try using the "Direct Connect" option which works best on mobile</li>
-        <li>If all else fails, try the "Super Light Version" which uses minimal resources</li>
+        <li>Try using the "Connection Tester" which automatically finds the best connection method</li>
+        <li>If all else fails, try the "Direct IP Connection" which bypasses DNS resolution problems</li>
       </ol>
     </div>
   </div>
@@ -231,7 +230,7 @@
       .catch(error => {
         updateStatus('error', 'Connection issue detected');
         errorMessage.style.display = 'block';
-        errorMessage.textContent = `Error: ${error.message}. Try the Super Light Version.`;
+        errorMessage.textContent = `Error: ${error.message}. Try the Direct IP Connection option.`;
         logConnection(`Error: ${error.message}`);
       });
   </script>
