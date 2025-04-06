@@ -116,8 +116,21 @@ export async function registerRoutes(app: Express) {
     res.sendFile("mobile-entry.html", { root: "./public" });
   });
   
+  // Direct IP connection page for bypassing DNS issues
+  app.get("/direct-ip", (req, res) => {
+    res.sendFile("direct-ip.html", { root: "./public" });
+  });
+  
   // Root path with DNS issue detection for mobile devices
   app.get("/", (req, res, next) => {
+    // Check if bypass parameter is present (user explicitly wants the full app)
+    const bypassMobileRedirect = req.query.bypass === "true";
+    
+    // If bypass is set, skip mobile detection and continue to the full app
+    if (bypassMobileRedirect) {
+      return next();
+    }
+    
     // Check if it's a mobile device via user agent
     const userAgent = req.headers['user-agent'] || '';
     const isMobile = /Mobile|Android|iPhone|iPad|iPod|Windows Phone/i.test(userAgent);
