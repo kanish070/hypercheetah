@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direct IP Access</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 600px;
+      width: 90%;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      margin-bottom: 10px;
+    }
+    
+    .progress {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: white;
+      transition: width 0.5s ease;
+    }
+    
+    .status {
+      font-size: 18px;
+      margin: 10px 0;
+      min-height: 25px;
+    }
+    
+    .buttons {
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .button {
+      background: white;
+      color: #3a7bd5;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 0 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      background: #f8f8f8;
+    }
+    
+    .ip-display {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: monospace;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ride Partner</h1>
+    <p>Direct IP Access</p>
+    
+    <div class="progress">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="status" id="status">Checking server connection...</div>
+    
+    <div class="ip-display" id="ip-display"></div>
+    
+    <div class="buttons" id="buttons">
+      <a href="/" class="button" id="direct-button">Continue to App</a>
+    </div>
+  </div>
+  
+  <script>
+    // Initialize
+    const progressBar = document.getElementById('progress-bar');
+    const status = document.getElementById('status');
+    const buttons = document.getElementById('buttons');
+    const ipDisplay = document.getElementById('ip-display');
+    const directButton = document.getElementById('direct-button');
+    
+    // Progress animation
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 5;
+      progressBar.style.width = `${progress}%`;
+      
+      if (progress >= 100) {
+        clearInterval(progressInterval);
+      }
+    }, 100);
+    
+    // Check server
+    setTimeout(() => {
+      fetch('/api/health')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            status.textContent = 'Server is available! Getting connection info...';
+            
+            // Get connection info
+            return fetch('/api/connection-info');
+          } else {
+            throw new Error('Server reported issues');
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Display connection info
+          status.textContent = 'Ready to connect!';
+          buttons.style.display = 'block';
+          
+          // Show IP display
+          ipDisplay.style.display = 'block';
+          ipDisplay.textContent = `Current IP: ${data.clientIp || 'unknown'}`;
+          
+          // Set direct button
+          const protocol = window.location.protocol;
+          const host = window.location.host;
+          directButton.href = `${protocol}//${host}/`;
+        })
+        .catch(error => {
+          status.textContent = `Error: ${error.message}`;
+          status.style.color = '#ff6b6b';
+          progressBar.style.backgroundColor = '#ff6b6b';
+        });
+    }, 1500);
+  </script>
+</body>
+</html>

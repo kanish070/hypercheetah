@@ -59,34 +59,9 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-access.html", { root: "./public" });
   });
   
-  // Mobile-optimized direct access page with QR code
-  app.get("/direct-mobile", (req, res) => {
-    res.sendFile("direct-mobile.html", { root: "./public" });
-  });
-  
-  // Simplified mobile direct access page
-  app.get("/mobile", (req, res) => {
-    res.sendFile("mobile-direct.html", { root: "./public" });
-  });
-  
-  // Direct IP access page
-  app.get("/direct-ip", (req, res) => {
-    res.sendFile("direct-ip.html", { root: "./public" });
-  });
-  
-  // QR code access page
-  app.get("/qr", (req, res) => {
-    res.sendFile("access-qr.html", { root: "./public" });
-  });
-  
-  // Lite version of the app that works without complex routing
-  app.get("/lite", (req, res) => {
-    res.sendFile("lite.html", { root: "./public" });
-  });
-  
-  // Emergency fallback for DNS resolution issues
-  app.get("/fallback", (req, res) => {
-    res.sendFile("fallback.html", { root: "./public" });
+  // Direct access with IP instead of domain name for mobile
+  app.get("/direct", (req, res) => {
+    res.sendFile("direct.html", { root: "./public" });
   });
   
   // Set up app entry point to redirect to the SPA
@@ -94,7 +69,7 @@ export async function registerRoutes(app: Express) {
     res.redirect("/");
   });
   
-  // Root path redirection for mobile access issues
+  // Root path with DNS issue detection for mobile devices
   app.get("/", (req, res, next) => {
     // Check if it's a mobile device via user agent
     const userAgent = req.headers['user-agent'] || '';
@@ -103,17 +78,10 @@ export async function registerRoutes(app: Express) {
     // Check if it's an internal request from Replit webview
     const isReplit = req.headers['x-replit-user-id'] || req.headers['x-replit-user-name'];
     
-    // If it's mobile and not from Replit webview, offer mobile access options
+    // If it's mobile and not from Replit webview, check for direct access
     if (isMobile && !isReplit) {
-      // Detect if the user is coming from a direct IP
-      const host = req.headers.host || '';
-      if (host.includes('0.0.0.0') || host.includes('127.0.0.1') || host.includes('localhost')) {
-        // Already using direct access, continue to the app
-        next();
-      } else {
-        // Redirect to mobile access options
-        res.redirect('/mobile');
-      }
+      // Continue to the app - we're using the direct entry point strategy
+      next();
     } else {
       // Not mobile or from Replit webview, continue to the app
       next();
