@@ -89,6 +89,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("super-light.html", { root: "./public" });
   });
   
+  // Direct IPv4 access page
+  app.get("/direct-ipv4", (req, res) => {
+    res.sendFile("direct-ipv4.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");

@@ -149,6 +149,25 @@
       font-size: 0.8rem;
     }
     
+    .highlight-option {
+      border: 2px solid #3a7bd5;
+      background-color: rgba(58, 123, 213, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .highlight-option::after {
+      content: "RECOMMENDED";
+      position: absolute;
+      top: 10px;
+      right: -30px;
+      background-color: #3a7bd5;
+      color: white;
+      font-size: 10px;
+      padding: 3px 30px;
+      transform: rotate(45deg);
+    }
+    
     footer {
       text-align: center;
       margin-top: 50px;
@@ -180,6 +199,12 @@
           <h3>Super Light Version (New!)</h3>
           <p>Extremely lightweight page for the poorest connections. Minimal HTML and almost no JavaScript.</p>
           <a href="/super-light" class="button">Open Super Light</a>
+        </div>
+        
+        <div class="option-card highlight-option">
+          <h3>IP Direct Connect (New!)</h3>
+          <p>Our most reliable solution - advanced IP-based access that bypasses domain names completely. Best option for connectivity issues.</p>
+          <a href="/direct-ipv4" class="button">IP Direct Connect</a>
         </div>
         
         <div class="option-card">
@@ -216,7 +241,7 @@
         </ol>
         
         <div class="direct-link-box" id="direct-link">
-          http://<span id="ip-display">0.0.0.0</span>:5000/direct-ip
+          http://<span id="ip-display">0.0.0.0</span>:5000/direct-ipv4
           <button class="copy-button" id="copy-link">Copy</button>
         </div>
         
@@ -248,7 +273,7 @@
         document.getElementById('ip-display').textContent = host;
         
         // Build the direct link
-        const directLink = `http://${host}:${port}/direct-ip`;
+        const directLink = `http://${host}:${port}/direct-ipv4`;
         document.getElementById('direct-link').textContent = directLink;
         
         // Setup copy button

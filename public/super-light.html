@@ -51,6 +51,12 @@
   </div>
   
   <div class="box">
+    <h2>Direct IP Connection</h2>
+    <p>Use this direct IP link to access the app:</p>
+    <p id="direct-ip-link" style="background:#e0e0e0;padding:10px;border-radius:3px;word-break:break-all;"></p>
+  </div>
+  
+  <div class="box">
     <h2>Access Options</h2>
     <a href="/mobile" class="btn">Mobile-Friendly Version</a>
     <a href="/lite" class="btn">Lite Version</a>
@@ -61,12 +67,21 @@
     // Show current time
     document.getElementById('time').textContent = new Date().toLocaleTimeString();
     
-    // Basic connectivity check
-    fetch('/api/health')
+    // Basic connectivity check and get IP
+    fetch('/api/connection-info')
       .then(response => response.json())
       .then(data => {
         document.getElementById('connection-info').textContent = 
           'Server connection: OK (Port: ' + (data.port || '5000') + ')';
+        
+        // Create direct IP link
+        const host = window.location.hostname;
+        const port = data.serverPort || window.location.port || '5000';
+        const ipLink = `http://${host}:${port}/mobile`;
+        
+        const linkElement = document.getElementById('direct-ip-link');
+        linkElement.innerHTML = `<a href="${ipLink}" style="color:#3a7bd5;text-decoration:underline;">${ipLink}</a>`;
+        linkElement.innerHTML += `<br><br><b>Save this link</b> - it bypasses domain name resolution and should work even on poor connections.`;
       })
       .catch(error => {
         document.getElementById('connection-info').textContent = 
