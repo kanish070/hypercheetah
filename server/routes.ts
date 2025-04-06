@@ -108,12 +108,27 @@ export async function registerRoutes(app: Express) {
   
   // Mobile route - redirects to full app with bypass parameter
   app.get("/mobile", (req, res) => {
-    res.redirect('/?bypass=true');
+    res.redirect('/?bypass=true&mobile=true');
   });
   
   // New mobile entry point - simpler with multiple connection options
   app.get("/m", (req, res) => {
     res.sendFile("mobile-entry.html", { root: "./public" });
+  });
+  
+  // Direct mobile access - now redirects directly to the full app for immediate access
+  app.get("/direct-mobile", (req, res) => {
+    res.redirect('/?bypass=true&mobile=true&direct=true');
+  });
+  
+  // New fast-loading mobile access route
+  app.get("/direct-mobile-app", (req, res) => {
+    res.sendFile("direct-mobile-app.html", { root: "./public" });
+  });
+  
+  // Even more direct mobile access - immediate redirect through client-side JS
+  app.get("/m-direct", (req, res) => {
+    res.sendFile("direct-mobile.html", { root: "./public" });
   });
   
   // Direct IP connection page for bypassing DNS issues
@@ -126,9 +141,26 @@ export async function registerRoutes(app: Express) {
     res.sendFile("full-app.html", { root: "./public" });
   });
   
-  // Root path with DNS issue detection for mobile devices
+  // Root path with improved mobile device detection and handling
   app.get("/", (req, res, next) => {
-    // Always serve the full app for all devices (mobile and desktop)
+    // Check if the request includes mobile optimization parameters
+    const bypass = req.query.bypass === 'true';
+    const isMobile = req.query.mobile === 'true';
+    const isDirect = req.query.direct === 'true';
+    
+    // If this is a mobile request with optimization parameters, apply special handling
+    if (bypass && isMobile) {
+      // Set special headers to force full app load on mobile
+      res.setHeader('X-Mobile-App', 'true');
+      res.setHeader('X-Bypass-Intermediates', 'true');
+      
+      // Log direct mobile access
+      if (isDirect) {
+        console.log('Direct mobile app access with bypass parameters');
+      }
+    }
+    
+    // Always serve the full app for all devices with appropriate settings
     next();
   });
   

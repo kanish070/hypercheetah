@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Loading Ride Partner</title>
+  <title>Loading App - Ride Partner</title>
   <style>
     :root {
       --primary: #3a7bd5;
@@ -34,13 +34,13 @@
     
     .loader {
       display: inline-block;
-      width: 80px;
-      height: 80px;
-      border: 6px solid rgba(255,255,255,.3);
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(255,255,255,.3);
       border-radius: 50%;
       border-top-color: white;
       animation: spin 1s ease-in-out infinite;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
     
     @keyframes spin {
@@ -48,27 +48,47 @@
     }
     
     h1 {
-      font-size: 2rem;
-      margin-bottom: 15px;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
     }
     
     p {
       opacity: 0.8;
       max-width: 400px;
       line-height: 1.5;
-      font-size: 1.1rem;
-      margin-bottom: 10px;
+    }
+    
+    .fallback {
+      margin-top: 30px;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+    
+    .fallback a {
+      color: white;
+      text-decoration: underline;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <div class="loader"></div>
-  <h1>Ride Partner</h1>
-  <p>Opening the app...</p>
+  <h1>Loading Ride Partner</h1>
+  <p>Redirecting you to the full app...</p>
+  <div class="fallback">
+    If you're not redirected automatically, <a href="/" id="manual-link">click here</a>
+  </div>
   
   <script>
-    // Immediately redirect to the main app with mobile optimization parameters
-    window.location.href = "/?bypass=true&mobile=true&direct=true&ts=" + new Date().getTime();
+    // Redirect to the full app with parameters that ensure mobile experience
+    window.onload = function() {
+      // Set the correct URL with parameters
+      const destinationUrl = '/?bypass=true&mobile=true&direct=true&ts=' + new Date().getTime();
+      document.getElementById('manual-link').href = destinationUrl;
+      
+      // Redirect immediately
+      window.location.href = destinationUrl;
+    };
   </script>
 </body>
 </html>
