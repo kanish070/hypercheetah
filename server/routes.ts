@@ -594,6 +594,127 @@ export async function registerRoutes(app: Express) {
           }
         }
         
+        // Handle ride match requests for real-time animation
+        if (data.type === "find_ride_matches") {
+          try {
+            const userId = ws.userId || data.userId;
+            const route = data.route;
+            const rideType = data.rideType || 'ride_request';
+            
+            console.log(`Ride match request from user ${userId || 'unknown'}: ${rideType}`);
+            
+            // Get all available users who can be ride matches
+            const nearbyUsers = await storage.getNearbyUsers({ 
+              lat: route?.startLocation?.lat || 22.3072, 
+              lng: route?.startLocation?.lng || 73.1812 
+            }, 15); // 15km radius
+            
+            // Filter out the current user
+            const potentialMatches = nearbyUsers
+              .filter((user: User) => user.id !== userId)
+              .slice(0, 8); // Limit to 8 potential matches for animation
+            
+            // Create animation steps for the matching process
+            const matchAnimationSteps: Array<{
+              stepIndex: number;
+              delay: number;
+              match: {
+                id: number;
+                name: string;
+                avatar: string | null;
+                location: { lat: number; lng: number };
+                rating: number;
+                verificationStatus: string;
+              };
+              matchScore: number;
+              result: 'matched' | 'rejected';
+              animationState: string;
+            }> = [];
+            
+            let currentDelay = 0;
+            const delayIncrement = 1500; // 1.5 seconds between steps
+            
+            potentialMatches.forEach((match, index) => {
+              // Generate a match score between 65 and 95
+              const matchScore = Math.floor(Math.random() * 30) + 65;
+              
+              // Create animation step
+              matchAnimationSteps.push({
+                stepIndex: index,
+                delay: currentDelay,
+                match: {
+                  id: match.id,
+                  name: match.name,
+                  avatar: match.avatar,
+                  location: { 
+                    lat: 22.3072 + (Math.random() * 0.02 - 0.01), 
+                    lng: 73.1812 + (Math.random() * 0.02 - 0.01) 
+                  },
+                  rating: 4.5,
+                  verificationStatus: 'verified'
+                },
+                matchScore: matchScore,
+                result: matchScore > 75 ? 'matched' : 'rejected',
+                animationState: 'pending'
+              });
+              
+              currentDelay += delayIncrement;
+            });
+            
+            // Send initial matching process start message
+            ws.send(JSON.stringify({
+              type: "ride_matching_started",
+              totalSteps: matchAnimationSteps.length,
+              timestamp: new Date().toISOString()
+            }));
+            
+            // Send each animation step with appropriate delay
+            matchAnimationSteps.forEach((step) => {
+              setTimeout(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({
+                    type: "ride_matching_step",
+                    step: step.stepIndex,
+                    match: step.match,
+                    matchScore: step.matchScore,
+                    result: step.result,
+                    totalSteps: matchAnimationSteps.length,
+                    timestamp: new Date().toISOString()
+                  }));
+                }
+              }, step.delay);
+            });
+            
+            // Send completion message after all steps
+            setTimeout(() => {
+              if (ws.readyState === WebSocket.OPEN) {
+                // Filter only successful matches
+                const finalMatches = matchAnimationSteps
+                  .filter(step => step.result === 'matched')
+                  .map(step => ({
+                    ...step.match,
+                    matchScore: step.matchScore
+                  }));
+                
+                ws.send(JSON.stringify({
+                  type: "ride_matching_complete",
+                  matches: finalMatches,
+                  timestamp: new Date().toISOString()
+                }));
+              }
+            }, currentDelay + 1000); // Add 1 second after the last step
+            
+          } catch (error) {
+            console.error("Error processing ride matching request:", error);
+            // Send error message if needed
+            ws.send(JSON.stringify({
+              type: "ride_matching_error",
+              error: "Failed to process matching request",
+              timestamp: new Date().toISOString()
+            }));
+          }
+        }
+        
         // Handle ping requests from the mobile test page
         if (data.type === "ping") {
           console.log("Received ping message, responding with pong");

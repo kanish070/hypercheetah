@@ -16,6 +16,7 @@ import { SavedLocationsPage } from "@/pages/saved-locations-page";
 import ComfortPreferencesPage from "@/pages/comfort-preferences-page";
 import Matches from "@/pages/matches";
 import RideMatching from "@/pages/ride-matching";
+import RideMatchAnimation from "@/pages/ride-match-animation";
 import AuthPage from "@/pages/auth-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { WebSocketProvider } from "@/hooks/use-websocket";
@@ -36,6 +37,7 @@ function Router() {
       <ProtectedRoute path="/preferences" component={ComfortPreferencesPage} />
       <ProtectedRoute path="/matches" component={Matches} />
       <ProtectedRoute path="/ride-matching" component={RideMatching} />
+      <ProtectedRoute path="/ride-match-animation" component={RideMatchAnimation} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
