@@ -106,9 +106,9 @@ export async function registerRoutes(app: Express) {
     res.redirect("/");
   });
   
-  // New direct mobile access route - our most reliable option
+  // Mobile route now serves the same React app as root
   app.get("/mobile", (req, res) => {
-    res.sendFile("mobile.html", { root: "./public" });
+    res.sendFile("index.html", { root: "./public" });
   });
   
   // New mobile entry point - simpler with multiple connection options
