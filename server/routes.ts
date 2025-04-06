@@ -64,6 +64,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct.html", { root: "./public" });
   });
   
+  // QR code for mobile access using direct IP
+  app.get("/mobile-qr", (req, res) => {
+    res.sendFile("mobile-qr.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");
