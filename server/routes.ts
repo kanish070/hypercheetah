@@ -37,24 +37,7 @@ export async function registerRoutes(app: Express) {
     });
   });
   
-  // Add connection info endpoint to help mobile devices connect
-  app.get("/api/connection-info", (req, res) => {
-    res.json({
-      status: "ok",
-      serverTime: new Date().toISOString(),
-      serverPort: process.env.PORT || 5000,
-      connection: {
-        encrypted: req.secure,
-        ip: req.ip,
-        protocol: req.protocol,
-        host: req.get('host'),
-        originalUrl: req.originalUrl
-      },
-      serverAddress: `${req.protocol}://${req.get('host')}`,
-      wsEndpoint: `/ws-chat`,
-      info: "Use this information to establish WebSocket connections"
-    });
-  });
+  // Connection info endpoint is defined below, this duplicate is removed
   
   // Add diagnostic pages under the /diagnostics path
   app.get("/diagnostics", (req, res) => {
@@ -113,6 +96,11 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-ipv4.html", { root: "./public" });
   });
   
+  // New direct connection page (easier to use)
+  app.get("/direct-connect", (req, res) => {
+    res.sendFile("direct-connect.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");
@@ -152,6 +140,31 @@ export async function registerRoutes(app: Express) {
       port: process.env.PORT || 5000,
       webSocketStatus: "active",
       serverMemory: process.memoryUsage()
+    });
+  });
+  
+  // Connection info API - improved for reliable cross-device communication
+  app.get("/api/connection-info", (req, res) => {
+    // Get the host from request or default to environment
+    const hostname = req.headers.host || process.env.REPL_SLUG || "hyper-cheetah.replit.app";
+    const protocol = req.secure ? "https" : "http";
+    const webSocketProtocol = req.secure ? "wss" : "ws";
+    const serverPort = process.env.PORT || 5000;
+    const serverIP = req.socket.localAddress || "0.0.0.0";
+    const wsPath = "/ws-chat";
+    
+    res.json({
+      status: "ok",
+      time: new Date().toISOString(),
+      hostname,
+      protocol,
+      serverPort,
+      serverIP,
+      wsPath,
+      webSocketProtocol,
+      webSocketUrl: `${webSocketProtocol}://${hostname}${wsPath}`,
+      connectedClients,
+      userAgent: req.headers["user-agent"]
     });
   });
   
@@ -568,6 +581,18 @@ export async function registerRoutes(app: Express) {
     connectedClients++;
     console.log(`WebSocket connection received from: ${req.socket.remoteAddress}. Total connections: ${connectedClients}`);
     ws.isAlive = true;
+    
+    // Broadcast connection update to all clients
+    wss.clients.forEach((client) => {
+      const wsClient = client as WebSocketClient;
+      if (wsClient.readyState === WebSocket.OPEN) {
+        wsClient.send(JSON.stringify({
+          type: "connection_update",
+          connections: connectedClients,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    });
     
     // Handle WebSocket messages
     ws.on("message", async (message: string) => {

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner - Direct Connect</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #3a7bd5;
+      color: white;
+      padding: 15px 20px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    h2 {
+      color: #3a7bd5;
+      font-size: 20px;
+      margin-top: 0;
+    }
+    p {
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-ok {
+      background-color: #4caf50;
+    }
+    .status-error {
+      background-color: #f44336;
+    }
+    .status-warning {
+      background-color: #ff9800;
+    }
+    .input-group {
+      display: flex;
+      margin: 15px 0;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px 0 0 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #3a7bd5;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 0 4px 4px 0;
+    }
+    button:hover {
+      background-color: #2c5ea3;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #3a7bd5;
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .btn:hover {
+      background-color: #2c5ea3;
+    }
+    .btn-block {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .btn-green {
+      background-color: #4caf50;
+    }
+    .btn-green:hover {
+      background-color: #388e3c;
+    }
+    .role-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .role-btn {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .passenger-btn {
+      background-color: #3a7bd5;
+      color: white;
+    }
+    .driver-btn {
+      background-color: #ff5722;
+      color: white;
+    }
+    #websocket-test-result {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      color: #388e3c;
+      display: block !important;
+    }
+    .error {
+      background-color: #ffebee;
+      border: 1px solid #ffcdd2;
+      color: #d32f2f;
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Ride Partner - Direct Connect</h1>
+      </div>
+      <div class="card-body">
+        <div id="connection-status">
+          <p>
+            <span class="status-indicator status-warning" id="server-status-icon"></span>
+            <strong>Server Connection:</strong> <span id="server-status">Checking...</span>
+          </p>
+          <p>
+            <span class="status-indicator status-warning" id="ws-status-icon"></span>
+            <strong>WebSocket:</strong> <span id="ws-status">Waiting...</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2>Direct IP Connection</h2>
+        <p>Enter the Replit app's IP address to connect:</p>
+        <div class="input-group">
+          <input type="text" id="ip-address" placeholder="Enter IP address" value="hyper-cheetah.replit.app">
+          <button onclick="connectToIP()">Connect</button>
+        </div>
+        <p><small>Example: hyper-cheetah.replit.app or the IP address (e.g., 34.56.78.90)</small></p>
+      </div>
+    </div>
+
+    <div class="card" id="role-card" style="display: none;">
+      <div class="card-body">
+        <h2>Choose Your Role</h2>
+        <p>What would you like to do?</p>
+        <div class="role-buttons">
+          <a href="#" class="role-btn passenger-btn" id="passenger-btn">Find a Ride</a>
+          <a href="#" class="role-btn driver-btn" id="driver-btn">Offer a Ride</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2>Test WebSocket Connection</h2>
+        <p>Check if real-time features are working:</p>
+        <button onclick="testWebSocket()" class="btn btn-green btn-block">Test Connection</button>
+        <div id="websocket-test-result"></div>
+      </div>
+    </div>
+
+    <div class="card" id="share-card" style="display: none;">
+      <div class="card-body">
+        <h2>Share With Friends</h2>
+        <p>Share this link for others to join:</p>
+        <div class="input-group">
+          <input type="text" id="share-link" readonly>
+          <button onclick="copyShareLink()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let connectedIP = '';
+    let connectedPort = '';
+
+    // Function to connect to a specific IP address
+    function connectToIP() {
+      const ipAddress = document.getElementById('ip-address').value.trim();
+      
+      if (!ipAddress) {
+        alert('Please enter a valid IP address or hostname');
+        return;
+      }
+
+      document.getElementById('server-status-icon').className = 'status-indicator status-warning';
+      document.getElementById('server-status').textContent = 'Connecting...';
+
+      // Test the connection by fetching the connection info endpoint
+      fetch(`https://${ipAddress}/api/connection-info`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Connection successful:', data);
+          document.getElementById('server-status-icon').className = 'status-indicator status-ok';
+          document.getElementById('server-status').textContent = 'Connected';
+          
+          // Store the connected IP and port
+          connectedIP = ipAddress;
+          connectedPort = data.serverPort || '5000';
+          
+          // Create share link
+          const shareLink = `https://${connectedIP}/super-light`;
+          document.getElementById('share-link').value = shareLink;
+          document.getElementById('share-card').style.display = 'block';
+          
+          // Update role buttons
+          document.getElementById('passenger-btn').href = `https://${connectedIP}/mobile?role=passenger`;
+          document.getElementById('driver-btn').href = `https://${connectedIP}/mobile?role=driver`;
+          document.getElementById('role-card').style.display = 'block';
+          
+          // Connect to WebSocket
+          connectWebSocket(connectedIP, connectedPort);
+        })
+        .catch(error => {
+          console.error('Connection error:', error);
+          document.getElementById('server-status-icon').className = 'status-indicator status-error';
+          document.getElementById('server-status').textContent = 'Failed: ' + error.message;
+          
+          // Try HTTP instead of HTTPS as fallback
+          fetch(`http://${ipAddress}/api/connection-info`)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('HTTP Connection successful:', data);
+              document.getElementById('server-status-icon').className = 'status-indicator status-ok';
+              document.getElementById('server-status').textContent = 'Connected (HTTP)';
+              
+              // Store the connected IP and port
+              connectedIP = ipAddress;
+              connectedPort = data.serverPort || '5000';
+              
+              // Create share link
+              const shareLink = `http://${connectedIP}/super-light`;
+              document.getElementById('share-link').value = shareLink;
+              document.getElementById('share-card').style.display = 'block';
+              
+              // Update role buttons
+              document.getElementById('passenger-btn').href = `http://${connectedIP}/mobile?role=passenger`;
+              document.getElementById('driver-btn').href = `http://${connectedIP}/mobile?role=driver`;
+              document.getElementById('role-card').style.display = 'block';
+              
+              // Connect to WebSocket
+              connectWebSocket(connectedIP, connectedPort, 'http:');
+            })
+            .catch(err => {
+              console.error('HTTP Connection error:', err);
+              document.getElementById('server-status-icon').className = 'status-indicator status-error';
+              document.getElementById('server-status').textContent = 'All connection attempts failed';
+            });
+        });
+    }
+
+    function connectWebSocket(host, port, protocolPrefix = window.location.protocol) {
+      // Close existing connection if any
+      if (ws && ws.readyState !== WebSocket.CLOSED) {
+        ws.close();
+      }
+
+      // Update status
+      document.getElementById('ws-status-icon').className = 'status-indicator status-warning';
+      document.getElementById('ws-status').textContent = 'Connecting...';
+
+      try {
+        const wsProtocol = protocolPrefix === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${host}/ws-chat`;
+        console.log('Connecting to WebSocket:', wsUrl);
+        
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = function() {
+          console.log('WebSocket connection established');
+          document.getElementById('ws-status-icon').className = 'status-indicator status-ok';
+          document.getElementById('ws-status').textContent = 'Connected';
+          
+          // Send initial ping to test the connection
+          ws.send(JSON.stringify({
+            type: 'ping',
+            message: 'Initial connection test',
+            timestamp: new Date().toISOString()
+          }));
+        };
+        
+        ws.onmessage = function(event) {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message received:', data);
+            
+            if (data.type === 'pong' || data.type === 'connection_update') {
+              const resultElement = document.getElementById('websocket-test-result');
+              resultElement.textContent = 'Connection successful! Server responded.';
+              resultElement.className = 'success';
+            }
+          } catch (e) {
+            console.error('Error parsing WebSocket message:', e);
+          }
+        };
+        
+        ws.onclose = function() {
+          console.log('WebSocket connection closed');
+          document.getElementById('ws-status-icon').className = 'status-indicator status-error';
+          document.getElementById('ws-status').textContent = 'Disconnected';
+        };
+        
+        ws.onerror = function(error) {
+          console.error('WebSocket error:', error);
+          document.getElementById('ws-status-icon').className = 'status-indicator status-error';
+          document.getElementById('ws-status').textContent = 'Error connecting';
+          
+          // Try with HTTP protocol if HTTPS failed
+          if (protocolPrefix === 'https:') {
+            console.log('Retrying with ws:// protocol');
+            connectWebSocket(host, port, 'http:');
+          }
+        };
+      } catch (error) {
+        console.error('Error creating WebSocket:', error);
+        document.getElementById('ws-status-icon').className = 'status-indicator status-error';
+        document.getElementById('ws-status').textContent = 'Error: ' + error.message;
+      }
+    }
+
+    function testWebSocket() {
+      const resultElement = document.getElementById('websocket-test-result');
+      
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        resultElement.textContent = 'WebSocket not connected. Please connect to an IP first.';
+        resultElement.className = 'error';
+        return;
+      }
+      
+      try {
+        ws.send(JSON.stringify({
+          type: 'ping',
+          message: 'Manual test ping',
+          timestamp: new Date().toISOString()
+        }));
+        
+        resultElement.textContent = 'Test message sent, waiting for response...';
+        resultElement.className = '';
+        resultElement.style.display = 'block';
+      } catch (error) {
+        resultElement.textContent = 'Error sending test: ' + error.message;
+        resultElement.className = 'error';
+      }
+    }
+
+    function copyShareLink() {
+      const shareLink = document.getElementById('share-link');
+      shareLink.select();
+      document.execCommand('copy');
+      
+      // Show feedback
+      const originalText = document.querySelector('button:nth-of-type(2)').textContent;
+      document.querySelector('button:nth-of-type(2)').textContent = 'Copied!';
+      setTimeout(() => {
+        document.querySelector('button:nth-of-type(2)').textContent = originalText;
+      }, 2000);
+    }
+
+    // Auto-fill IP field with current hostname if possible
+    window.addEventListener('DOMContentLoaded', () => {
+      const host = window.location.hostname;
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        document.getElementById('ip-address').value = host;
+      }
+    });
+  </script>
+</body>
+</html>
