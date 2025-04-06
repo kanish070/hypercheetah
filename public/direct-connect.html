@@ -3,425 +3,322 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Partner - Direct Connect</title>
+  <title>Direct Connect - Hyper Cheetah</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       margin: 0;
       padding: 0;
       color: #333;
-      background-color: #f5f7fa;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f7f9fc, #e3f2fd);
+      text-align: center;
     }
     .container {
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 20px;
     }
     .header {
-      background-color: #3a7bd5;
-      color: white;
-      padding: 15px 20px;
-      text-align: center;
-      border-radius: 8px 8px 0 0;
-      margin-bottom: 0;
+      padding: 20px 0;
     }
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #3a7bd5;
+      margin-bottom: 10px;
     }
-    .card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3a7bd5;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .progress-container {
+      margin: 20px 0;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      height: 20px;
       overflow: hidden;
     }
-    .card-body {
-      padding: 20px;
-    }
-    h2 {
-      color: #3a7bd5;
-      font-size: 20px;
-      margin-top: 0;
-    }
-    p {
-      line-height: 1.6;
-      margin: 10px 0;
-    }
-    .status-indicator {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    .status-ok {
-      background-color: #4caf50;
-    }
-    .status-error {
-      background-color: #f44336;
-    }
-    .status-warning {
-      background-color: #ff9800;
-    }
-    .input-group {
-      display: flex;
-      margin: 15px 0;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px 0 0 4px;
-      font-size: 16px;
-    }
-    button {
+    .progress-bar {
+      height: 100%;
+      width: 0;
       background-color: #3a7bd5;
+      transition: width 0.5s ease;
+      text-align: center;
+      line-height: 20px;
       color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 0 4px 4px 0;
+      font-size: 12px;
     }
-    button:hover {
-      background-color: #2c5ea3;
+    .card {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    h1, h2 {
+      color: #2c3e50;
     }
     .btn {
       display: inline-block;
       background-color: #3a7bd5;
       color: white;
+      padding: 12px 20px;
+      margin: 5px;
+      border-radius: 8px;
       text-decoration: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      font-size: 16px;
-      margin-right: 10px;
-      margin-bottom: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
     .btn:hover {
-      background-color: #2c5ea3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
-    .btn-block {
-      display: block;
-      width: 100%;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .btn-green {
-      background-color: #4caf50;
-    }
-    .btn-green:hover {
-      background-color: #388e3c;
-    }
-    .role-buttons {
-      display: flex;
-      gap: 10px;
+    .status-message {
       margin: 15px 0;
-    }
-    .role-btn {
-      flex: 1;
-      text-align: center;
-      padding: 15px;
-      border-radius: 6px;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    .passenger-btn {
-      background-color: #3a7bd5;
-      color: white;
-    }
-    .driver-btn {
-      background-color: #ff5722;
-      color: white;
-    }
-    #websocket-test-result {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 4px;
-      display: none;
+      font-size: 16px;
     }
     .success {
-      background-color: #e8f5e9;
-      border: 1px solid #c8e6c9;
-      color: #388e3c;
-      display: block !important;
+      color: #4CAF50;
     }
     .error {
-      background-color: #ffebee;
-      border: 1px solid #ffcdd2;
-      color: #d32f2f;
-      display: block !important;
+      color: #F44336;
+    }
+    .warning {
+      color: #FF9800;
+    }
+    .hidden {
+      display: none;
+    }
+    .log-container {
+      background-color: #2c3e50;
+      color: #f1f1f1;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      text-align: left;
+      font-family: monospace;
+      margin-top: 20px;
+    }
+    .log-entry {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .log-time {
+      color: #4CAF50;
+      margin-right: 10px;
+    }
+    .log-info {
+      color: #3a7bd5;
+    }
+    .log-error {
+      color: #F44336;
+    }
+    .log-warning {
+      color: #FF9800;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="card">
-      <div class="header">
-        <h1>Ride Partner - Direct Connect</h1>
-      </div>
-      <div class="card-body">
-        <div id="connection-status">
-          <p>
-            <span class="status-indicator status-warning" id="server-status-icon"></span>
-            <strong>Server Connection:</strong> <span id="server-status">Checking...</span>
-          </p>
-          <p>
-            <span class="status-indicator status-warning" id="ws-status-icon"></span>
-            <strong>WebSocket:</strong> <span id="ws-status">Waiting...</span>
-          </p>
-        </div>
-      </div>
+    <div class="header">
+      <div class="logo">Hyper Cheetah</div>
+      <p>The smartest way to get around Vadodara</p>
     </div>
 
     <div class="card">
-      <div class="card-body">
-        <h2>Direct IP Connection</h2>
-        <p>Enter the Replit app's IP address to connect:</p>
-        <div class="input-group">
-          <input type="text" id="ip-address" placeholder="Enter IP address" value="hyper-cheetah.replit.app">
-          <button onclick="connectToIP()">Connect</button>
-        </div>
-        <p><small>Example: hyper-cheetah.replit.app or the IP address (e.g., 34.56.78.90)</small></p>
+      <h1>Establishing Connection</h1>
+      <div class="loader" id="loader"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
       </div>
-    </div>
-
-    <div class="card" id="role-card" style="display: none;">
-      <div class="card-body">
-        <h2>Choose Your Role</h2>
-        <p>What would you like to do?</p>
-        <div class="role-buttons">
-          <a href="#" class="role-btn passenger-btn" id="passenger-btn">Find a Ride</a>
-          <a href="#" class="role-btn driver-btn" id="driver-btn">Offer a Ride</a>
+      <div class="status-message" id="statusMessage">Testing connection methods...</div>
+      
+      <div id="successContainer" class="hidden">
+        <p class="success">Connection established successfully!</p>
+        <a href="#" class="btn" id="continueBtn">Continue to Application</a>
+      </div>
+      
+      <div id="errorContainer" class="hidden">
+        <p class="error">Connection failed. Please try one of these alternatives:</p>
+        <div id="alternativeLinks">
+          <a href="/full-app" class="btn" style="background-color: #4CAF50;">Load Full App</a>
+          <a href="/direct-ip" class="btn" style="background-color: #FF9800;">Direct IP Connection</a>
+          <a href="/super-light" class="btn">Super Light Version</a>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-body">
-        <h2>Test WebSocket Connection</h2>
-        <p>Check if real-time features are working:</p>
-        <button onclick="testWebSocket()" class="btn btn-green btn-block">Test Connection</button>
-        <div id="websocket-test-result"></div>
-      </div>
-    </div>
-
-    <div class="card" id="share-card" style="display: none;">
-      <div class="card-body">
-        <h2>Share With Friends</h2>
-        <p>Share this link for others to join:</p>
-        <div class="input-group">
-          <input type="text" id="share-link" readonly>
-          <button onclick="copyShareLink()">Copy</button>
-        </div>
-      </div>
+      <h2>Connection Log</h2>
+      <div class="log-container" id="logContainer"></div>
     </div>
   </div>
 
   <script>
-    let ws = null;
-    let connectedIP = '';
-    let connectedPort = '';
+    // Elements
+    const loader = document.getElementById('loader');
+    const progressBar = document.getElementById('progressBar');
+    const statusMessage = document.getElementById('statusMessage');
+    const successContainer = document.getElementById('successContainer');
+    const errorContainer = document.getElementById('errorContainer');
+    const continueBtn = document.getElementById('continueBtn');
+    const logContainer = document.getElementById('logContainer');
 
-    // Function to connect to a specific IP address
-    function connectToIP() {
-      const ipAddress = document.getElementById('ip-address').value.trim();
-      
-      if (!ipAddress) {
-        alert('Please enter a valid IP address or hostname');
-        return;
+    // Initialize variables
+    let progress = 0;
+    let connectionSuccess = false;
+    let bestConnection = null;
+
+    // Log levels
+    const LOG_INFO = 'info';
+    const LOG_ERROR = 'error';
+    const LOG_WARNING = 'warning';
+
+    // Connection methods to try
+    const connectionMethods = [
+      { 
+        name: 'Primary connection via main domain',
+        url: '/api/health',
+        redirectUrl: '/?bypass=true' 
+      },
+      { 
+        name: 'Secondary connection via direct app path',
+        url: '/api/health',
+        redirectUrl: '/full-app' 
+      },
+      { 
+        name: 'Backup connection via WebSocket path',
+        url: '/ws-chat',
+        redirectUrl: '/?direct=ws&bypass=true'
+      },
+      { 
+        name: 'Emergency direct connection',
+        url: '/api/connection-info',
+        redirectUrl: '/direct-ip'
       }
+    ];
 
-      document.getElementById('server-status-icon').className = 'status-indicator status-warning';
-      document.getElementById('server-status').textContent = 'Connecting...';
-
-      // Test the connection by fetching the connection info endpoint
-      fetch(`https://${ipAddress}/api/connection-info`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Connection successful:', data);
-          document.getElementById('server-status-icon').className = 'status-indicator status-ok';
-          document.getElementById('server-status').textContent = 'Connected';
-          
-          // Store the connected IP and port
-          connectedIP = ipAddress;
-          connectedPort = data.serverPort || '5000';
-          
-          // Create share link
-          const shareLink = `https://${connectedIP}/super-light`;
-          document.getElementById('share-link').value = shareLink;
-          document.getElementById('share-card').style.display = 'block';
-          
-          // Update role buttons
-          document.getElementById('passenger-btn').href = `https://${connectedIP}/mobile?role=passenger`;
-          document.getElementById('driver-btn').href = `https://${connectedIP}/mobile?role=driver`;
-          document.getElementById('role-card').style.display = 'block';
-          
-          // Connect to WebSocket
-          connectWebSocket(connectedIP, connectedPort);
-        })
-        .catch(error => {
-          console.error('Connection error:', error);
-          document.getElementById('server-status-icon').className = 'status-indicator status-error';
-          document.getElementById('server-status').textContent = 'Failed: ' + error.message;
-          
-          // Try HTTP instead of HTTPS as fallback
-          fetch(`http://${ipAddress}/api/connection-info`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              console.log('HTTP Connection successful:', data);
-              document.getElementById('server-status-icon').className = 'status-indicator status-ok';
-              document.getElementById('server-status').textContent = 'Connected (HTTP)';
-              
-              // Store the connected IP and port
-              connectedIP = ipAddress;
-              connectedPort = data.serverPort || '5000';
-              
-              // Create share link
-              const shareLink = `http://${connectedIP}/super-light`;
-              document.getElementById('share-link').value = shareLink;
-              document.getElementById('share-card').style.display = 'block';
-              
-              // Update role buttons
-              document.getElementById('passenger-btn').href = `http://${connectedIP}/mobile?role=passenger`;
-              document.getElementById('driver-btn').href = `http://${connectedIP}/mobile?role=driver`;
-              document.getElementById('role-card').style.display = 'block';
-              
-              // Connect to WebSocket
-              connectWebSocket(connectedIP, connectedPort, 'http:');
-            })
-            .catch(err => {
-              console.error('HTTP Connection error:', err);
-              document.getElementById('server-status-icon').className = 'status-indicator status-error';
-              document.getElementById('server-status').textContent = 'All connection attempts failed';
-            });
-        });
+    // Helper functions
+    function updateProgress(value) {
+      progress = value;
+      progressBar.style.width = `${progress}%`;
+      progressBar.textContent = `${progress}%`;
     }
 
-    function connectWebSocket(host, port, protocolPrefix = window.location.protocol) {
-      // Close existing connection if any
-      if (ws && ws.readyState !== WebSocket.CLOSED) {
-        ws.close();
-      }
+    function log(message, level = LOG_INFO) {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+      
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.textContent = `[${time}]`;
+      
+      const messageSpan = document.createElement('span');
+      messageSpan.className = `log-${level}`;
+      messageSpan.textContent = ` ${message}`;
+      
+      logEntry.appendChild(timeSpan);
+      logEntry.appendChild(messageSpan);
+      
+      logContainer.appendChild(logEntry);
+      
+      // Auto-scroll to bottom
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
 
-      // Update status
-      document.getElementById('ws-status-icon').className = 'status-indicator status-warning';
-      document.getElementById('ws-status').textContent = 'Connecting...';
+    function showSuccess(method) {
+      connectionSuccess = true;
+      loader.style.display = 'none';
+      successContainer.classList.remove('hidden');
+      statusMessage.classList.add('success');
+      statusMessage.textContent = `Connection established successfully via ${method.name}`;
+      
+      // Set continue button to redirect to the best connection method
+      continueBtn.href = method.redirectUrl;
+      
+      log(`Connection successful. Ready to continue to app.`, LOG_INFO);
+    }
 
-      try {
-        const wsProtocol = protocolPrefix === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${host}/ws-chat`;
-        console.log('Connecting to WebSocket:', wsUrl);
+    function showError() {
+      loader.style.display = 'none';
+      errorContainer.classList.remove('hidden');
+      statusMessage.classList.add('error');
+      statusMessage.textContent = 'All connection methods failed. Please try an alternative.';
+      
+      log(`Connection failed. Please try an alternative method.`, LOG_ERROR);
+    }
+
+    // Test each connection method
+    async function testConnections() {
+      const progressIncrement = 100 / connectionMethods.length;
+      
+      log(`Starting connection test with ${connectionMethods.length} methods...`, LOG_INFO);
+      
+      for (let i = 0; i < connectionMethods.length; i++) {
+        const method = connectionMethods[i];
+        const startProgress = i * progressIncrement;
+        const endProgress = (i + 1) * progressIncrement;
         
-        ws = new WebSocket(wsUrl);
+        statusMessage.textContent = `Testing ${method.name}...`;
+        log(`Testing connection method ${i + 1}: ${method.name}`, LOG_INFO);
         
-        ws.onopen = function() {
-          console.log('WebSocket connection established');
-          document.getElementById('ws-status-icon').className = 'status-indicator status-ok';
-          document.getElementById('ws-status').textContent = 'Connected';
-          
-          // Send initial ping to test the connection
-          ws.send(JSON.stringify({
-            type: 'ping',
-            message: 'Initial connection test',
-            timestamp: new Date().toISOString()
-          }));
-        };
-        
-        ws.onmessage = function(event) {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('WebSocket message received:', data);
-            
-            if (data.type === 'pong' || data.type === 'connection_update') {
-              const resultElement = document.getElementById('websocket-test-result');
-              resultElement.textContent = 'Connection successful! Server responded.';
-              resultElement.className = 'success';
+        try {
+          const response = await fetch(method.url, { 
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
             }
-          } catch (e) {
-            console.error('Error parsing WebSocket message:', e);
-          }
-        };
-        
-        ws.onclose = function() {
-          console.log('WebSocket connection closed');
-          document.getElementById('ws-status-icon').className = 'status-indicator status-error';
-          document.getElementById('ws-status').textContent = 'Disconnected';
-        };
-        
-        ws.onerror = function(error) {
-          console.error('WebSocket error:', error);
-          document.getElementById('ws-status-icon').className = 'status-indicator status-error';
-          document.getElementById('ws-status').textContent = 'Error connecting';
+          });
           
-          // Try with HTTP protocol if HTTPS failed
-          if (protocolPrefix === 'https:') {
-            console.log('Retrying with ws:// protocol');
-            connectWebSocket(host, port, 'http:');
+          if (response.ok) {
+            log(`Method ${i + 1} successful!`, LOG_INFO);
+            updateProgress(endProgress);
+            
+            // This connection method works, save it as our best option
+            if (!bestConnection) {
+              bestConnection = method;
+            }
+            
+            // If this is our first method, use it right away
+            if (i === 0) {
+              showSuccess(method);
+              break;
+            }
+          } else {
+            log(`Method ${i + 1} failed with status: ${response.status}`, LOG_WARNING);
+            updateProgress(startProgress + (progressIncrement / 2));
           }
-        };
-      } catch (error) {
-        console.error('Error creating WebSocket:', error);
-        document.getElementById('ws-status-icon').className = 'status-indicator status-error';
-        document.getElementById('ws-status').textContent = 'Error: ' + error.message;
+        } catch (error) {
+          log(`Method ${i + 1} error: ${error.message}`, LOG_ERROR);
+          updateProgress(startProgress + (progressIncrement / 2));
+        }
+      }
+      
+      // Check if any connection method worked
+      if (!connectionSuccess && bestConnection) {
+        showSuccess(bestConnection);
+      } else if (!connectionSuccess) {
+        showError();
       }
     }
 
-    function testWebSocket() {
-      const resultElement = document.getElementById('websocket-test-result');
-      
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
-        resultElement.textContent = 'WebSocket not connected. Please connect to an IP first.';
-        resultElement.className = 'error';
-        return;
-      }
-      
-      try {
-        ws.send(JSON.stringify({
-          type: 'ping',
-          message: 'Manual test ping',
-          timestamp: new Date().toISOString()
-        }));
-        
-        resultElement.textContent = 'Test message sent, waiting for response...';
-        resultElement.className = '';
-        resultElement.style.display = 'block';
-      } catch (error) {
-        resultElement.textContent = 'Error sending test: ' + error.message;
-        resultElement.className = 'error';
-      }
-    }
-
-    function copyShareLink() {
-      const shareLink = document.getElementById('share-link');
-      shareLink.select();
-      document.execCommand('copy');
-      
-      // Show feedback
-      const originalText = document.querySelector('button:nth-of-type(2)').textContent;
-      document.querySelector('button:nth-of-type(2)').textContent = 'Copied!';
-      setTimeout(() => {
-        document.querySelector('button:nth-of-type(2)').textContent = originalText;
-      }, 2000);
-    }
-
-    // Auto-fill IP field with current hostname if possible
-    window.addEventListener('DOMContentLoaded', () => {
-      const host = window.location.hostname;
-      if (host && host !== 'localhost' && host !== '127.0.0.1') {
-        document.getElementById('ip-address').value = host;
-      }
-    });
+    // Start testing connections when the page loads
+    window.onload = testConnections;
   </script>
 </body>
 </html>

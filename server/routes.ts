@@ -121,31 +121,15 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-ip.html", { root: "./public" });
   });
   
+  // Full app access page - guaranteed to load the full React app
+  app.get("/full-app", (req, res) => {
+    res.sendFile("full-app.html", { root: "./public" });
+  });
+  
   // Root path with DNS issue detection for mobile devices
   app.get("/", (req, res, next) => {
-    // Check if bypass parameter is present (user explicitly wants the full app)
-    const bypassMobileRedirect = req.query.bypass === "true";
-    
-    // If bypass is set, skip mobile detection and continue to the full app
-    if (bypassMobileRedirect) {
-      return next();
-    }
-    
-    // Check if it's a mobile device via user agent
-    const userAgent = req.headers['user-agent'] || '';
-    const isMobile = /Mobile|Android|iPhone|iPad|iPod|Windows Phone/i.test(userAgent);
-    
-    // Check if it's an internal request from Replit webview
-    const isReplit = req.headers['x-replit-user-id'] || req.headers['x-replit-user-name'];
-    
-    // If it's mobile and not from Replit webview, redirect to mobile page
-    if (isMobile && !isReplit) {
-      // Redirect to the more reliable mobile entry page which has multiple connection options
-      res.redirect("/m");
-    } else {
-      // Not mobile or from Replit webview, continue to the app
-      next();
-    }
+    // Always serve the full app for all devices (mobile and desktop)
+    next();
   });
   
   // This is a duplicate endpoint removed to avoid confusion

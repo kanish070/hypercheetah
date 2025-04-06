@@ -62,13 +62,16 @@ app.use((req, res, next) => {
   const port = process.env.PORT || 5000;
   const host = '0.0.0.0';
 
-  // Enable CORS for development
+  // Enable CORS for development and production
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    // Allow requests from Replit webview and any origin
+    const origin = req.headers.origin || '*';
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,X-Replit-User-Id,X-Replit-User-Name');
     res.header('Access-Control-Allow-Credentials', 'true');
-
+    
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
       return res.status(200).end();
     }
