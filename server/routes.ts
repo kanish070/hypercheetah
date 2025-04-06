@@ -84,9 +84,19 @@ export async function registerRoutes(app: Express) {
     res.sendFile("lite.html", { root: "./public" });
   });
   
+  // Ultra lightweight version for very poor connections
+  app.get("/super-light", (req, res) => {
+    res.sendFile("super-light.html", { root: "./public" });
+  });
+  
   // Set up app entry point to redirect to the SPA
   app.get("/app", (req, res) => {
     res.redirect("/");
+  });
+  
+  // New direct mobile access route - our most reliable option
+  app.get("/mobile", (req, res) => {
+    res.sendFile("mobile.html", { root: "./public" });
   });
   
   // Root path with DNS issue detection for mobile devices
@@ -98,10 +108,10 @@ export async function registerRoutes(app: Express) {
     // Check if it's an internal request from Replit webview
     const isReplit = req.headers['x-replit-user-id'] || req.headers['x-replit-user-name'];
     
-    // If it's mobile and not from Replit webview, check for direct access
+    // If it's mobile and not from Replit webview, redirect to mobile page
     if (isMobile && !isReplit) {
-      // Continue to the app - we're using the direct entry point strategy
-      next();
+      // Redirect to the more reliable mobile access page
+      res.redirect("/mobile");
     } else {
       // Not mobile or from Replit webview, continue to the app
       next();

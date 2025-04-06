@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner - Super Light</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+    h1 {
+      background: #3a7bd5;
+      color: white;
+      padding: 15px;
+      margin: 0 0 15px 0;
+      text-align: center;
+    }
+    .box {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    p {
+      margin: 5px 0;
+    }
+    .btn {
+      display: block;
+      background: #3a7bd5;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      border-radius: 5px;
+      text-decoration: none;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ride Partner</h1>
+  
+  <div class="box">
+    <h2>Connection Test</h2>
+    <p>If you can see this page, your connection to the app server is working.</p>
+    <p>Current time: <span id="time">checking...</span></p>
+    <p id="connection-info">Checking connection details...</p>
+  </div>
+  
+  <div class="box">
+    <h2>Access Options</h2>
+    <a href="/mobile" class="btn">Mobile-Friendly Version</a>
+    <a href="/lite" class="btn">Lite Version</a>
+    <a href="/" class="btn">Full App (if working)</a>
+  </div>
+
+  <script>
+    // Show current time
+    document.getElementById('time').textContent = new Date().toLocaleTimeString();
+    
+    // Basic connectivity check
+    fetch('/api/health')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('connection-info').textContent = 
+          'Server connection: OK (Port: ' + (data.port || '5000') + ')';
+      })
+      .catch(error => {
+        document.getElementById('connection-info').textContent = 
+          'Connection error: ' + error.message;
+      });
+  </script>
+</body>
+</html>

@@ -6,286 +6,207 @@
   <title>Ride Partner Mobile Access</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
-      color: white;
+      font-family: system-ui, sans-serif;
       margin: 0;
       padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background: #f5f7fa;
+      color: #333;
     }
-    .container {
-      padding: 1.5rem;
-      flex: 1;
-      max-width: 100%;
-      width: 100%;
-      box-sizing: border-box;
+    
+    .header {
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      padding: 20px;
+      text-align: center;
     }
+    
     h1 {
+      margin: 0;
       font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-      text-align: center;
     }
-    p {
-      margin: 0.5rem 0;
-      text-align: center;
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
     }
+    
     .card {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
     }
-    .btn {
+    
+    .button {
       display: block;
-      background: #fff;
-      color: #3a7bd5;
-      font-weight: bold;
-      padding: 1rem;
-      border-radius: 50px;
+      background: #3a7bd5;
+      color: white;
       text-decoration: none;
-      margin: 1rem auto;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      text-align: center;
-      max-width: 250px;
-    }
-    .btn:active {
-      transform: scale(0.98);
-    }
-    .btn-primary {
-      background: #4CAF50;
-      color: white;
-    }
-    .btn-secondary {
-      background: #ff5722;
-      color: white;
-    }
-    .status {
-      padding: 1rem;
+      padding: 15px;
       border-radius: 8px;
-      margin: 1rem 0;
-      text-align: center;
-    }
-    .status-info {
-      background: rgba(33, 150, 243, 0.3);
-    }
-    .status-success {
-      background: rgba(76, 175, 80, 0.3);
-    }
-    .status-error {
-      background: rgba(244, 67, 54, 0.3);
-    }
-    .input-group {
-      margin: 1rem 0;
-    }
-    .input-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 0.8rem;
-      border-radius: 8px;
-      border: none;
-      font-size: 1rem;
-      background: rgba(255, 255, 255, 0.9);
-      box-sizing: border-box;
-    }
-    #serverStatus, #connectionStatus {
       font-weight: bold;
-    }
-    .separator {
-      display: flex;
-      align-items: center;
+      margin: 15px 0;
       text-align: center;
-      margin: 1.5rem 0;
-      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
     }
-    .separator::before, .separator::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    
+    .button.secondary {
+      background: #edf2f7;
+      color: #3a7bd5;
+      border: 1px solid #3a7bd5;
     }
-    .separator::before {
-      margin-right: 0.5rem;
+    
+    .ip-box {
+      background: #edf2f7;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      margin: 15px 0;
+      word-break: break-all;
     }
-    .separator::after {
-      margin-left: 0.5rem;
+    
+    .note {
+      background: #ffe8cc;
+      border-left: 4px solid #ff9500;
+      padding: 10px 15px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
     }
-    .steps {
-      list-style-type: none;
-      padding: 0;
-      counter-reset: step-counter;
+    
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 10px 15px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
     }
-    .steps li {
-      position: relative;
-      padding-left: 2.5rem;
-      margin-bottom: 1rem;
-      counter-increment: step-counter;
-    }
-    .steps li::before {
-      content: counter(step-counter);
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 1.8rem;
-      height: 1.8rem;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    
+    #connection-status {
+      text-align: center;
+      margin: 20px 0;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
+  <div class="header">
+    <h1>Ride Partner</h1>
+    <p>Direct Mobile Access</p>
+  </div>
+  
   <div class="container">
-    <h1>Ride Partner Mobile Access</h1>
-    <p>Connect directly to the app from your mobile device</p>
+    <div id="connection-status">Checking connection...</div>
     
     <div class="card">
-      <div id="serverStatusContainer" class="status status-info">
-        Checking server status... <span id="serverStatus">⏳</span>
+      <h2>Access Options</h2>
+      
+      <div class="note">
+        <p><strong>Having trouble connecting?</strong> Use one of these direct options to bypass DNS resolution issues.</p>
       </div>
       
-      <div class="input-group">
-        <label for="serverUrl">Server URL:</label>
-        <input type="text" id="serverUrl" value="" readonly />
+      <h3>Option 1: Use Raw IP Address</h3>
+      <div class="ip-box" id="direct-ip-link">
+        Loading direct IP link...
       </div>
+      <a href="#" class="button" id="copy-ip-button">Copy IP Link</a>
       
-      <a href="#" id="checkConnectionBtn" class="btn">Check Connection</a>
-      <a href="#" id="launchAppBtn" class="btn btn-primary">Launch App</a>
-    </div>
-    
-    <div class="separator">Connection Info</div>
-    
-    <div class="card">
-      <h2>Connection Status</h2>
-      <div id="connectionStatusContainer" class="status status-info">
-        WebSocket connection: <span id="connectionStatus">Not tested</span>
-      </div>
-      <a href="#" id="testWebSocketBtn" class="btn btn-secondary">Test WebSocket</a>
+      <h3>Option 2: Access Simplified Version</h3>
+      <p>Try our lightweight version that works even on slow connections:</p>
+      <a href="/lite" class="button">Open Lite Version</a>
+      
+      <h3>Option 3: Try Full App</h3>
+      <a href="/" class="button secondary">Access Full App</a>
     </div>
     
     <div class="card">
-      <h2>Having Trouble?</h2>
-      <ol class="steps">
+      <h2>Connection Troubleshooting</h2>
+      <ul>
         <li>Make sure you're connected to the internet</li>
-        <li>Try using a different browser</li>
+        <li>Try connecting to the same WiFi network as the server</li>
         <li>Clear your browser cache and cookies</li>
-        <li>Restart your device and try again</li>
-      </ol>
+        <li>Try a different browser if available</li>
+      </ul>
     </div>
   </div>
-
+  
   <script>
-    // Set the server URL based on the current location
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    
-    // Update the server URL input
-    const serverUrlInput = document.getElementById('serverUrl');
-    const serverUrl = `${protocol}//${hostname}${port ? ':' + port : ''}`;
-    serverUrlInput.value = serverUrl;
-    
-    // Check server status on page load
-    checkServerStatus();
-    
-    // Button event listeners
-    document.getElementById('checkConnectionBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      checkServerStatus();
-    });
-    
-    document.getElementById('launchAppBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = '/app';
-    });
-    
-    document.getElementById('testWebSocketBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      testWebSocketConnection();
-    });
-    
-    // Function to check server status
-    function checkServerStatus() {
-      const serverStatus = document.getElementById('serverStatus');
-      const serverStatusContainer = document.getElementById('serverStatusContainer');
-      
-      serverStatus.textContent = '⏳ Checking...';
-      serverStatusContainer.className = 'status status-info';
-      
-      fetch('/api/health')
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'ok') {
-            serverStatus.textContent = '✅ Online';
-            serverStatusContainer.className = 'status status-success';
-          } else {
-            serverStatus.textContent = '❌ Error';
-            serverStatusContainer.className = 'status status-error';
-          }
-        })
-        .catch(error => {
-          console.error('Error checking server status:', error);
-          serverStatus.textContent = '❌ Offline';
-          serverStatusContainer.className = 'status status-error';
-        });
-    }
-    
-    // Function to test WebSocket connection
-    function testWebSocketConnection() {
-      const connectionStatus = document.getElementById('connectionStatus');
-      const connectionStatusContainer = document.getElementById('connectionStatusContainer');
-      
-      connectionStatus.textContent = '⏳ Connecting...';
-      connectionStatusContainer.className = 'status status-info';
-      
-      // Create WebSocket with the correct path
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${wsProtocol}//${hostname}${port ? ':' + port : ''}/ws-chat`;
+    document.addEventListener('DOMContentLoaded', async function() {
+      const connectionStatus = document.getElementById('connection-status');
+      const directIpLink = document.getElementById('direct-ip-link');
+      const copyIpButton = document.getElementById('copy-ip-button');
       
       try {
-        const socket = new WebSocket(wsUrl);
+        // Test the connection
+        const startTime = Date.now();
+        const response = await fetch('/api/health');
+        const endTime = Date.now();
+        const pingTime = endTime - startTime;
         
-        socket.onopen = function() {
-          connectionStatus.textContent = '✅ Connected';
-          connectionStatusContainer.className = 'status status-success';
+        if (response.ok) {
+          const data = await response.json();
+          connectionStatus.textContent = `Connected! (${pingTime}ms)`;
+          connectionStatus.className = 'success';
           
-          // Send a test message
-          socket.send(JSON.stringify({
-            type: 'ping',
-            timestamp: new Date().toISOString()
-          }));
+          // Get connection info for direct IP link
+          const connResponse = await fetch('/api/connection-info');
+          const connData = await connResponse.json();
           
-          // Close after 2 seconds
-          setTimeout(() => {
-            socket.close();
-          }, 2000);
-        };
-        
-        socket.onclose = function() {
-          connectionStatus.textContent = '🔌 Disconnected';
-        };
-        
-        socket.onerror = function(error) {
-          console.error('WebSocket error:', error);
-          connectionStatus.textContent = '❌ Error';
-          connectionStatusContainer.className = 'status status-error';
-        };
+          const protocol = window.location.protocol;
+          const host = window.location.hostname;
+          const port = connData.serverPort || window.location.port || "5000";
+          
+          const directUrl = `${protocol}//${host}:${port}/direct-ip`;
+          directIpLink.textContent = directUrl;
+          
+          // Set up copy button
+          copyIpButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText(directUrl)
+              .then(() => {
+                alert('Direct IP link copied to clipboard!');
+              })
+              .catch(err => {
+                console.error('Could not copy text: ', err);
+                // Fallback for mobile
+                const tempInput = document.createElement('input');
+                tempInput.value = directUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                alert('Direct IP link copied to clipboard!');
+              });
+          });
+        } else {
+          throw new Error(`Server responded with status ${response.status}`);
+        }
       } catch (error) {
-        console.error('Error creating WebSocket:', error);
-        connectionStatus.textContent = '❌ Failed';
-        connectionStatusContainer.className = 'status status-error';
+        console.error('Connection error:', error);
+        connectionStatus.textContent = 'Connection error. Trying alternative method...';
+        connectionStatus.style.color = '#dc3545';
+        
+        // Fallback to hardcoded IP link
+        const protocol = window.location.protocol;
+        const host = window.location.hostname || "0.0.0.0";
+        const port = "5000";
+        
+        const directUrl = `${protocol}//${host}:${port}/direct-ip`;
+        directIpLink.textContent = directUrl;
+        
+        copyIpButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          const tempInput = document.createElement('input');
+          tempInput.value = directUrl;
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempInput);
+          alert('Direct IP link copied to clipboard!');
+        });
       }
-    }
+    });
   </script>
 </body>
 </html>
