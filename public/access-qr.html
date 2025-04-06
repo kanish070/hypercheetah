@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner - Direct Access</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      color: white;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 12px;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+    }
+    
+    .content {
+      margin: 20px 0;
+    }
+    
+    .qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+    }
+    
+    .qr-container {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    
+    .ip-address {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    .button {
+      background: white;
+      color: #3a7bd5;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .button-primary {
+      background: #3a7bd5;
+      color: white;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    
+    .instructions {
+      text-align: left;
+      margin: 20px 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+    
+    .instructions ol {
+      margin-left: 20px;
+    }
+    
+    .instructions li {
+      margin-bottom: 10px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Ride Partner Mobile Access</h1>
+    
+    <div class="content">
+      <p>Scan this QR code with your mobile device to access the application:</p>
+      
+      <div class="qr-section">
+        <h3>Direct IP Access</h3>
+        <div id="qrcode" class="qr-container"></div>
+        <div class="ip-address" id="directIp">Generating QR code...</div>
+      </div>
+      
+      <div class="instructions">
+        <h3>Instructions:</h3>
+        <ol>
+          <li>Scan the QR code with your phone's camera app</li>
+          <li>Open the link in your mobile browser</li>
+          <li>If this doesn't work, try typing the URL manually into your browser</li>
+          <li>Make sure your phone is connected to the same network as this computer</li>
+        </ol>
+      </div>
+    </div>
+    
+    <div>
+      <a href="/" class="button button-primary">Go to App</a>
+      <a href="/lite" class="button">Lite Version</a>
+    </div>
+    
+    <div id="status" class="status"></div>
+  </div>
+  
+  <script>
+    // Create a direct IP URL
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    const directIpUrl = `${protocol}//${host}/lite`;
+    
+    // Generate QR code
+    const qrcodeElement = document.getElementById('qrcode');
+    QRCode.toCanvas(qrcodeElement, directIpUrl, { width: 200 }, function (error) {
+      if (error) console.error(error);
+      console.log('QR code generated!');
+    });
+    
+    // Show direct IP
+    document.getElementById('directIp').textContent = directIpUrl;
+    
+    // Check server status
+    fetch('/api/health')
+      .then(response => response.json())
+      .then(data => {
+        const statusElement = document.getElementById('status');
+        if (data.status === 'ok') {
+          statusElement.style.background = 'rgba(0, 255, 0, 0.2)';
+          statusElement.textContent = '✅ Server is running and healthy';
+        } else {
+          statusElement.style.background = 'rgba(255, 255, 0, 0.2)';
+          statusElement.textContent = '⚠️ Server is online but reporting issues';
+        }
+      })
+      .catch(error => {
+        const statusElement = document.getElementById('status');
+        statusElement.style.background = 'rgba(255, 0, 0, 0.2)';
+        statusElement.textContent = '❌ Cannot connect to server: ' + error.message;
+      });
+  </script>
+</body>
+</html>

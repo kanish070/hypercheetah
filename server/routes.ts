@@ -74,6 +74,16 @@ export async function registerRoutes(app: Express) {
     res.sendFile("direct-ip.html", { root: "./public" });
   });
   
+  // QR code access page
+  app.get("/qr", (req, res) => {
+    res.sendFile("access-qr.html", { root: "./public" });
+  });
+  
+  // Lite version of the app that works without complex routing
+  app.get("/lite", (req, res) => {
+    res.sendFile("lite.html", { root: "./public" });
+  });
+  
   // Emergency fallback for DNS resolution issues
   app.get("/fallback", (req, res) => {
     res.sendFile("fallback.html", { root: "./public" });

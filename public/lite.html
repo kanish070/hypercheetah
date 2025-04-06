@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Partner Lite</title>
+  <style>
+    :root {
+      --primary: #3a7bd5;
+      --primary-light: #5990e0;
+      --primary-dark: #2a63b3;
+      --secondary: #00d2ff;
+      --text: #333;
+      --text-light: #666;
+      --background: #f5f7fa;
+      --card-bg: #ffffff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --border: #e2e8f0;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 80px;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 20px;
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .section {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+
+    .section p {
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .ride-option {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .ride-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: var(--primary-light);
+    }
+
+    .ride-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      color: white;
+      font-size: 20px;
+    }
+
+    .ride-details {
+      flex: 1;
+    }
+
+    .ride-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .ride-price {
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .ride-action {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .ride-action:hover {
+      background: var(--primary-dark);
+    }
+
+    .popular-locations {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .location-pill {
+      background: var(--primary-light);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-light);
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    /* Message section */
+    .message-section {
+      display: none;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: var(--border-radius);
+      margin-bottom: 10px;
+      max-width: 80%;
+    }
+
+    .message-received {
+      background: #e2e8f0;
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 0;
+    }
+
+    .message-sent {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+      border-radius: 16px 16px 0 16px;
+    }
+
+    .message-form {
+      display: flex;
+      margin-top: 16px;
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius) 0 0 var(--border-radius);
+      outline: none;
+    }
+
+    .send-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 16px;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      cursor: pointer;
+    }
+
+    .messages-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Profile section */
+    .profile-section {
+      display: none;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin-right: 16px;
+    }
+
+    .profile-info h3 {
+      margin-bottom: 4px;
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .achievement {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .achievement-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+
+    .achievement-details h4 {
+      margin-bottom: 4px;
+    }
+
+    .achievement-progress {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    /* Login form */
+    .login-form {
+      margin-top: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      outline: none;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .login-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .register-link {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* Register form */
+    .register-form {
+      display: none;
+      margin-top: 16px;
+    }
+
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Utility classes */
+    .hidden {
+      display: none;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .align-center {
+      align-items: center;
+    }
+
+    .justify-between {
+      justify-content: space-between;
+    }
+
+    .mb-2 {
+      margin-bottom: 8px;
+    }
+
+    .mt-2 {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <h1>Ride Partner</h1>
+      <p>Find rides in Vadodara, easily and safely</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Home Section -->
+    <div id="home-section">
+      <div class="section">
+        <h2>Book a Ride</h2>
+        <p>Choose your ride type:</p>
+        
+        <div class="ride-option">
+          <div class="ride-icon">🏍️</div>
+          <div class="ride-details">
+            <div class="ride-name">Bike</div>
+            <div class="ride-price">₹6/km · Faster · Single rider</div>
+          </div>
+          <button class="ride-action">Book</button>
+        </div>
+        
+        <div class="ride-option">
+          <div class="ride-icon">🚗</div>
+          <div class="ride-details">
+            <div class="ride-name">Car</div>
+            <div class="ride-price">₹15/km · Comfortable · AC</div>
+          </div>
+          <button class="ride-action">Book</button>
+        </div>
+        
+        <div class="ride-option">
+          <div class="ride-icon">👥</div>
+          <div class="ride-details">
+            <div class="ride-name">Carpool</div>
+            <div class="ride-price">₹12/km · Shared · Eco-friendly</div>
+          </div>
+          <button class="ride-action">Book</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>Popular in Vadodara</h2>
+        <p>Quick access to popular locations</p>
+        
+        <div class="popular-locations">
+          <div class="location-pill">Alkapuri</div>
+          <div class="location-pill">Railway Station</div>
+          <div class="location-pill">Sayajigunj</div>
+          <div class="location-pill">Nizampura</div>
+          <div class="location-pill">Fatehgunj</div>
+          <div class="location-pill">Manjalpur</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Messages Section -->
+    <div id="messages-section" class="message-section">
+      <div class="section">
+        <h2>Messages</h2>
+        <p>Your conversations with drivers and riders</p>
+        
+        <div class="messages-container">
+          <div class="message message-received">
+            Hi, I'm on my way to pick you up!
+          </div>
+          
+          <div class="message message-sent">
+            Great! I'm waiting near the main entrance.
+          </div>
+          
+          <div class="message message-received">
+            I'll be there in about 5 minutes.
+          </div>
+        </div>
+        
+        <form class="message-form">
+          <input type="text" class="message-input" placeholder="Type a message...">
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Profile Section -->
+    <div id="profile-section" class="profile-section">
+      <div class="section">
+        <div class="profile-header">
+          <div class="profile-avatar">👤</div>
+          <div class="profile-info">
+            <h3>Guest User</h3>
+            <p>Please log in to see your profile</p>
+          </div>
+        </div>
+        
+        <div id="login-container">
+          <h2>Login</h2>
+          <form class="login-form">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="login-btn">Login</button>
+              <a href="#" class="register-link" id="show-register">Register Instead</a>
+            </div>
+          </form>
+          
+          <form class="register-form">
+            <div class="form-group">
+              <label for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+              <label for="reg-username">Username</label>
+              <input type="text" id="reg-username" placeholder="Choose a username">
+            </div>
+            
+            <div class="form-group">
+              <label for="reg-password">Password</label>
+              <input type="password" id="reg-password" placeholder="Choose a password">
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="login-btn">Register</button>
+              <a href="#" class="register-link" id="show-login">Login Instead</a>
+            </div>
+          </form>
+        </div>
+        
+        <div id="user-profile" class="hidden">
+          <div class="stats-container">
+            <div class="stat-card">
+              <div class="stat-value">12</div>
+              <div class="stat-label">Rides</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-value">4.8</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-value">320</div>
+              <div class="stat-label">Points</div>
+            </div>
+          </div>
+          
+          <h3>Achievements</h3>
+          
+          <div class="achievement">
+            <div class="achievement-icon">🚀</div>
+            <div class="achievement-details">
+              <h4>Early Adopter</h4>
+              <p>Joined during launch month</p>
+              <div class="achievement-progress">
+                <div class="progress-bar" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="achievement">
+            <div class="achievement-icon">🌍</div>
+            <div class="achievement-details">
+              <h4>Eco Warrior</h4>
+              <p>Saved 25kg of CO2 by using eco rides</p>
+              <div class="achievement-progress">
+                <div class="progress-bar" style="width: 60%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="achievement">
+            <div class="achievement-icon">⭐</div>
+            <div class="achievement-details">
+              <h4>5-Star Rider</h4>
+              <p>Maintain a 5-star rating for 10 rides</p>
+              <div class="achievement-progress">
+                <div class="progress-bar" style="width: 30%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <button id="logout-btn" class="login-btn mt-2">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bottom-nav">
+    <a href="#" class="nav-item active" data-section="home">
+      <div class="nav-icon">🏠</div>
+      <div>Home</div>
+    </a>
+    <a href="#" class="nav-item" data-section="messages">
+      <div class="nav-icon">💬</div>
+      <div>Messages</div>
+    </a>
+    <a href="#" class="nav-item" data-section="profile">
+      <div class="nav-icon">👤</div>
+      <div>Profile</div>
+    </a>
+  </div>
+
+  <script>
+    // Simple navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update active nav item
+        document.querySelectorAll('.nav-item').forEach(navItem => {
+          navItem.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        // Show selected section
+        const sectionName = this.getAttribute('data-section');
+        document.getElementById('home-section').style.display = sectionName === 'home' ? 'block' : 'none';
+        document.getElementById('messages-section').style.display = sectionName === 'messages' ? 'block' : 'none';
+        document.getElementById('profile-section').style.display = sectionName === 'profile' ? 'block' : 'none';
+      });
+    });
+    
+    // Register form toggle
+    document.getElementById('show-register').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector('.login-form').style.display = 'none';
+      document.querySelector('.register-form').style.display = 'block';
+    });
+    
+    document.getElementById('show-login').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector('.login-form').style.display = 'block';
+      document.querySelector('.register-form').style.display = 'none';
+    });
+    
+    // Login form submission
+    document.querySelector('.login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (username && password) {
+        // For demo purposes only - in a real app, this would call the API
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('user-profile').classList.remove('hidden');
+        
+        // Update profile header
+        document.querySelector('.profile-info h3').textContent = username;
+        document.querySelector('.profile-info p').textContent = 'Rider since April 2025';
+      }
+    });
+    
+    // Register form submission
+    document.querySelector('.register-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('reg-name').value;
+      const username = document.getElementById('reg-username').value;
+      const password = document.getElementById('reg-password').value;
+      
+      if (name && username && password) {
+        // For demo purposes only - in a real app, this would call the API
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('user-profile').classList.remove('hidden');
+        
+        // Update profile header
+        document.querySelector('.profile-info h3').textContent = name;
+        document.querySelector('.profile-info p').textContent = 'Rider since April 2025';
+      }
+    });
+    
+    // Logout button
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('user-profile').classList.add('hidden');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      
+      // Reset profile header
+      document.querySelector('.profile-info h3').textContent = 'Guest User';
+      document.querySelector('.profile-info p').textContent = 'Please log in to see your profile';
+    });
+    
+    // Message form
+    document.querySelector('.message-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const messageInput = document.querySelector('.message-input');
+      const message = messageInput.value.trim();
+      
+      if (message) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', 'message-sent');
+        messageElement.textContent = message;
+        
+        document.querySelector('.messages-container').appendChild(messageElement);
+        
+        messageInput.value = '';
+      }
+    });
+    
+    // Book ride buttons
+    document.querySelectorAll('.ride-action').forEach(button => {
+      button.addEventListener('click', function() {
+        alert('This is a simplified lite version. Please use the full app for booking rides. Redirecting to home page...');
+      });
+    });
+    
+    // Location pills
+    document.querySelectorAll('.location-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        alert(`Selected location: ${this.textContent}. Please use the full app for destination selection.`);
+      });
+    });
+  </script>
+</body>
+</html>
