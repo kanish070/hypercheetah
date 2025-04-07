@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Replit webview detection middleware
+// Replit webview detection middleware - ONLY active for desktop browsers
 app.use((req, res, next) => {
   // Skip for API and asset requests
   if (req.path.startsWith('/api') || 
@@ -32,35 +32,40 @@ app.use((req, res, next) => {
     return next();
   }
   
-  // Only run the Replit detection on the root path
+  // Skip if not root path
   if (req.path !== '/') {
     return next();
   }
   
-  // Check specific paths we want to exclude from Replit webview detection
+  // Skip for ALL mobile devices
+  const userAgent = req.headers['user-agent'] || '';
+  if (userAgent.toLowerCase().includes('mobile') || 
+      userAgent.toLowerCase().includes('android') || 
+      userAgent.toLowerCase().includes('iphone') || 
+      userAgent.toLowerCase().includes('ipad') || 
+      userAgent.toLowerCase().includes('ipod')) {
+    console.log('Mobile device detected, allowing direct access');
+    return next();
+  }
+  
+  // Skip for direct access paths and query parameters
   if (req.path.startsWith('/m-direct') ||
       req.path.startsWith('/direct-mobile') ||
-      req.path.startsWith('/direct-ip')) {
+      req.path.startsWith('/direct-ip') ||
+      req.query.bypass === 'true' || 
+      req.query.mobile === 'true' || 
+      req.query.direct === 'true') {
     return next();
   }
-  
-  // Skip if this is a mobile direct access request with query parameters
-  if (req.query.bypass === 'true' || req.query.mobile === 'true' || req.query.direct === 'true') {
-    return next();
-  }
-  
-  // Check if this is the Replit webview
-  const userAgent = req.headers['user-agent'] || '';
-  const referer = req.headers['referer'] || '';
   
   console.log('UA:', userAgent);
-  console.log('Referer:', referer);
+  console.log('Referer:', req.headers['referer'] || '');
   
-  // More reliable Replit webview detection
+  // More reliable Replit webview detection - ONLY for desktop browsers
   const isReplitWebview = 
-    userAgent.toLowerCase().includes('replit') || 
-    referer.toLowerCase().includes('replit.com') ||
-    (req.headers['x-replit-user-id'] !== undefined);
+    (userAgent.toLowerCase().includes('replit') || 
+    (req.headers['referer'] || '').toLowerCase().includes('replit.com') ||
+    (req.headers['x-replit-user-id'] !== undefined));
   
   if (isReplitWebview) {
     console.log('Replit webview detected, serving special page');

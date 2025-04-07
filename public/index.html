@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ride Partner</title>
   <link rel="stylesheet" href="/assets/index.css">
   <script type="module" src="/src/main.tsx"></script>
+  
+  <!-- Fallback mechanism for mobile devices -->
+  <script>
+    // If the app fails to load within 5 seconds, we'll redirect to a special mobile route
+    var fallbackTimer = setTimeout(function() {
+      // Check if we're on a mobile device
+      var isMobile = /iPhone|iPad|iPod|Android|Mobile|BlackBerry/i.test(navigator.userAgent);
+      
+      // Only do the redirect for mobile devices
+      if (isMobile && !window.appLoaded) {
+        console.log('App failed to load, redirecting to mobile entry...');
+        window.location.href = '/direct-mobile-app.html?ts=' + new Date().getTime();
+      }
+    }, 5000);
+    
+    // The actual application will clear this timer when it loads
+    window.addEventListener('load', function() {
+      // Give React a moment to render
+      setTimeout(function() {
+        if (document.getElementById('root').children.length > 0) {
+          console.log('App loaded successfully, clearing fallback timer');
+          window.appLoaded = true;
+          clearTimeout(fallbackTimer);
+        }
+      }, 2000);
+    });
+  </script>
 </head>
 
 <body>
   <div id="root"></div>
 </body>
-
 </html>

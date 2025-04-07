@@ -27,7 +27,26 @@ interface WebSocketClient extends WebSocket {
   isAlive: boolean;
 }
 
+// Route specifically for mobile direct access
+const handleMobileDirectAccess = (req: Request, res: Response) => {
+  const userAgent = req.headers['user-agent'] || '';
+  console.log('Mobile direct access route hit. UA:', userAgent);
+  
+  // Always set CORS headers for mobile routes
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Directly send the app HTML with proper parameters
+  res.redirect('/?bypass=true&mobile=true&direct=true&ts=' + Date.now());
+};
+
 export async function registerRoutes(app: Express) {
+  // Special direct mobile access routes - these bypass all middleware
+  app.get('/m', handleMobileDirectAccess);
+  app.get('/mobile', handleMobileDirectAccess);
+  app.get('/m-direct', handleMobileDirectAccess);
+  app.get('/direct-mobile-route', handleMobileDirectAccess);
   // Special route for Replit webview to display mobile access options
   app.get("/replit-view", (req, res) => {
     res.sendFile("replit-view.html", { root: "./public" });
@@ -557,10 +576,16 @@ export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
   
   // Use WebSocketServer with a specific path to avoid conflicts with Vite
-  // and ensure compatibility with Replit's webview
+  // and ensure compatibility with Replit's webview and mobile clients
   const wss = new WebSocketServer({ 
     server: httpServer,
     path: '/ws-chat',
+    // Allow connections from any origin - critical for mobile access
+    verifyClient: (info, cb) => {
+      // Always accept the connection
+      console.log('WS connection from:', info.req.headers['user-agent']);
+      cb(true);
+    },
     perMessageDeflate: {
       zlibDeflateOptions: {
         // See zlib defaults.
