@@ -32,35 +32,7 @@ app.use((req, res, next) => {
     return next();
   }
   
-  // Skip if not root path
-  if (req.path !== '/') {
-    return next();
-  }
-  
-  const userAgent = req.headers['user-agent'] || '';
-  
-  // Log device information but don't redirect based on device type
-  if (userAgent.toLowerCase().includes('mobile') || 
-      userAgent.toLowerCase().includes('android') || 
-      userAgent.toLowerCase().includes('iphone') || 
-      userAgent.toLowerCase().includes('ipad') || 
-      userAgent.toLowerCase().includes('ipod')) {
-    console.log('Mobile device detected, serving full app experience');
-  }
-  
-  // Allow direct access even in Replit webview
-  const isReplitWebview = 
-    (userAgent.toLowerCase().includes('replit') || 
-    (req.headers['referer'] || '').toLowerCase().includes('replit.com') ||
-    (req.headers['x-replit-user-id'] !== undefined));
-  
-  if (isReplitWebview) {
-    console.log('Replit webview detected, serving full app');
-    // Continue to next middleware to serve full app
-  }
-  
-  // For all other cases (mobile or desktop), serve the full app
-  console.log('Serving full app experience to all devices');
+  // Always serve the full app
   next();
 });
 
