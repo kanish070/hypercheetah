@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Replit webview detection middleware - ONLY active for desktop browsers
+// Simplified middleware - ensure ALL devices get the full app experience
 app.use((req, res, next) => {
   // Skip for API and asset requests
   if (req.path.startsWith('/api') || 
@@ -37,31 +37,19 @@ app.use((req, res, next) => {
     return next();
   }
   
-  // Skip for ALL mobile devices
   const userAgent = req.headers['user-agent'] || '';
+  
+  // Log device information but don't redirect based on device type
   if (userAgent.toLowerCase().includes('mobile') || 
       userAgent.toLowerCase().includes('android') || 
       userAgent.toLowerCase().includes('iphone') || 
       userAgent.toLowerCase().includes('ipad') || 
       userAgent.toLowerCase().includes('ipod')) {
-    console.log('Mobile device detected, allowing direct access');
-    return next();
+    console.log('Mobile device detected, serving full app experience');
   }
   
-  // Skip for direct access paths and query parameters
-  if (req.path.startsWith('/m-direct') ||
-      req.path.startsWith('/direct-mobile') ||
-      req.path.startsWith('/direct-ip') ||
-      req.query.bypass === 'true' || 
-      req.query.mobile === 'true' || 
-      req.query.direct === 'true') {
-    return next();
-  }
-  
-  console.log('UA:', userAgent);
-  console.log('Referer:', req.headers['referer'] || '');
-  
-  // More reliable Replit webview detection - ONLY for desktop browsers
+  // Only special case: handle Replit webview differently to provide access instructions
+  // This only affects viewing the app within Replit's editor
   const isReplitWebview = 
     (userAgent.toLowerCase().includes('replit') || 
     (req.headers['referer'] || '').toLowerCase().includes('replit.com') ||
@@ -72,6 +60,8 @@ app.use((req, res, next) => {
     return res.sendFile('replit-view.html', { root: './public' });
   }
   
+  // For all other cases (mobile or desktop), serve the full app
+  console.log('Serving full app experience to all devices');
   next();
 });
 

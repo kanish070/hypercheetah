@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Loading VadodaraRide - Full App Experience</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      color: #333;
+      flex-direction: column;
+      text-align: center;
+    }
+    .loading-container {
+      padding: 2rem;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 90%;
+      width: 400px;
+    }
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 1rem;
+    }
+    p {
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .button {
+      display: inline-block;
+      background-color: #1a73e8;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #0d62c9;
+    }
+    .status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-container">
+    <h1>VadodaraRide</h1>
+    <div class="loader"></div>
+    <p>Launching the full app experience, please wait...</p>
+    <div id="countdown">Redirecting in 3 seconds...</div>
+    <div class="status">
+      <div id="status-message">Establishing connection...</div>
+    </div>
+  </div>
+
+  <script>
+    // Redirect to the root with full app parameters
+    const redirectToFullApp = () => {
+      const timestamp = Date.now();
+      window.location.href = '/?full=true&ts=' + timestamp;
+    };
+
+    // Countdown timer
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+    const statusElement = document.getElementById('status-message');
+    
+    const updateCountdown = () => {
+      countdown--;
+      countdownElement.textContent = `Redirecting in ${countdown} seconds...`;
+      
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        statusElement.textContent = 'Loading full application...';
+        redirectToFullApp();
+      }
+    };
+    
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    
+    // If page is hidden (user switches tabs), redirect immediately when they return
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && countdown > 0) {
+        clearInterval(countdownInterval);
+        redirectToFullApp();
+      }
+    });
+  </script>
+</body>
+</html>

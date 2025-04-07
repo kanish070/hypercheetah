@@ -27,26 +27,27 @@ interface WebSocketClient extends WebSocket {
   isAlive: boolean;
 }
 
-// Route specifically for mobile direct access
-const handleMobileDirectAccess = (req: Request, res: Response) => {
+// Universal access route - ensures full app experience on all devices
+const handleUniversalAccess = (req: Request, res: Response) => {
   const userAgent = req.headers['user-agent'] || '';
-  console.log('Mobile direct access route hit. UA:', userAgent);
+  console.log('Universal access route hit. UA:', userAgent);
   
-  // Always set CORS headers for mobile routes
+  // Always set CORS headers for universal access
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   
-  // Directly send the app HTML with proper parameters
-  res.redirect('/?bypass=true&mobile=true&direct=true&ts=' + Date.now());
+  // Redirect to root with no device-specific parameters
+  // This ensures the same full app experience on all devices
+  res.redirect('/?full=true&ts=' + Date.now());
 };
 
 export async function registerRoutes(app: Express) {
-  // Special direct mobile access routes - these bypass all middleware
-  app.get('/m', handleMobileDirectAccess);
-  app.get('/mobile', handleMobileDirectAccess);
-  app.get('/m-direct', handleMobileDirectAccess);
-  app.get('/direct-mobile-route', handleMobileDirectAccess);
+  // Universal access routes - consistent experience on all devices
+  app.get('/m', handleUniversalAccess);
+  app.get('/mobile', handleUniversalAccess);
+  app.get('/m-direct', handleUniversalAccess);
+  app.get('/direct-mobile-route', handleUniversalAccess);
   // Special route for Replit webview to display mobile access options
   app.get("/replit-view", (req, res) => {
     res.sendFile("replit-view.html", { root: "./public" });
@@ -130,66 +131,64 @@ export async function registerRoutes(app: Express) {
     res.redirect("/");
   });
   
-  // Mobile route - immediately redirects to direct mobile app page
+  // Universal access route - redirects all devices to full app
   app.get("/mobile", (req, res) => {
-    // Redirect directly to the direct-mobile-app.html which handles instant app loading
-    res.sendFile("direct-mobile-app.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // New mobile entry point - simpler with multiple connection options
+  // Universal access route - consistent experience on all devices
   app.get("/m", (req, res) => {
-    res.sendFile("mobile-entry.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // Direct mobile access - now redirects directly to the full app for immediate access
+  // Universal access route - consistent experience on all devices
   app.get("/direct-mobile", (req, res) => {
-    res.redirect('/?bypass=true&mobile=true&direct=true');
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // New fast-loading mobile access route
+  // Universal access route - consistent experience on all devices
   app.get("/direct-mobile-app", (req, res) => {
-    res.sendFile("direct-mobile-app.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // Even more direct mobile access - immediate redirect through client-side JS
+  // Universal access route - consistent experience on all devices
   app.get("/m-direct", (req, res) => {
-    res.sendFile("direct-mobile.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // Direct IP connection page for bypassing DNS issues
+  // Universal access route - consistent experience on all devices
   app.get("/direct-ip", (req, res) => {
-    res.sendFile("direct-ip.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // Full app access page - guaranteed to load the full React app
+  // Universal access route - consistent experience on all devices
   app.get("/full-app", (req, res) => {
-    res.sendFile("full-app.html", { root: "./public" });
+    // Redirect to full app experience
+    res.redirect('/?full=true&ts=' + Date.now());
   });
   
-  // Root path with improved mobile device detection and handling
+  // Root path handler - serves the same experience to all devices
   app.get("/", (req, res, next) => {
-    // Check if the request includes mobile optimization parameters
-    const bypass = req.query.bypass === 'true';
-    const isMobile = req.query.mobile === 'true';
-    const isDirect = req.query.direct === 'true';
+    // Set headers to ensure consistent experience
+    res.setHeader('X-Full-App', 'true');
     
-    // If this is a mobile request with optimization parameters, apply special handling
-    if (bypass && isMobile) {
-      // Set special headers to force full app load on mobile
-      res.setHeader('X-Mobile-App', 'true');
-      res.setHeader('X-Bypass-Intermediates', 'true');
-      
-      // Log direct mobile access
-      if (isDirect) {
-        console.log('Direct mobile app access with bypass parameters');
-      }
-    }
+    // Log access with timestamp for debugging
+    console.log(`App access at ${new Date().toISOString()}`);
     
-    // Always serve the full app for all devices with appropriate settings
+    // Continue to serve the full app
     next();
   });
   
-  // This is a duplicate endpoint removed to avoid confusion
+  // Universal entry point for guaranteed application loading
+  app.get("/unified", (req, res) => {
+    res.sendFile("unified-entry.html", { root: "./public" });
+  });
   
   // Health check endpoint for monitoring server status
   app.get("/api/health", (req, res) => {
