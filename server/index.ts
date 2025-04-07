@@ -48,16 +48,15 @@ app.use((req, res, next) => {
     console.log('Mobile device detected, serving full app experience');
   }
   
-  // Only special case: handle Replit webview differently to provide access instructions
-  // This only affects viewing the app within Replit's editor
+  // Allow direct access even in Replit webview
   const isReplitWebview = 
     (userAgent.toLowerCase().includes('replit') || 
     (req.headers['referer'] || '').toLowerCase().includes('replit.com') ||
     (req.headers['x-replit-user-id'] !== undefined));
   
   if (isReplitWebview) {
-    console.log('Replit webview detected, serving special page');
-    return res.sendFile('replit-view.html', { root: './public' });
+    console.log('Replit webview detected, serving full app');
+    // Continue to next middleware to serve full app
   }
   
   // For all other cases (mobile or desktop), serve the full app
