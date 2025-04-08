@@ -171,13 +171,35 @@ export function LiveLocationTracker({
   // Simulated driver speed in km/h
   const [driverSpeed, setDriverSpeed] = useState(30);
   
-  // Get initial user location
+  // Get initial user location with high accuracy
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
+          const { latitude, longitude, accuracy, speed, heading } = position.coords;
+          setUserLocation({ 
+            lat: latitude, 
+            lng: longitude,
+            accuracy: accuracy,
+            speed: speed || 0,
+            heading: heading || 0,
+            timestamp: position.timestamp
+          });
+
+          // Send location update to server
+          fetch('/api/location/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              rideId,
+              location: { lat: latitude, lng: longitude },
+              accuracy,
+              speed,
+              heading,
+              timestamp: position.timestamp
+            })
+          });
         },
         (error) => {
           console.error("Error getting location: ", error);
@@ -283,6 +305,13 @@ export function LiveLocationTracker({
         watchIdRef.current = null;
       }
       setIsLocationShared(false);
+
+      // Notify server that tracking has stopped
+      fetch('/api/location/stop-sharing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, rideId })
+      });
       
       toast({
         title: "Location Sharing Disabled",
